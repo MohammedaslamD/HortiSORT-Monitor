@@ -73,7 +73,7 @@ export function TicketsPage() {
       setError(null)
 
       try {
-        const fetchedMachines = await getMachinesByRole(user!.role, user!.id)
+        const fetchedMachines = await getMachinesByRole()
 
         let fetchedTickets: Ticket[]
 

@@ -63,7 +63,7 @@ export function SiteVisitsPage() {
 
         const [fetchedVisits, fetchedMachines] = await Promise.all([
           getAllSiteVisits(filters),
-          getMachinesByRole(user!.role, user!.id),
+          getMachinesByRole(),
         ])
 
         if (cancelled) return

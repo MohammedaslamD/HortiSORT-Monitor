@@ -50,7 +50,7 @@ export function MachinesPage() {
       setError(null)
 
       try {
-        const fetchedMachines = await getMachinesByRole(user!.role, user!.id)
+        const fetchedMachines = await getMachinesByRole()
         if (cancelled) return
         setMachines(fetchedMachines)
       } catch (err) {

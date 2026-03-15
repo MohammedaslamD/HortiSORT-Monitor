@@ -1,74 +1,140 @@
-import { describe, it, expect } from 'vitest'
-import { getDailyLogs, getDailyLogsByMachineId, getRecentDailyLogs, getAllDailyLogs } from '../dailyLogService'
+import { vi, beforeEach, it, expect, describe } from 'vitest'
 
-describe('dailyLogService', () => {
-  describe('getDailyLogs', () => {
-    it('should return all 15 daily logs', async () => {
-      const logs = await getDailyLogs()
-      expect(logs).toHaveLength(15)
-    })
+vi.mock('../apiClient', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}))
+
+import { apiClient } from '../apiClient'
+import {
+  getDailyLogs,
+  getDailyLogsByMachineId,
+  getRecentDailyLogs,
+  getAllDailyLogs,
+  addDailyLog,
+} from '../dailyLogService'
+import type { NewDailyLogInput } from '../dailyLogService'
+
+const mockGet = apiClient.get as ReturnType<typeof vi.fn>
+const mockPost = apiClient.post as ReturnType<typeof vi.fn>
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+describe('getDailyLogs', () => {
+  it('calls GET /api/v1/daily-logs with no query when no filters', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    const result = await getDailyLogs()
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs')
+    expect(result).toEqual([])
   })
 
-  describe('getDailyLogsByMachineId', () => {
-    it('should return 3 logs for machine id 1', async () => {
-      const logs = await getDailyLogsByMachineId(1)
-      expect(logs).toHaveLength(3)
-    })
-
-    it('should return empty array for machine with no logs', async () => {
-      const logs = await getDailyLogsByMachineId(999)
-      expect(logs).toHaveLength(0)
-    })
+  it('calls GET /api/v1/daily-logs with machineId query param', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getDailyLogs({ machineId: 3 })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?machineId=3')
   })
 
-  describe('getRecentDailyLogs', () => {
-    it('should return logs sorted by date desc, limited to N', async () => {
-      const logs = await getRecentDailyLogs(3)
-      expect(logs).toHaveLength(3)
-      expect(logs.every((log) => log.date === '2026-03-15')).toBe(true)
-    })
-
-    it('should return all logs sorted when limit exceeds total', async () => {
-      const logs = await getRecentDailyLogs(100)
-      expect(logs).toHaveLength(15)
-      // Verify sorted descending: each date >= next date
-      for (let i = 0; i < logs.length - 1; i++) {
-        expect(logs[i].date >= logs[i + 1].date).toBe(true)
-      }
-    })
+  it('calls GET /api/v1/daily-logs with date query param', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getDailyLogs({ date: '2026-03-15' })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?date=2026-03-15')
   })
 
-  describe('getAllDailyLogs', () => {
-    it('should return all 15 logs sorted by date desc when no filters given', async () => {
-      const logs = await getAllDailyLogs()
-      expect(logs).toHaveLength(15)
-      for (let i = 0; i < logs.length - 1; i++) {
-        expect(logs[i].date >= logs[i + 1].date).toBe(true)
-      }
-    })
+  it('calls GET /api/v1/daily-logs with status query param', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getDailyLogs({ status: 'running' })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?status=running')
+  })
 
-    it('should filter by machineId', async () => {
-      const logs = await getAllDailyLogs({ machineId: 1 })
-      expect(logs).toHaveLength(3)
-      expect(logs.every((l) => l.machine_id === 1)).toBe(true)
-    })
+  it('calls GET /api/v1/daily-logs with multiple query params', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getDailyLogs({ machineId: 2, status: 'maintenance' })
+    const called = mockGet.mock.calls[0][0] as string
+    expect(called).toContain('machineId=2')
+    expect(called).toContain('status=maintenance')
+  })
 
-    it('should filter by date', async () => {
-      const logs = await getAllDailyLogs({ date: '2026-03-15' })
-      expect(logs).toHaveLength(4)
-      expect(logs.every((l) => l.date === '2026-03-15')).toBe(true)
-    })
+  it('returns data from the response', async () => {
+    const logs = [{ id: 1, machine_id: 1, date: '2026-03-15' }]
+    mockGet.mockResolvedValue({ data: logs })
+    const result = await getDailyLogs()
+    expect(result).toEqual(logs)
+  })
+})
 
-    it('should filter by status', async () => {
-      const logs = await getAllDailyLogs({ status: 'running' })
-      expect(logs).toHaveLength(12)
-      expect(logs.every((l) => l.status === 'running')).toBe(true)
-    })
+describe('getDailyLogsByMachineId', () => {
+  it('calls GET /api/v1/daily-logs?machineId=:id', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    const result = await getDailyLogsByMachineId(7)
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?machineId=7')
+    expect(result).toEqual([])
+  })
+})
 
-    it('should combine multiple filters', async () => {
-      const logs = await getAllDailyLogs({ machineId: 1, status: 'running' })
-      expect(logs).toHaveLength(3)
-      expect(logs.every((l) => l.machine_id === 1 && l.status === 'running')).toBe(true)
+describe('getRecentDailyLogs', () => {
+  it('calls GET /api/v1/daily-logs with limit and sort params', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getRecentDailyLogs(5)
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?limit=5&sort=date%3Adesc')
+  })
+})
+
+describe('getAllDailyLogs', () => {
+  it('calls GET /api/v1/daily-logs with no params when no filters', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getAllDailyLogs()
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs')
+  })
+
+  it('calls GET /api/v1/daily-logs with machineId filter', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getAllDailyLogs({ machineId: 1 })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?machineId=1')
+  })
+
+  it('calls GET /api/v1/daily-logs with date filter', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getAllDailyLogs({ date: '2026-03-10' })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?date=2026-03-10')
+  })
+
+  it('calls GET /api/v1/daily-logs with status filter', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getAllDailyLogs({ status: 'not_running' })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/daily-logs?status=not_running')
+  })
+})
+
+describe('addDailyLog', () => {
+  it('calls POST /api/v1/daily-logs with the correct body', async () => {
+    const input: NewDailyLogInput = {
+      machine_id: 2,
+      date: '2026-03-15',
+      status: 'running',
+      fruit_type: 'mango',
+      tons_processed: 12.5,
+      shift_start: '08:00',
+      shift_end: '16:00',
+      notes: 'All good',
+      updated_by: 3,
+    }
+    const created = { id: 99, ...input }
+    mockPost.mockResolvedValue({ data: created })
+    const result = await addDailyLog(input)
+    expect(mockPost).toHaveBeenCalledWith('/api/v1/daily-logs', {
+      machine_id: 2,
+      date: '2026-03-15',
+      status: 'running',
+      fruit_type: 'mango',
+      tons_processed: 12.5,
+      shift_start: '08:00',
+      shift_end: '16:00',
+      notes: 'All good',
     })
+    expect(result).toEqual(created)
   })
 })

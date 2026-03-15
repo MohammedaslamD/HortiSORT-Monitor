@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { Machine, MachineStatus, MachineStats, DailyLog, Ticket } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { getMachinesByRole, getMachineStats } from '../services/machineService';
+import { getMachinesByRole } from '../services/machineService';
 import { getTickets } from '../services/ticketService';
 import { getDailyLogs } from '../services/dailyLogService';
 import { StatsCards } from '../components/dashboard/StatsCards';
@@ -63,7 +63,7 @@ export function DashboardPage() {
 
       try {
         const [fetchedMachines, fetchedTickets, fetchedLogs] = await Promise.all([
-          getMachinesByRole(user!.role, user!.id),
+          getMachinesByRole(),
           getTickets(),
           getDailyLogs(),
         ]);
@@ -110,7 +110,13 @@ export function DashboardPage() {
   });
 
   // Stats are computed from filtered results so cards + stats stay in sync
-  const stats: MachineStats = getMachineStats(filteredMachines);
+  const stats: MachineStats = {
+    total: filteredMachines.length,
+    running: filteredMachines.filter((m) => m.status === 'running').length,
+    idle: filteredMachines.filter((m) => m.status === 'idle').length,
+    down: filteredMachines.filter((m) => m.status === 'down').length,
+    offline: filteredMachines.filter((m) => m.status === 'offline').length,
+  };
 
   // Global open ticket count (across all user-visible machines, unfiltered)
   const openTicketCount = allTickets.filter((t) =>

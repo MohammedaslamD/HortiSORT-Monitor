@@ -1,82 +1,49 @@
-import type { Machine, MachineFilters, MachineStats, MachineStatus, UserRole } from '../types'
-import { MOCK_MACHINES } from '../data/mockData'
+import { apiClient } from './apiClient'
+import type { Machine, MachineFilters, MachineStats, MachineStatus } from '../types'
 
-/** Return all machines, optionally filtered. All filters are AND-combined. */
+/** Return all machines, optionally filtered. Role-scoping is handled server-side via JWT. */
 export async function getMachines(filters?: MachineFilters): Promise<Machine[]> {
-  let result = MOCK_MACHINES
+  const params = new URLSearchParams()
+  if (filters?.status) params.set('status', filters.status)
+  if (filters?.model) params.set('model', filters.model)
+  if (filters?.city) params.set('city', filters.city)
+  if (filters?.search) params.set('search', filters.search)
 
-  if (filters?.status) {
-    result = result.filter((m) => m.status === filters.status)
-  }
-
-  if (filters?.model) {
-    result = result.filter((m) => m.model === filters.model)
-  }
-
-  if (filters?.city) {
-    const cityLower = filters.city.toLowerCase()
-    result = result.filter((m) => m.city.toLowerCase() === cityLower)
-  }
-
-  if (filters?.search) {
-    const term = filters.search.toLowerCase()
-    result = result.filter(
-      (m) =>
-        m.machine_code.toLowerCase().includes(term) ||
-        m.machine_name.toLowerCase().includes(term) ||
-        m.city.toLowerCase().includes(term) ||
-        m.state.toLowerCase().includes(term),
-    )
-  }
-
-  return result
+  const query = params.toString()
+  const path = query ? `/api/v1/machines?${query}` : '/api/v1/machines'
+  const res = await apiClient.get<Machine[]>(path)
+  return res.data
 }
 
-/** Return a single machine by its ID, or undefined if not found. */
-export async function getMachineById(id: number): Promise<Machine | undefined> {
-  return MOCK_MACHINES.find((m) => m.id === id)
-}
-
-/** Compute aggregated status counts from the given array of machines. */
-export function getMachineStats(machines: Machine[]): MachineStats {
-  return {
-    total: machines.length,
-    running: machines.filter((m) => m.status === 'running').length,
-    idle: machines.filter((m) => m.status === 'idle').length,
-    down: machines.filter((m) => m.status === 'down').length,
-    offline: machines.filter((m) => m.status === 'offline').length,
-  }
-}
-
-/** Return machines visible to a user based on their role.
- *  - customer: only machines where customer_id matches userId
- *  - engineer: only machines where engineer_id matches userId
- *  - admin: all machines
- */
-export async function getMachinesByRole(role: UserRole, userId: number): Promise<Machine[]> {
-  switch (role) {
-    case 'customer':
-      return MOCK_MACHINES.filter((m) => m.customer_id === userId)
-    case 'engineer':
-      return MOCK_MACHINES.filter((m) => m.engineer_id === userId)
-    case 'admin':
-      return [...MOCK_MACHINES]
-  }
+/** Return a single machine by its ID. Throws if not found. */
+export async function getMachineById(id: number): Promise<Machine> {
+  const res = await apiClient.get<Machine>(`/api/v1/machines/${id}`)
+  return res.data
 }
 
 /**
- * Mutates the in-memory mock machine record with the given status and timestamp.
- * Used by UpdateStatusPage to reflect submitted data without a real backend.
+ * Return aggregated machine status counts.
+ * Role-scoping is handled server-side; no user param required.
  */
+export async function getMachineStats(): Promise<MachineStats> {
+  const res = await apiClient.get<MachineStats>('/api/v1/machines/stats')
+  return res.data
+}
+
+/**
+ * Return machines visible to the authenticated user.
+ * Role-scoping is handled server-side via JWT — no role/userId params needed.
+ */
+export async function getMachinesByRole(): Promise<Machine[]> {
+  const res = await apiClient.get<Machine[]>('/api/v1/machines')
+  return res.data
+}
+
+/** Update a machine's status. */
 export async function updateMachineStatus(
   machineId: number,
   newStatus: MachineStatus,
-  updatedBy: number,
+  _updatedBy: number,
 ): Promise<void> {
-  const machine = MOCK_MACHINES.find((m) => m.id === machineId)
-  if (!machine) throw new Error(`Machine ${machineId} not found`)
-  machine.status = newStatus
-  machine.last_updated = new Date().toISOString()
-  machine.last_updated_by = updatedBy
-  machine.updated_at = new Date().toISOString()
+  await apiClient.patch(`/api/v1/machines/${machineId}/status`, { status: newStatus })
 }

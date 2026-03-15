@@ -1,131 +1,83 @@
-import { describe, it, expect } from 'vitest'
-import { getMachines, getMachineById, getMachineStats, getMachinesByRole } from '../machineService'
+import { vi, beforeEach, it, expect, describe } from 'vitest'
+
+vi.mock('../apiClient', () => ({
+  apiClient: {
+    get: vi.fn(),
+    patch: vi.fn(),
+  },
+}))
+
+import { apiClient } from '../apiClient'
+import { getMachines, getMachineById, getMachineStats, getMachinesByRole, updateMachineStatus } from '../machineService'
+
+const mockGet = apiClient.get as ReturnType<typeof vi.fn>
+const mockPatch = apiClient.patch as ReturnType<typeof vi.fn>
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('getMachines', () => {
-  it('should return all 12 machines when no filters are provided', async () => {
-    const machines = await getMachines()
-    expect(machines).toHaveLength(12)
+  it('calls GET /api/v1/machines with no params when no filters', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    const result = await getMachines()
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/machines')
+    expect(result).toEqual([])
   })
 
-  it('should filter by status', async () => {
-    const machines = await getMachines({ status: 'running' })
-    expect(machines).toHaveLength(6)
+  it('calls GET /api/v1/machines with status query param', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getMachines({ status: 'running' })
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/machines?status=running')
   })
 
-  it('should filter by model', async () => {
-    const machines = await getMachines({ model: 'HS-300' })
-    expect(machines).toHaveLength(4)
+  it('calls GET /api/v1/machines with multiple filter params', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getMachines({ status: 'idle', city: 'Mumbai' })
+    const called = mockGet.mock.calls[0][0] as string
+    expect(called).toContain('status=idle')
+    expect(called).toContain('city=Mumbai')
   })
 
-  it('should filter by city (case-insensitive)', async () => {
-    const machines = await getMachines({ city: 'pune' })
-    expect(machines).toHaveLength(1)
-    expect(machines[0].city).toBe('Pune')
-  })
-
-  it('should filter by search (partial, case-insensitive)', async () => {
-    // Search by machine_code prefix
-    const byCode = await getMachines({ search: 'HS-2024' })
-    expect(byCode).toHaveLength(5)
-
-    // Search by city
-    const byCity = await getMachines({ search: 'chennai' })
-    expect(byCity).toHaveLength(1)
-    expect(byCity[0].id).toBe(7)
-
-    // Search by state (ids 1-5 + id 12 Nagpur are in Maharashtra)
-    const byState = await getMachines({ search: 'maharashtra' })
-    expect(byState).toHaveLength(6)
-
-    // Search by machine_name (ids 1, 3, 11 all named "HortiSort Pro 500")
-    const byName = await getMachines({ search: 'HortiSort Pro 500' })
-    expect(byName).toHaveLength(3)
-  })
-
-  it('should combine filters (status + model)', async () => {
-    const machines = await getMachines({ status: 'running', model: 'HS-300' })
-    // HS-300 machines: ids 2,4,7,10. Running: ids 2,7. So 2 matches.
-    expect(machines).toHaveLength(2)
-    machines.forEach((m) => {
-      expect(m.status).toBe('running')
-      expect(m.model).toBe('HS-300')
-    })
+  it('returns the data array from the response', async () => {
+    const machines = [{ id: 1, machine_code: 'HS-001' }]
+    mockGet.mockResolvedValue({ data: machines })
+    const result = await getMachines()
+    expect(result).toEqual(machines)
   })
 })
 
 describe('getMachineById', () => {
-  it('should return the machine when found', async () => {
-    const machine = await getMachineById(1)
-    expect(machine).toBeDefined()
-    expect(machine!.id).toBe(1)
-    expect(machine!.machine_code).toBe('HS-2024-0001')
-  })
-
-  it('should return undefined when not found', async () => {
-    const machine = await getMachineById(999)
-    expect(machine).toBeUndefined()
+  it('calls GET /api/v1/machines/:id', async () => {
+    mockGet.mockResolvedValue({ data: { id: 5 } })
+    const result = await getMachineById(5)
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/machines/5')
+    expect(result).toEqual({ id: 5 })
   })
 })
 
 describe('getMachineStats', () => {
-  it('should compute correct stats for all machines', async () => {
-    const machines = await getMachines()
-    const stats = getMachineStats(machines)
-
-    expect(stats).toEqual({
-      total: 12,
-      running: 6,
-      idle: 2,
-      down: 2,
-      offline: 2,
-    })
-  })
-
-  it('should compute stats for a filtered subset', async () => {
-    const machines = await getMachines({ model: 'HS-300' })
-    const stats = getMachineStats(machines)
-
-    expect(stats.total).toBe(4)
-    // HS-300 ids: 2(running), 4(idle), 7(running), 10(idle)
-    expect(stats.running).toBe(2)
-    expect(stats.idle).toBe(2)
-    expect(stats.down).toBe(0)
-    expect(stats.offline).toBe(0)
-  })
-
-  it('should return all zeros for an empty array', () => {
-    const stats = getMachineStats([])
-
-    expect(stats).toEqual({
-      total: 0,
-      running: 0,
-      idle: 0,
-      down: 0,
-      offline: 0,
-    })
+  it('calls GET /api/v1/machines/stats and returns stats', async () => {
+    const stats = { running: 3, idle: 2, down: 1, offline: 0, total: 6 }
+    mockGet.mockResolvedValue({ data: stats })
+    const result = await getMachineStats()
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/machines/stats')
+    expect(result).toEqual(stats)
   })
 })
 
 describe('getMachinesByRole', () => {
-  it('should return only customer-owned machines for customer role', async () => {
-    const machines = await getMachinesByRole('customer', 1)
-    expect(machines).toHaveLength(5)
-    machines.forEach((m) => expect(m.customer_id).toBe(1))
+  it('calls GET /api/v1/machines (server handles role-scoping)', async () => {
+    mockGet.mockResolvedValue({ data: [] })
+    await getMachinesByRole()
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/machines')
   })
+})
 
-  it('should return only assigned machines for engineer role', async () => {
-    const machines = await getMachinesByRole('engineer', 3)
-    expect(machines).toHaveLength(6)
-    machines.forEach((m) => expect(m.engineer_id).toBe(3))
-  })
-
-  it('should return all machines for admin role', async () => {
-    const machines = await getMachinesByRole('admin', 5)
-    expect(machines).toHaveLength(12)
-  })
-
-  it('should return empty array for customer with no machines', async () => {
-    const machines = await getMachinesByRole('customer', 999)
-    expect(machines).toHaveLength(0)
+describe('updateMachineStatus', () => {
+  it('calls PATCH /api/v1/machines/:id/status with correct body', async () => {
+    mockPatch.mockResolvedValue({ data: {} })
+    await updateMachineStatus(3, 'down', 1)
+    expect(mockPatch).toHaveBeenCalledWith('/api/v1/machines/3/status', { status: 'down' })
   })
 })

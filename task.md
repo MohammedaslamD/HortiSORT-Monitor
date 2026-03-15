@@ -122,7 +122,7 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 5: Backend & Database
 
-### Status: IN PROGRESS — Chunk 1 complete
+### Status: IN PROGRESS — Chunk 2 complete
 
 | Date       | Task                                                        | Status      |
 |------------|-------------------------------------------------------------|-------------|
@@ -144,6 +144,15 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | T14: frontend authService.ts → real API (login/logout/restoreSession) | done |
 | 2026-03-15 | T15: AuthContext → async restoreSession on mount, isLoading:true default | done |
 | 2026-03-15 | T16: ProtectedRoute + PublicRoute → loading spinner, async-safe guards | done |
+| 2026-03-15 | T18: server/src/schemas/machines.ts (machineQuerySchema, updateMachineStatusSchema) | done |
+| 2026-03-15 | T19: server/src/services/machineService.ts (getMachines, getMachineById, getMachineStats, updateMachineStatus) | done |
+| 2026-03-15 | T20: server/src/routes/machines.ts (4 routes) + mounted in app.ts | done |
+| 2026-03-15 | T21: server/src/schemas/dailyLogs.ts (dailyLogQuerySchema, createDailyLogSchema) | done |
+| 2026-03-15 | T22: server/src/services/dailyLogService.ts (getDailyLogs, createDailyLog) | done |
+| 2026-03-15 | T23: server/src/routes/dailyLogs.ts (GET + POST) + mounted in app.ts | done |
+| 2026-03-15 | T24: server integration tests — machines (11) + dailyLogs (6) | done |
+| 2026-03-15 | T25: frontend machineService.ts → real API; tests rewritten (mock apiClient) | done |
+| 2026-03-15 | T26: frontend dailyLogService.ts → real API; tests rewritten (mock apiClient) | done |
 
 **Deferred (run from Windows Terminal when Docker is ready):**
 - `docker compose up -d`

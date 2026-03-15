@@ -55,7 +55,7 @@ export function DailyLogsPage() {
       try {
         const [fetchedLogs, fetchedMachines] = await Promise.all([
           getAllDailyLogs(),
-          getMachinesByRole(user!.role, user!.id),
+          getMachinesByRole(),
         ])
 
         if (cancelled) return

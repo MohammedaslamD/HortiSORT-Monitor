@@ -67,7 +67,7 @@ export function RaiseTicketPage() {
   useEffect(() => {
     if (!user) return
 
-    getMachinesByRole(user.role, user.id).then((fetched) => {
+    getMachinesByRole().then((fetched) => {
       setMachines(fetched)
       setIsLoading(false)
 
