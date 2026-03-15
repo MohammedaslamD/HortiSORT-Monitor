@@ -53,6 +53,27 @@ export type ChangeType =
 export type EntityType = "machine" | "ticket" | "user";
 
 // -----------------------------------------------------------------------------
+// Filter & Stats Interfaces (Phase 2)
+// -----------------------------------------------------------------------------
+
+/** Filters for the machine list page. All fields optional, AND-combined. */
+export interface MachineFilters {
+  status?: MachineStatus;
+  model?: string;
+  city?: string;
+  search?: string;
+}
+
+/** Aggregated machine status counts for the dashboard. */
+export interface MachineStats {
+  total: number;
+  running: number;
+  idle: number;
+  down: number;
+  offline: number;
+}
+
+// -----------------------------------------------------------------------------
 // Table: users
 // -----------------------------------------------------------------------------
 

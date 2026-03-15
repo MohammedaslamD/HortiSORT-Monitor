@@ -5,7 +5,7 @@
 **Date:** 2026-03-15
 
 ### What was done
-- Completely rewrote `AGENTS.md` (removed all previous content)
+- Completely rewrote `AGENTS.md` (removed all previous content)E
 - New rules based on user's instructions:
 
 ### Rules added
