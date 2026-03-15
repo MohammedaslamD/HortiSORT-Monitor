@@ -2,9 +2,13 @@
 server/node_modules/
 server/dist/
 server/.env
+server/.env.test
 
 # Docker
 pgdata/
 
 # OS
 .DS_Store
+
+# Git worktrees
+.worktrees/
