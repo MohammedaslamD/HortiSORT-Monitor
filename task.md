@@ -170,73 +170,92 @@ Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL ba
 
 ### File Structure Summary
 
+#### server/ (Phase 5 — Chunk 1 complete)
+
+```
+server/
+├── package.json                     -- Express/Prisma/JWT deps, tsx dev, vitest tests
+├── tsconfig.json                    -- ES2022, NodeNext, strict
+├── .env.example                     -- DATABASE_URL, JWT_SECRET, PORT, NODE_ENV
+├── .env.test                        -- points to hortisort_test DB, JWT_SECRET min 8 chars
+├── vitest.config.ts                 -- globals, node env, forks pool, --env-file .env.test
+├── prisma/
+│   ├── schema.prisma                -- 9 enums + 8 models (@@map snake_case) + all relations
+│   └── seed.ts                      -- createMany from mockData in FK order, resets sequences
+└── src/
+    ├── app.ts                       -- Express app: CORS, JSON, cookieParser, routes, errorHandler
+    ├── index.ts                     -- listens on env.PORT
+    ├── config/env.ts                -- Zod-validated env (DATABASE_URL, JWT_SECRET, PORT, NODE_ENV)
+    ├── middleware/
+    │   ├── auth.ts                  -- authenticate (Bearer JWT) + requireRole(...roles)
+    │   ├── errorHandler.ts          -- AppError / ZodError / PrismaKnownError / unknown → JSON
+    │   └── validate.ts              -- Zod validation factory (body/query/params)
+    ├── routes/
+    │   └── auth.ts                  -- POST login, POST logout, GET me, POST refresh
+    ├── schemas/
+    │   └── auth.ts                  -- loginSchema (email + password)
+    ├── services/
+    │   └── authService.ts           -- login (bcrypt), getUserById, refreshAccessToken
+    ├── utils/
+    │   ├── AppError.ts              -- operational error with statusCode
+    │   ├── jwt.ts                   -- signAccessToken(15m) / signRefreshToken(7d) / verify both
+    │   └── prisma.ts                -- PrismaClient singleton
+    └── __tests__/
+        ├── setup.ts                 -- globalSetup: loads .env.test, runs prisma migrate deploy
+        ├── helpers.ts               -- truncateAll() + prisma export
+        └── auth.test.ts             -- 7 integration tests (supertest)
+```
+
+#### hortisort-monitor/src/ (Phases 1–5 Chunk 1)
+
 ```
 hortisort-monitor/src/
-├── App.tsx                          -- Wired with AuthProvider + Router + PageLayout
-├── main.tsx                         -- Entry point
+├── App.tsx                          -- AuthProvider + Router + PageLayout
+├── main.tsx                         -- entry point
 ├── index.css                        -- Tailwind + slide-in animation
-├── types/index.ts                   -- 8 table interfaces + 5 Phase 3 interfaces + 9 union types + MachineFilters + MachineStats
-├── data/mockData.ts                 -- 12 machines, 6 users, 15 logs, 10 tickets, 15 comments, 6 visits, 10 history, 10 activity
+├── types/index.ts                   -- 8 table interfaces + 5 Phase 3 interfaces + 9 union types
+├── data/mockData.ts                 -- reference seed data (still used by server/prisma/seed.ts)
 ├── utils/
 │   ├── formatters.ts                -- formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor
 │   └── userLookup.ts                -- getUserById, getUserName
 ├── services/
-│   ├── authService.ts               -- login/logout/getCurrentUser/isAuthenticated
-│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole
-│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog
-│   ├── ticketService.ts             -- 14 functions (CRUD, queries, status updates, comments)
-│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit
-│   ├── machineHistoryService.ts     -- getHistoryByMachineId
+│   ├── apiClient.ts                 -- JWT token store + fetch wrapper + 401→refresh→retry interceptor
+│   ├── authService.ts               -- login/logout/restoreSession/getCurrentUser/isAuthenticated (→ real API)
+│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole (mock)
+│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog (mock)
+│   ├── ticketService.ts             -- 14 functions: CRUD, queries, status updates, comments (mock)
+│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit (mock)
+│   ├── machineHistoryService.ts     -- getHistoryByMachineId (mock)
+│   ├── userService.ts               -- getUsers, getUserById, toggleUserActive (mock)
+│   ├── activityLogService.ts        -- getRecentActivity (mock)
 │   └── __tests__/
-│       ├── authService.test.ts      -- 13 tests
+│       ├── authService.test.ts      -- 15 tests (mock apiClient)
 │       ├── machineService.test.ts   -- 15 tests
 │       ├── dailyLogService.test.ts  -- 5+ tests
-│       ├── ticketService.test.ts    -- 6+ tests
+│       ├── ticketService.test.ts    -- 21 tests
 │       ├── siteVisitService.test.ts -- 4+ tests
 │       └── machineHistoryService.test.ts -- 4 tests
 ├── context/
-│   ├── AuthContext.tsx               -- AuthProvider + useAuth
-│   └── __tests__/AuthContext.test.tsx -- 6 tests
+│   ├── AuthContext.tsx               -- async restoreSession on mount, isLoading:true default
+│   └── __tests__/AuthContext.test.tsx -- 6 tests (mock authService)
 ├── components/
-│   ├── common/
-│   │   ├── index.ts                 -- Barrel export (8 components)
-│   │   ├── Button.tsx, Badge.tsx, Card.tsx, Input.tsx, Select.tsx, TextArea.tsx, Modal.tsx, Toast.tsx
-│   │   └── __tests__/              -- Component tests
-│   ├── dashboard/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── StatsCards.tsx           -- 6 stat cards in responsive grid
-│   ├── machines/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── MachineCard.tsx          -- Machine summary card with role-based actions
-│   ├── tickets/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── TicketCard.tsx           -- Ticket summary card (Phase 3)
-│   ├── logs/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── DailyLogCard.tsx         -- Daily log card (Phase 3)
-│   ├── visits/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── SiteVisitCard.tsx        -- Site visit card (Phase 3)
-│   └── layout/
-│       ├── index.ts, Navbar.tsx, Sidebar.tsx, BottomNav.tsx, PageLayout.tsx
+│   ├── common/    Button, Badge, Card, Input, Select, TextArea, Modal, Toast + barrel
+│   ├── dashboard/ StatsCards
+│   ├── machines/  MachineCard
+│   ├── tickets/   TicketCard
+│   ├── logs/      DailyLogCard
+│   ├── visits/    SiteVisitCard
+│   └── layout/    Navbar, Sidebar, BottomNav, PageLayout + barrel
 ├── pages/
-│   ├── LoginPage.tsx                -- Complete auth form
-│   ├── DashboardPage.tsx            -- Stats + filters + machine grid (Phase 2)
-│   ├── MachineDetailPage.tsx        -- Full detail with tabs (Phase 2)
-│   ├── UpdateStatusPage.tsx         -- Daily log form (Phase 2)
-│   ├── MachinesPage.tsx             -- Full machine list with 4 filters (Phase 4)
-│   ├── TicketsPage.tsx              -- Ticket list with filters + role scoping (Phase 3)
-│   ├── TicketDetailPage.tsx         -- Ticket detail + comments + status actions (Phase 3)
-│   ├── RaiseTicketPage.tsx          -- Raise ticket form (Phase 3)
-│   ├── DailyLogsPage.tsx            -- Daily log list with filters + role scoping (Phase 3)
-│   ├── SiteVisitsPage.tsx           -- Site visit list with filters + role scoping (Phase 3)
-│   ├── LogVisitPage.tsx             -- Log site visit form (Phase 3)
-│   ├── AdminPage.tsx                -- Admin dashboard: stats + activity + user management (Phase 4)
-│   └── __tests__/LoginPage.test.tsx -- 7 tests
+│   ├── LoginPage.tsx, DashboardPage.tsx, MachineDetailPage.tsx, UpdateStatusPage.tsx
+│   ├── MachinesPage.tsx, TicketsPage.tsx, TicketDetailPage.tsx, RaiseTicketPage.tsx
+│   ├── DailyLogsPage.tsx, SiteVisitsPage.tsx, LogVisitPage.tsx, AdminPage.tsx
+│   └── __tests__/LoginPage.test.tsx -- 7 tests (mock authService)
 ├── routes/
-│   ├── AppRoutes.tsx                -- All routes including /visits/new, /tickets/new, /tickets/:id
-│   ├── ProtectedRoute.tsx           -- Role-based route guard
-│   └── __tests__/ProtectedRoute.test.tsx -- 6 tests
+│   ├── AppRoutes.tsx                -- all routes
+│   ├── ProtectedRoute.tsx           -- spinner while isLoading, redirect after restore
+│   ├── PublicRoute.tsx              -- spinner while isLoading, redirect if authenticated
+│   └── __tests__/ProtectedRoute.test.tsx -- 7 tests (mock authService)
 └── test/
     ├── setup.ts
     └── utils.tsx
