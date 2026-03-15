@@ -10,6 +10,7 @@ import { TicketDetailPage } from '../pages/TicketDetailPage';
 import { RaiseTicketPage } from '../pages/RaiseTicketPage';
 import { DailyLogsPage } from '../pages/DailyLogsPage';
 import { SiteVisitsPage } from '../pages/SiteVisitsPage';
+import { LogVisitPage } from '../pages/LogVisitPage';
 import { AdminPage } from '../pages/AdminPage';
 
 /**
@@ -90,6 +91,14 @@ export function AppRoutes() {
       />
 
       {/* Protected — engineer + admin only */}
+      <Route
+        path="/visits/new"
+        element={
+          <ProtectedRoute allowedRoles={['engineer', 'admin']}>
+            <LogVisitPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/visits"
         element={
