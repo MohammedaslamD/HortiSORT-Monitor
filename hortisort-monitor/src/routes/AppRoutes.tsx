@@ -3,6 +3,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { MachinesPage } from '../pages/MachinesPage';
+import { MachineDetailPage } from '../pages/MachineDetailPage';
 import { TicketsPage } from '../pages/TicketsPage';
 import { DailyLogsPage } from '../pages/DailyLogsPage';
 import { SiteVisitsPage } from '../pages/SiteVisitsPage';
@@ -33,6 +34,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <MachinesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/machines/:id"
+        element={
+          <ProtectedRoute>
+            <MachineDetailPage />
           </ProtectedRoute>
         }
       />
