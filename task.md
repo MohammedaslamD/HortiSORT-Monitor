@@ -122,7 +122,7 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 5: Backend & Database
 
-### Status: IN PROGRESS — Chunk 2 complete
+### Status: IN PROGRESS — Chunk 3 complete
 
 | Date       | Task                                                        | Status      |
 |------------|-------------------------------------------------------------|-------------|
@@ -153,6 +153,11 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | T24: server integration tests — machines (11) + dailyLogs (6) | done |
 | 2026-03-15 | T25: frontend machineService.ts → real API; tests rewritten (mock apiClient) | done |
 | 2026-03-15 | T26: frontend dailyLogService.ts → real API; tests rewritten (mock apiClient) | done |
+| 2026-03-15 | T28: server/src/schemas/tickets.ts (5 Zod schemas)          | done        |
+| 2026-03-15 | T29: server/src/services/ticketService.ts (7 functions, role-scoped) | done |
+| 2026-03-15 | T30: server/src/routes/tickets.ts (6 routes) + ticketComments.ts + mounted in app.ts | done |
+| 2026-03-15 | T31: server integration tests — tickets (11 tests)          | done        |
+| 2026-03-15 | T32: frontend ticketService.ts → real API; tests rewritten (mock apiClient) | done |
 
 **Deferred (run from Windows Terminal when Docker is ready):**
 - `docker compose up -d`
