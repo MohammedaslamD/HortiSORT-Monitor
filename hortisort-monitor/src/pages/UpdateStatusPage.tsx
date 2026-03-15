@@ -1,74 +1,80 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+
+import type { Machine, DailyLogStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { getMachineById, updateMachineStatus } from '../services/machineService';
-import { addDailyLog } from '../services/dailyLogService';
+import { getMachineById } from '../services/machineService';
+import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Select } from '../components/common/Select';
 import { TextArea } from '../components/common/TextArea';
 import { Toast } from '../components/common/Toast';
-import type { Machine, MachineStatus, DailyLogStatus } from '../types';
+import { getStatusBadgeColor } from '../utils/formatters';
 
-const MACHINE_STATUS_OPTIONS: { value: MachineStatus; label: string }[] = [
+// -----------------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------------
+
+/** Radio options for the DailyLogStatus field. */
+const DAILY_LOG_STATUS_OPTIONS: { value: DailyLogStatus; label: string }[] = [
   { value: 'running', label: 'Running' },
-  { value: 'idle', label: 'Idle' },
-  { value: 'down', label: 'Down' },
-  { value: 'offline', label: 'Offline' },
+  { value: 'not_running', label: 'Not Running' },
+  { value: 'maintenance', label: 'Maintenance' },
 ];
 
-const FRUIT_TYPE_OPTIONS = [
-  { value: '', label: 'Select fruit/vegetable…' },
+/** Dropdown options for the fruit/vegetable type field. */
+const FRUIT_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: 'Mango', label: 'Mango' },
-  { value: 'Grapes', label: 'Grapes' },
+  { value: 'Apple', label: 'Apple' },
+  { value: 'Orange', label: 'Orange' },
   { value: 'Tomato', label: 'Tomato' },
   { value: 'Banana', label: 'Banana' },
+  { value: 'Grapes', label: 'Grapes' },
   { value: 'Pomegranate', label: 'Pomegranate' },
-  { value: 'Apple', label: 'Apple' },
+  { value: 'Kiwi', label: 'Kiwi' },
   { value: 'Guava', label: 'Guava' },
-  { value: 'Orange', label: 'Orange' },
+  { value: 'Papaya', label: 'Papaya' },
+  { value: 'Lemon', label: 'Lemon' },
   { value: 'Other', label: 'Other' },
 ];
 
-/** Maps machine status to the closest daily log status. */
-function toDailyLogStatus(status: MachineStatus): DailyLogStatus {
-  if (status === 'running') return 'running';
-  if (status === 'down') return 'not_running';
-  return 'maintenance';
-}
-
-/** Today's date in YYYY-MM-DD format. */
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+// -----------------------------------------------------------------------------
+// Component
+// -----------------------------------------------------------------------------
 
 /**
- * Form page for engineers and admins to update a machine's operational status
- * and submit a daily production log entry.
+ * Form page that allows engineers and admins to update a machine's status
+ * by creating a daily log entry. Accessed via `/machines/:id/update-status`.
  */
 export function UpdateStatusPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Machine data
   const [machine, setMachine] = useState<Machine | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
 
   // Form state
-  const [machineStatus, setMachineStatus] = useState<MachineStatus>('running');
+  const [status, setStatus] = useState<DailyLogStatus>('running');
   const [fruitType, setFruitType] = useState('');
   const [tonsProcessed, setTonsProcessed] = useState('');
-  const [shiftStart, setShiftStart] = useState('06:00');
-  const [shiftEnd, setShiftEnd] = useState('14:00');
+  const [shiftStart, setShiftStart] = useState('');
+  const [shiftEnd, setShiftEnd] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Form validation errors
+  // Submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  // Validation errors (keyed by field name)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // ---------------------------------------------------------------------------
+  // Fetch machine on mount
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     const machineId = Number(id);
     if (Number.isNaN(machineId)) {
@@ -82,91 +88,141 @@ export function UpdateStatusPage() {
         setNotFound(true);
       } else {
         setMachine(found);
-        // Pre-select current status
-        setMachineStatus(found.status);
       }
       setIsLoading(false);
     });
   }, [id]);
 
+  // ---------------------------------------------------------------------------
+  // Validation
+  // ---------------------------------------------------------------------------
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
-    if (!fruitType && machineStatus === 'running') {
-      newErrors.fruitType = 'Fruit type is required when machine is running.';
+
+    // Status is always set via radio (default "running"), no validation needed
+
+    if (!fruitType) {
+      newErrors.fruitType = 'Fruit type is required.';
     }
+
     const tons = parseFloat(tonsProcessed);
-    if (machineStatus === 'running') {
-      if (tonsProcessed === '' || Number.isNaN(tons) || tons < 0) {
-        newErrors.tonsProcessed = 'Enter a valid number of tons (≥ 0).';
-      }
+    if (tonsProcessed === '' || Number.isNaN(tons)) {
+      newErrors.tonsProcessed = 'Tons processed is required.';
+    } else if (tons < 0) {
+      newErrors.tonsProcessed = 'Tons processed must be 0 or greater.';
     }
-    if (!shiftStart) newErrors.shiftStart = 'Shift start time is required.';
-    if (!shiftEnd) newErrors.shiftEnd = 'Shift end time is required.';
+
+    if (!shiftStart) {
+      newErrors.shiftStart = 'Shift start time is required.';
+    }
+
+    if (!shiftEnd) {
+      newErrors.shiftEnd = 'Shift end time is required.';
+    }
+
+    if (shiftStart && shiftEnd && shiftEnd <= shiftStart) {
+      newErrors.shiftEnd = 'Shift end must be after shift start.';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
+  // ---------------------------------------------------------------------------
+  // Submit handler (simulates success for mock-data app)
+  // ---------------------------------------------------------------------------
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!machine || !user) return;
     if (!validate()) return;
 
     setIsSubmitting(true);
-    setSubmitError(null);
 
-    try {
-      // Update machine status in mock data
-      await updateMachineStatus(machine.id, machineStatus, user.id);
+    // Simulate a short network delay
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // Add daily log entry
-      await addDailyLog({
-        machine_id: machine.id,
-        date: todayStr(),
-        status: toDailyLogStatus(machineStatus),
-        fruit_type: fruitType,
-        tons_processed: machineStatus === 'running' ? parseFloat(tonsProcessed) || 0 : 0,
-        shift_start: shiftStart,
-        shift_end: shiftEnd,
-        notes,
-        updated_by: user.id,
-      });
+    setIsSubmitting(false);
+    setShowToast(true);
 
-      setShowToast(true);
-      // Redirect after a short delay so toast is visible
-      setTimeout(() => {
-        navigate(`/machines/${machine.id}`);
-      }, 1500);
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Failed to update status.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Navigate back to machine detail after a brief pause
+    setTimeout(() => {
+      navigate(`/machines/${machine.id}`);
+    }, 1500);
   }
 
+  // ---------------------------------------------------------------------------
+  // Loading state
+  // ---------------------------------------------------------------------------
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-gray-500 text-sm">Loading...</p>
+        <div className="flex flex-col items-center gap-3">
+          <svg
+            className="animate-spin h-8 w-8 text-primary-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+          <p className="text-gray-500 text-sm">Loading machine data...</p>
+        </div>
       </div>
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Not found state
+  // ---------------------------------------------------------------------------
   if (notFound || !machine) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <p className="text-gray-700 font-medium">Machine not found.</p>
-        <Button variant="secondary" size="sm" onClick={() => navigate('/machines')}>
-          Back to Machines
-        </Button>
+        <div className="rounded-full bg-red-100 p-3">
+          <svg
+            className="h-8 w-8 text-red-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900">Machine not found</h2>
+        <p className="text-sm text-gray-500">
+          The machine you're looking for doesn't exist or you don't have access to it.
+        </p>
+        <Link
+          to="/"
+          className="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+        >
+          Back to Dashboard
+        </Link>
       </div>
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Main form
+  // ---------------------------------------------------------------------------
   return (
     <>
       {/* Success toast */}
       <Toast
-        message="Status updated successfully!"
+        message="Status updated successfully"
         type="success"
         isVisible={showToast}
         onClose={() => setShowToast(false)}
@@ -174,39 +230,53 @@ export function UpdateStatusPage() {
       />
 
       <div className="max-w-lg mx-auto space-y-6">
-        {/* Back link */}
-        <button
-          onClick={() => navigate(-1)}
-          className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-        >
-          ← Back
-        </button>
-
-        {/* Page header */}
+        {/* Page title */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Update Status</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {machine.machine_code} &bull; {machine.machine_name}
-          </p>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Update Status &mdash; {machine.machine_code}
+          </h2>
+        </div>
+
+        {/* Machine info header */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-900">{machine.machine_name}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{machine.machine_code}</p>
+          </div>
+          <Badge color={getStatusBadgeColor(machine.status)} size="sm">
+            {machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
+          </Badge>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-5" noValidate>
-          {/* Machine Status */}
+          {/* Status — Radio buttons */}
           <fieldset>
-            <legend className="block text-sm font-medium text-gray-700 mb-2">Machine Status</legend>
+            <legend className="block text-sm font-medium text-gray-700 mb-2">
+              Status <span className="text-red-500">*</span>
+            </legend>
             <div className="flex flex-wrap gap-3">
-              {MACHINE_STATUS_OPTIONS.map((opt) => (
-                <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+              {DAILY_LOG_STATUS_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`
+                    flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-2.5
+                    transition-colors duration-150
+                    ${status === opt.value
+                      ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
+                      : 'border-gray-300 bg-white hover:bg-gray-50'
+                    }
+                  `.trim()}
+                >
                   <input
                     type="radio"
-                    name="machineStatus"
+                    name="status"
                     value={opt.value}
-                    checked={machineStatus === opt.value}
-                    onChange={() => setMachineStatus(opt.value)}
+                    checked={status === opt.value}
+                    onChange={() => setStatus(opt.value)}
                     className="text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700">{opt.label}</span>
+                  <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -214,11 +284,13 @@ export function UpdateStatusPage() {
 
           {/* Fruit Type */}
           <Select
-            label="Fruit / Vegetable Type"
+            label="Fruit Type"
             options={FRUIT_TYPE_OPTIONS}
             value={fruitType}
             onChange={(e) => setFruitType(e.target.value)}
             error={errors.fruitType}
+            placeholder="Select a fruit type..."
+            required
           />
 
           {/* Tons Processed */}
@@ -231,7 +303,7 @@ export function UpdateStatusPage() {
             value={tonsProcessed}
             onChange={(e) => setTonsProcessed(e.target.value)}
             error={errors.tonsProcessed}
-            disabled={machineStatus !== 'running'}
+            required
           />
 
           {/* Shift times */}
@@ -242,6 +314,7 @@ export function UpdateStatusPage() {
               value={shiftStart}
               onChange={(e) => setShiftStart(e.target.value)}
               error={errors.shiftStart}
+              required
             />
             <Input
               label="Shift End"
@@ -249,31 +322,26 @@ export function UpdateStatusPage() {
               value={shiftEnd}
               onChange={(e) => setShiftEnd(e.target.value)}
               error={errors.shiftEnd}
+              required
             />
           </div>
 
           {/* Notes */}
           <TextArea
             label="Notes"
-            placeholder="Any observations, issues, or remarks…"
+            placeholder="Any observations, issues, or remarks..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
           />
 
-          {/* Submit error */}
-          {submitError && (
-            <div className="rounded-md bg-red-50 p-3">
-              <p className="text-sm text-red-700">{submitError}</p>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-3">
+          {/* Action buttons */}
+          <div className="flex gap-3 pt-2">
             <Button
               type="submit"
               variant="primary"
               isLoading={isSubmitting}
+              disabled={isSubmitting}
               className="flex-1"
             >
               Submit Update
@@ -281,7 +349,7 @@ export function UpdateStatusPage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(`/machines/${machine.id}`)}
               disabled={isSubmitting}
             >
               Cancel
