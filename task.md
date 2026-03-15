@@ -120,6 +120,31 @@ All Phase 2 tasks are done. The app now has:
 
 ---
 
+## Phase 5: Backend & Database
+
+### Status: PLANNED — ready for execution
+
+| Date       | Task                                      | Status      |
+|------------|-------------------------------------------|-------------|
+| 2026-03-15 | Phase 5 design spec                       | done        |
+| 2026-03-15 | Phase 5 implementation plan (41 tasks)    | done        |
+
+**Plan:** `docs/superpowers/plans/2026-03-15-phase5-backend-database-plan.md`
+**Spec:** `docs/superpowers/specs/2026-03-15-phase5-backend-database-design.md`
+
+### What Phase 5 builds
+
+Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL backend.
+
+| Chunk | Tasks | Scope |
+|-------|-------|-------|
+| 1 | 1–17  | Docker, server scaffold, Prisma schema + seed, JWT, Express app + middleware, auth routes + tests, frontend apiClient + Vite proxy + authService/AuthContext/route guards |
+| 2 | 18–27 | Machines + daily logs — server services, routes, tests, frontend service swaps |
+| 3 | 28–33 | Tickets + comments — server services, routes (tickets.ts + ticketComments.ts), tests, frontend service swap |
+| 4 | 34–41 | Site visits, machine history, activity log, users — server services, routes, tests, frontend service swaps + E2E verification |
+
+---
+
 ### File Structure Summary
 
 ```
