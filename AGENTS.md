@@ -6,31 +6,39 @@
 ## Tech Stack
 
 - **Frontend:** React (with TypeScript)
-- **Backend:** Node.js (with TypeScript)
-- **Database:** PostgreSQL
-- **Testing:** Jest (all test files, all layers)
+- **Backend:** Node.js (with TypeScript) — future phase
+- **Database:** PostgreSQL — future phase
+- **Testing:** Vitest + React Testing Library (same describe/it/expect API as Jest)
+- **Styling:** Tailwind CSS v3
+- **Build Tool:** Vite
 - **Methodology:** Test-Driven Development (TDD) — always
 
 ## Build / Dev / Test Commands
 
 | Command                  | Description                          |
 |--------------------------|--------------------------------------|
-| `npm run dev`            | Start dev server                     |
-| `npm run build`          | Production build                     |
-| `npm run test`           | Run all Jest tests                   |
-| `npm run test -- <file>` | Run a single test file               |
+| `npm run dev`            | Start Vite dev server                |
+| `npm run build`          | Type-check (`tsc -b`) then Vite build|
+| `npm run test`           | Run Vitest in watch mode             |
+| `npm run test:run`       | Run all tests once (CI-friendly)     |
 | `npm run lint`           | Lint the codebase                    |
 
 ### Running a single test file
 
 ```bash
-npx jest path/to/file.test.ts
+npx vitest run src/components/__tests__/Button.test.tsx
 ```
 
 ### Running tests matching a pattern
 
 ```bash
-npx jest -t "should calculate total"
+npx vitest run -t "should calculate total"
+```
+
+### Type-check only
+
+```bash
+npx tsc -b --noEmit
 ```
 
 ## TDD Workflow (Mandatory)
@@ -64,11 +72,11 @@ without a failing test first. Build **one functionality at a time**.
 
 7. **Regression within file** — After each fix, re-run ALL test cases in the same file.
    ```bash
-   npx jest path/to/file.test.ts
+   npx vitest run src/path/to/file.test.ts
    ```
 8. **Cross-file regression** — After each fix, run ALL test files to catch unexpected impacts.
    ```bash
-   npm run test
+   npm run test:run
    ```
 
 ### Commit Rules
