@@ -1,42 +1,47 @@
-import { Badge } from '../common/Badge';
 import type { MachineStats } from '../../types';
 
 interface StatsCardsProps {
   stats: MachineStats;
-  openTickets: number;
+  openTicketCount: number;
 }
 
-interface StatCardProps {
+interface StatCardItem {
   label: string;
   value: number;
-  badgeColor: 'green' | 'yellow' | 'red' | 'gray' | 'blue';
+  dotColor: string;
 }
 
 /**
- * A single stat count card for the dashboard overview row.
+ * Dashboard overview row showing machine status counts and open ticket count.
+ * Responsive grid: 2 columns on mobile, 3 on tablet, 6 on desktop.
  */
-function StatCard({ label, value, badgeColor }: StatCardProps) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-4 flex flex-col gap-2">
-      <Badge color={badgeColor} size="sm">{label}</Badge>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
-    </div>
-  );
-}
+export function StatsCards({ stats, openTicketCount }: StatsCardsProps) {
+  const cards: StatCardItem[] = [
+    { label: 'Total Machines', value: stats.total, dotColor: 'bg-blue-600' },
+    { label: 'Running', value: stats.running, dotColor: 'bg-green-600' },
+    { label: 'Idle', value: stats.idle, dotColor: 'bg-yellow-500' },
+    { label: 'Down', value: stats.down, dotColor: 'bg-red-600' },
+    { label: 'Offline', value: stats.offline, dotColor: 'bg-gray-500' },
+    { label: 'Open Tickets', value: openTicketCount, dotColor: 'bg-purple-600' },
+  ];
 
-/**
- * Dashboard stats row: Total, Running, Idle, Down, Offline, Open Tickets.
- * Badge colors: green=running, yellow=idle, red=down, gray=offline, blue=total/tickets.
- */
-export function StatsCards({ stats, openTickets }: StatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-      <StatCard label="Total" value={stats.total} badgeColor="blue" />
-      <StatCard label="Running" value={stats.running} badgeColor="green" />
-      <StatCard label="Idle" value={stats.idle} badgeColor="yellow" />
-      <StatCard label="Down" value={stats.down} badgeColor="red" />
-      <StatCard label="Offline" value={stats.offline} badgeColor="gray" />
-      <StatCard label="Open Tickets" value={openTickets} badgeColor="blue" />
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      {cards.map((card) => (
+        <div
+          key={card.label}
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className={`w-3 h-3 rounded-full ${card.dotColor}`}
+              aria-hidden="true"
+            />
+            <span className="text-sm text-gray-500">{card.label}</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+        </div>
+      ))}
     </div>
   );
 }
