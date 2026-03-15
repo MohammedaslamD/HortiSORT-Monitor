@@ -35,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed'
       setError(message)
+      // Re-throw so callers (e.g. LoginPage) can distinguish success from failure
+      throw err
     } finally {
       setIsLoading(false)
     }

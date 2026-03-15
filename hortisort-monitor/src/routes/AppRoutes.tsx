@@ -1,28 +1,36 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute } from './ProtectedRoute';
-import { LoginPage } from '../pages/LoginPage';
-import { DashboardPage } from '../pages/DashboardPage';
-import { MachinesPage } from '../pages/MachinesPage';
-import { MachineDetailPage } from '../pages/MachineDetailPage';
-import { UpdateStatusPage } from '../pages/UpdateStatusPage';
-import { TicketsPage } from '../pages/TicketsPage';
-import { TicketDetailPage } from '../pages/TicketDetailPage';
-import { RaiseTicketPage } from '../pages/RaiseTicketPage';
-import { DailyLogsPage } from '../pages/DailyLogsPage';
-import { SiteVisitsPage } from '../pages/SiteVisitsPage';
-import { LogVisitPage } from '../pages/LogVisitPage';
-import { AdminPage } from '../pages/AdminPage';
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { ProtectedRoute } from './ProtectedRoute'
+import { PublicRoute } from './PublicRoute'
+import { LoginPage } from '../pages/LoginPage'
+import { DashboardPage } from '../pages/DashboardPage'
+import { MachinesPage } from '../pages/MachinesPage'
+import { MachineDetailPage } from '../pages/MachineDetailPage'
+import { UpdateStatusPage } from '../pages/UpdateStatusPage'
+import { TicketsPage } from '../pages/TicketsPage'
+import { TicketDetailPage } from '../pages/TicketDetailPage'
+import { RaiseTicketPage } from '../pages/RaiseTicketPage'
+import { DailyLogsPage } from '../pages/DailyLogsPage'
+import { SiteVisitsPage } from '../pages/SiteVisitsPage'
+import { LogVisitPage } from '../pages/LogVisitPage'
+import { AdminPage } from '../pages/AdminPage'
 
 /**
  * All application routes.
- * Public routes: /login
+ * Public routes: /login (redirects to /dashboard if already authenticated)
  * Protected routes: everything else (wrapped in ProtectedRoute).
  */
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* Public — redirects authenticated users to dashboard */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
 
       {/* Protected — any authenticated user */}
       <Route
