@@ -101,6 +101,21 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | LogVisitPage                              | done        |
 | 2026-03-15 | Phase 3 complete                          | done        |
 
+---
+
+## Phase 4: MachinesPage + AdminPage
+
+### Status: IN PROGRESS
+
+| Date       | Task                                      | Status      |
+|------------|-------------------------------------------|-------------|
+| 2026-03-15 | Phase 4 design spec                       | done        |
+| 2026-03-15 | Phase 4 implementation plan               | done        |
+| 2026-03-15 | userService (3 functions + tests)         | done        |
+| 2026-03-15 | activityLogService (1 function + tests)   | done        |
+
+---
+
 ### File Structure Summary
 
 ```
