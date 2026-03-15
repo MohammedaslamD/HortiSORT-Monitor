@@ -15,90 +15,126 @@ All Phase 1 tasks are done. The app has:
 
 ---
 
-## Phase 2: Dashboard + Machine Management (In Progress)
+## Phase 2: Dashboard + Machine Management
+
+### Status: COMPLETE
+
+All Phase 2 tasks are done. The app now has:
+- Full service layer: 6 services (machine, ticket, dailyLog, siteVisit, machineHistory, auth) with 47 passing tests
+- Dashboard page with stats cards, search/filter bar, and responsive machine card grid
+- Machine detail page with info header, today's production, 4 tabbed sections, and role-based actions
+- Update status form with radio buttons, dropdown, time inputs, validation, and mock submit
+- Role-based data filtering (customer sees own, engineer sees assigned, admin sees all)
+- Role-based route guards (update-status restricted to engineer + admin)
+- Clean TypeScript compilation (zero errors)
+- All 47 service tests passing
 
 ### Completed Tasks
 
 #### 2a. AGENTS.md rewrite
-- Rewrote AGENTS.md from 222 → 173 lines
-- Added project identity (HortiSort Monitor), exact versions, full src/ structure
-- Added observed code patterns: function style, export conventions, barrel files
-- Added TypeScript config details (verbatimModuleSyntax, strict flags)
-- Added Vitest/ESLint config summaries
-- Noted semicolon inconsistency (no Prettier config)
+- Rewrote AGENTS.md from 222 to 173 lines
+- Added project identity, exact versions, full src/ structure
+- Added observed code patterns, TypeScript/Vitest/ESLint config details
 
-#### 2b. Data services + tests
-- `machineService.ts` — `getMachines(filters?)` with status filtering
-- `dailyLogService.ts` — `getDailyLogs()`, `getDailyLogsByMachineId()`, `getRecentDailyLogs(limit)`
-- `ticketService.ts` — `getTickets()`  (test file exists)
-- `machineService.test.ts` — 3 tests (all machines, filter by status, filter by model)
-- `dailyLogService.test.ts` — 5 tests (all logs, by machine, empty result, recent sorted, limit overflow)
-- `ticketService.test.ts` — 1 test (all tickets)
-- `types/index.ts` — updated with new type definitions for Phase 2
+#### 2b. Service layer (complete)
+- `machineService.ts` — `getMachines(filters)`, `getMachineById(id)`, `getMachineStats(machines)`, `getMachinesByRole(role, userId)` with status/model/city/search filters (15 tests)
+- `ticketService.ts` — `getTickets()`, `getTicketsByMachineId(id)`, `getOpenTicketCount()`, `getRecentTickets(limit)` (6 tests)
+- `dailyLogService.ts` — `getDailyLogs()`, `getDailyLogsByMachineId(id)`, `getRecentDailyLogs(limit)` (5 tests)
+- `siteVisitService.ts` — `getSiteVisitsByMachineId(id)` (4 tests)
+- `machineHistoryService.ts` — `getHistoryByMachineId(id)` (4 tests)
+- `authService.ts` — login/logout/getCurrentUser/isAuthenticated (13 tests)
 
-#### 2c. Phase 2 design spec
-- `docs/superpowers/plans/2026-03-15-phase2-dashboard-machines-plan.md` — full spec
+#### 2c. Utility layer
+- `formatters.ts` — `formatRelativeTime()`, `getStatusBadgeColor()`, `getSeverityBadgeColor()`
+- `userLookup.ts` — `getUserById()`, `getUserName()`
 
-### Remaining (Phase 2)
+#### 2d. Dashboard components
+- `StatsCards.tsx` — 6 stat cards (Total, Running, Idle, Down, Offline, Open Tickets) in responsive grid
+- `MachineCard.tsx` — Machine summary card with status badge, today's log, ticket count, role-based action buttons
 
-1. Dashboard page — stats cards, recent tickets, recent logs
-2. Machine List page — filterable/sortable table with status badges
-3. Machine Detail page — full info, daily logs, tickets, history timeline
-4. Machine Create/Edit forms (admin only)
+#### 2e. DashboardPage (full implementation)
+- StatsCards row + search bar + status filter dropdown + MachineCard grid
+- Fetches machines via `getMachinesByRole`, tickets, daily logs
+- Client-side search (machine code, name, city, state) and status filtering
+- Loading, error, and empty states
+
+#### 2f. MachineDetailPage (full implementation)
+- Machine info header: code, name, model, serial, status badge, customer/engineer names, location, installation date, last updated
+- Today's Production section with daily log data or empty state
+- 4 tabbed sections: Production History (table), Tickets (cards with severity/status badges), Site Visits (cards), Machine History (timeline)
+- Role-based "Update Status" button for engineer/admin
+- Invalid machine ID error state with "Back to Dashboard" link
+- Loading spinner
+
+#### 2g. UpdateStatusPage (full implementation)
+- Form with DailyLogStatus radio buttons, fruit type dropdown (12 options), tons processed, shift start/end time inputs, notes textarea
+- Machine info header with current status badge
+- Full validation: required fields, tons >= 0, shift end > start
+- Mock submit with loading state, success toast, redirect to machine detail
+- Cancel button, error state for invalid machine ID
+
+#### 2h. Route updates
+- `/machines/:id` — any authenticated user
+- `/machines/:id/update-status` — engineer + admin only (role guard)
 
 ### File Structure Summary
 
 ```
 hortisort-monitor/src/
-├── App.tsx                          ✅ Wired with AuthProvider + Router + PageLayout
-├── main.tsx                         ✅ Entry point
-├── index.css                        ✅ Tailwind + slide-in animation
-├── types/index.ts                   ✅ 8 interfaces + 9 union types
-├── data/mockData.ts                 ✅ All mock data
+├── App.tsx                          -- Wired with AuthProvider + Router + PageLayout
+├── main.tsx                         -- Entry point
+├── index.css                        -- Tailwind + slide-in animation
+├── types/index.ts                   -- 8 interfaces + 9 union types + MachineFilters + MachineStats
+├── data/mockData.ts                 -- 12 machines, 6 users, 15 logs, 10 tickets, 15 comments, 6 visits, 10 history, 10 activity
+├── utils/
+│   ├── formatters.ts                -- formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor
+│   └── userLookup.ts                -- getUserById, getUserName
 ├── services/
-│   ├── authService.ts               ✅ login/logout/getCurrentUser/isAuthenticated
-│   ├── machineService.ts            ✅ getMachines (with status/model filters)
-│   ├── dailyLogService.ts           ✅ getDailyLogs, byMachineId, getRecent
-│   ├── ticketService.ts             ✅ getTickets
+│   ├── authService.ts               -- login/logout/getCurrentUser/isAuthenticated
+│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole
+│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent
+│   ├── ticketService.ts             -- getTickets, byMachineId, getOpenTicketCount, getRecent
+│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId
+│   ├── machineHistoryService.ts     -- getHistoryByMachineId
 │   └── __tests__/
-│       ├── authService.test.ts      ✅ 13 tests
-│       ├── machineService.test.ts   ✅ 3 tests
-│       ├── dailyLogService.test.ts  ✅ 5 tests
-│       └── ticketService.test.ts    ✅ 1 test
+│       ├── authService.test.ts      -- 13 tests
+│       ├── machineService.test.ts   -- 15 tests
+│       ├── dailyLogService.test.ts  -- 5 tests
+│       ├── ticketService.test.ts    -- 6 tests
+│       ├── siteVisitService.test.ts -- 4 tests
+│       └── machineHistoryService.test.ts -- 4 tests
 ├── context/
-│   ├── AuthContext.tsx               ✅ AuthProvider + useAuth
-│   └── __tests__/AuthContext.test.tsx ✅ 6 tests
+│   ├── AuthContext.tsx               -- AuthProvider + useAuth
+│   └── __tests__/AuthContext.test.tsx -- 6 tests
 ├── components/
 │   ├── common/
-│   │   ├── index.ts                 ✅ Barrel export
-│   │   ├── Button.tsx               ✅
-│   │   ├── Badge.tsx                ✅
-│   │   ├── Card.tsx                 ✅
-│   │   ├── Input.tsx                ✅
-│   │   ├── Select.tsx               ✅
-│   │   ├── TextArea.tsx             ✅
-│   │   ├── Modal.tsx                ✅
-│   │   └── Toast.tsx                ✅
+│   │   ├── index.ts                 -- Barrel export (8 components)
+│   │   ├── Button.tsx, Badge.tsx, Card.tsx, Input.tsx, Select.tsx, TextArea.tsx, Modal.tsx, Toast.tsx
+│   │   └── __tests__/              -- Component tests
+│   ├── dashboard/
+│   │   ├── index.ts                 -- Barrel export
+│   │   └── StatsCards.tsx           -- 6 stat cards in responsive grid
+│   ├── machines/
+│   │   ├── index.ts                 -- Barrel export
+│   │   └── MachineCard.tsx          -- Machine summary card with role-based actions
 │   └── layout/
-│       ├── index.ts                 ✅ Barrel export
-│       ├── Navbar.tsx               ✅
-│       ├── Sidebar.tsx              ✅
-│       ├── BottomNav.tsx            ✅
-│       └── PageLayout.tsx           ✅
+│       ├── index.ts, Navbar.tsx, Sidebar.tsx, BottomNav.tsx, PageLayout.tsx
 ├── pages/
-│   ├── LoginPage.tsx                ✅
-│   ├── DashboardPage.tsx            ✅ Placeholder
-│   ├── MachinesPage.tsx             ✅ Placeholder
-│   ├── TicketsPage.tsx              ✅ Placeholder
-│   ├── DailyLogsPage.tsx            ✅ Placeholder
-│   ├── SiteVisitsPage.tsx           ✅ Placeholder
-│   ├── AdminPage.tsx                ✅ Placeholder
-│   └── __tests__/LoginPage.test.tsx ✅ 7 tests
+│   ├── LoginPage.tsx                -- Complete auth form
+│   ├── DashboardPage.tsx            -- Stats + filters + machine grid (Phase 2)
+│   ├── MachineDetailPage.tsx        -- Full detail with tabs (Phase 2)
+│   ├── UpdateStatusPage.tsx         -- Daily log form (Phase 2)
+│   ├── MachinesPage.tsx             -- Placeholder (Phase 3+)
+│   ├── TicketsPage.tsx              -- Placeholder (Phase 3+)
+│   ├── DailyLogsPage.tsx            -- Placeholder (Phase 3+)
+│   ├── SiteVisitsPage.tsx           -- Placeholder (Phase 3+)
+│   ├── AdminPage.tsx                -- Placeholder (Phase 4)
+│   └── __tests__/LoginPage.test.tsx -- 7 tests
 ├── routes/
-│   ├── AppRoutes.tsx                ✅
-│   ├── ProtectedRoute.tsx           ✅
-│   └── __tests__/ProtectedRoute.test.tsx ✅ 6 tests
+│   ├── AppRoutes.tsx                -- All routes including /machines/:id and /machines/:id/update-status
+│   ├── ProtectedRoute.tsx           -- Role-based route guard
+│   └── __tests__/ProtectedRoute.test.tsx -- 6 tests
 └── test/
-    ├── setup.ts                     ✅
-    └── utils.tsx                    ✅
+    ├── setup.ts
+    └── utils.tsx
 ```
