@@ -74,6 +74,55 @@ export interface MachineStats {
 }
 
 // -----------------------------------------------------------------------------
+// Filter, Input & Resolution Interfaces (Phase 3)
+// -----------------------------------------------------------------------------
+
+/** Data required when resolving a ticket. */
+export interface ResolutionData {
+  root_cause: string
+  solution: string
+  parts_used?: string
+}
+
+/** Input data for creating a new ticket (service-layer input). */
+export interface NewTicketData {
+  machine_id: number
+  raised_by: number
+  assigned_to: number
+  severity: TicketSeverity
+  category: TicketCategory
+  title: string
+  description: string
+}
+
+/** Filters for the daily logs list page. All fields optional, AND-combined. */
+export interface DailyLogFilters {
+  machineId?: number
+  date?: string
+  status?: DailyLogStatus
+}
+
+/** Filters for the site visits list page. All fields optional, AND-combined. */
+export interface SiteVisitFilters {
+  engineerId?: number
+  machineId?: number
+  purpose?: VisitPurpose
+}
+
+/** Input data for logging a new site visit. */
+export interface NewSiteVisitData {
+  machine_id: number
+  engineer_id: number
+  visit_date: string
+  visit_purpose: VisitPurpose
+  ticket_id?: number
+  findings: string
+  actions_taken: string
+  parts_replaced?: string
+  next_visit_due?: string
+}
+
+// -----------------------------------------------------------------------------
 // Table: users
 // -----------------------------------------------------------------------------
 
