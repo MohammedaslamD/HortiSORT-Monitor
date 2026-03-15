@@ -35,7 +35,7 @@ Domain-first, service layer first (Option A):
 ```
 hortisort-monitor/src/
   services/
-    ticketService.ts          ← extend (7 new functions)
+    ticketService.ts          ← extend (9 new functions)
     dailyLogService.ts        ← extend (1 new function)
     siteVisitService.ts       ← extend (2 new functions)
 
@@ -77,12 +77,13 @@ task.md                       ← new at repo root
 | `getTicketsByAssignedTo` | `(userId: number) => Promise<Ticket[]>` | Engineer's assigned tickets |
 | `getTicketsByRaisedBy` | `(userId: number) => Promise<Ticket[]>` | Customer's raised tickets |
 | `getTicketComments` | `(ticketId: number) => Promise<TicketComment[]>` | Comments for a ticket, sorted by created_at asc |
-| `addTicketComment` | `(data: Omit<TicketComment, 'id'>) => Promise<TicketComment>` | Push to MOCK_TICKET_COMMENTS |
-| `updateTicketStatus` | `(id: number, status: TicketStatus, resolution?: ResolutionData) => Promise<Ticket>` | Mutate MOCK_TICKETS |
+| `addTicketComment` | `(data: Omit<TicketComment, 'id' \| 'created_at'>) => Promise<TicketComment>` | Push to MOCK_TICKET_COMMENTS; `id` and `created_at` auto-generated internally |
+| `updateTicketStatus` | `(id: number, status: TicketStatus, resolution?: ResolutionData) => Promise<Ticket>` | Mutates MOCK_TICKETS: always sets `status`, `updated_at`; on resolve sets `resolved_at`, `resolution_time_mins`, `root_cause`, `solution`, `parts_used`; on reopen increments `reopen_count`, sets `reopened_at` |
 | `createTicket` | `(data: NewTicketData) => Promise<Ticket>` | Push to MOCK_TICKETS, auto-generate ticket_number |
 | `getTicketById` | `(id: number) => Promise<Ticket \| null>` | Single ticket lookup |
+| `getTicketsByMachineIds` | `(ids: number[]) => Promise<Ticket[]>` | Customer role scoping — tickets for a set of machine ids |
 
-**`ResolutionData` type** (local to ticketService or types/index.ts):
+**`ResolutionData` type** (add to `src/types/index.ts` — shared across service + detail page):
 ```ts
 interface ResolutionData {
   root_cause: string
@@ -91,7 +92,7 @@ interface ResolutionData {
 }
 ```
 
-**`NewTicketData` type:**
+**`NewTicketData` type** (add to `src/types/index.ts`):
 ```ts
 interface NewTicketData {
   machine_id: number
@@ -104,7 +105,7 @@ interface NewTicketData {
 }
 ```
 
-SLA hours are derived from severity: P1=4, P2=8, P3=24, P4=72.
+SLA hours are derived from severity: P1=4, P2=8, P3=24, P4=72. `createTicket` computes `sla_hours` internally from the submitted severity before pushing to `MOCK_TICKETS` — it is never a caller-supplied field.
 
 ### `dailyLogService.ts` — New Function
 
@@ -159,8 +160,8 @@ interface NewSiteVisitData {
 ### `/tickets` — TicketsPage
 
 **Role scoping:**
-- `customer` → tickets where `machine_id` belongs to their machines
-- `engineer` → tickets where `assigned_to === user.id` OR `raised_by === user.id`
+- `customer` → `getMachinesByRole(user)` to get their machine ids, then `getTicketsByMachineIds(ids)`
+- `engineer` → call both `getTicketsByAssignedTo(user.id)` and `getTicketsByRaisedBy(user.id)` in parallel, then deduplicate by `id` before rendering
 - `admin` → all tickets
 
 **UI:**
@@ -298,10 +299,12 @@ Card shows: visit_date, machineCode + machineName, purpose badge (routine=green,
 New routes added to `AppRoutes.tsx`:
 
 ```
+/tickets/new              → RaiseTicketPage    (engineer + admin)   ← MUST be declared before /tickets/:id
 /tickets/:id              → TicketDetailPage   (all authenticated)
-/tickets/new              → RaiseTicketPage    (engineer + admin)
 /visits/new               → LogVisitPage       (engineer + admin)
 ```
+
+> Route order matters: `/tickets/new` must come before `/tickets/:id` in the route list or React Router will match "new" as an id param.
 
 ---
 
