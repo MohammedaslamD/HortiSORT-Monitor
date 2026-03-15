@@ -114,6 +114,7 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | userService (3 functions + tests)         | done        |
 | 2026-03-15 | activityLogService (1 function + tests)   | done        |
 | 2026-03-15 | MachinesPage (filters + MachineCard grid) | done        |
+| 2026-03-15 | Admin components (3 components + barrel) | done        |
 
 ---
 
