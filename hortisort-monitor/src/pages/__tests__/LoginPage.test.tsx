@@ -1,127 +1,138 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import type { ReactNode } from 'react';
-import { render } from '../../test/utils';
-import { AuthProvider } from '../../context/AuthContext';
-import { LoginPage } from '../LoginPage';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
+import { render } from '../../test/utils'
+import { AuthProvider } from '../../context/AuthContext'
+import { LoginPage } from '../LoginPage'
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
-  };
-})();
+// Mock authService so tests don't make real network calls
+vi.mock('../../services/authService', () => ({
+  authService: {
+    login: vi.fn(),
+    logout: vi.fn(),
+    restoreSession: vi.fn(),
+    getCurrentUser: vi.fn(),
+    isAuthenticated: vi.fn(),
+  },
+}))
 
-Object.defineProperty(globalThis, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-});
+import { authService } from '../../services/authService'
+
+const mockLogin = authService.login as ReturnType<typeof vi.fn>
+const mockRestoreSession = authService.restoreSession as ReturnType<typeof vi.fn>
 
 // Mock useNavigate
-const mockNavigate = vi.fn();
+const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-  };
-});
+  }
+})
+
+const MOCK_CUSTOMER = {
+  id: 1, name: 'Rajesh Patel', email: 'rajesh.patel@agrifresh.com',
+  phone: '+91 98765 43210', whatsapp_number: null, role: 'customer' as const,
+  is_active: true, created_at: '2024-01-15T10:00:00Z', updated_at: '2024-01-15T10:00:00Z',
+}
 
 function renderLoginPage() {
   function Wrapper({ children }: { children: ReactNode }) {
-    return <AuthProvider>{children}</AuthProvider>;
+    return <AuthProvider>{children}</AuthProvider>
   }
-
-  return render(<LoginPage />, { wrapper: Wrapper });
+  return render(<LoginPage />, { wrapper: Wrapper })
 }
 
 describe('LoginPage', () => {
   beforeEach(() => {
-    localStorageMock.clear();
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+    // No active session by default
+    mockRestoreSession.mockResolvedValue(null)
+    ;(authService.logout as ReturnType<typeof vi.fn>).mockResolvedValue(undefined)
+  })
 
-  it('should render email and password fields', () => {
-    renderLoginPage();
+  it('renders email and password fields', async () => {
+    renderLoginPage()
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-  });
+    // Wait for loading state to clear
+    await waitFor(() => expect(screen.queryByLabelText(/email/i)).toBeInTheDocument())
 
-  it('should render a submit button', () => {
-    renderLoginPage();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+  })
 
-    expect(screen.getByRole('button', { name: /sign in|log in|login/i })).toBeInTheDocument();
-  });
+  it('renders a submit button', async () => {
+    renderLoginPage()
 
-  it('should show error message on invalid credentials', async () => {
-    const user = userEvent.setup();
-    renderLoginPage();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in|log in|login/i })).toBeInTheDocument()
+    )
+  })
 
-    await user.type(screen.getByLabelText(/email/i), 'nobody@nowhere.com');
-    await user.type(screen.getByLabelText(/password/i), 'wrong');
-    await user.click(screen.getByRole('button', { name: /sign in|log in|login/i }));
+  it('shows error message on invalid credentials', async () => {
+    mockLogin.mockRejectedValue(new Error('Invalid email or password'))
+    const user = userEvent.setup()
+    renderLoginPage()
 
-    await waitFor(() => {
-      expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument();
-    });
-  });
+    await waitFor(() => expect(screen.getByLabelText(/email/i)).toBeInTheDocument())
 
-  it('should navigate to /dashboard on successful customer login', async () => {
-    const user = userEvent.setup();
-    renderLoginPage();
-
-    await user.type(screen.getByLabelText(/email/i), 'rajesh.patel@agrifresh.com');
-    await user.type(screen.getByLabelText(/password/i), 'password_123');
-    await user.click(screen.getByRole('button', { name: /sign in|log in|login/i }));
+    await user.type(screen.getByLabelText(/email/i), 'nobody@nowhere.com')
+    await user.type(screen.getByLabelText(/password/i), 'wrong')
+    await user.click(screen.getByRole('button', { name: /sign in|log in|login/i }))
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
-    });
-  });
+      expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument()
+    })
+  })
 
-  it('should disable submit button while loading', async () => {
-    const user = userEvent.setup();
-    renderLoginPage();
+  it('navigates to /dashboard on successful login', async () => {
+    mockLogin.mockResolvedValue(MOCK_CUSTOMER)
+    const user = userEvent.setup()
+    renderLoginPage()
 
-    await user.type(screen.getByLabelText(/email/i), 'rajesh.patel@agrifresh.com');
-    await user.type(screen.getByLabelText(/password/i), 'password_123');
+    await waitFor(() => expect(screen.getByLabelText(/email/i)).toBeInTheDocument())
 
-    const button = screen.getByRole('button', { name: /sign in|log in|login/i });
-    await user.click(button);
+    await user.type(screen.getByLabelText(/email/i), 'rajesh.patel@agrifresh.com')
+    await user.type(screen.getByLabelText(/password/i), 'password_123')
+    await user.click(screen.getByRole('button', { name: /sign in|log in|login/i }))
 
-    // Button should be disabled during login
-    expect(button).toBeDisabled();
-  });
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
+    })
+  })
 
-  it('should require email field', async () => {
-    const user = userEvent.setup();
-    renderLoginPage();
+  it('disables submit button while loading', async () => {
+    // Never resolves during this test
+    mockLogin.mockReturnValue(new Promise(() => {}))
+    const user = userEvent.setup()
+    renderLoginPage()
 
-    const emailInput = screen.getByLabelText(/email/i);
-    expect(emailInput).toBeRequired();
-  });
+    await waitFor(() => expect(screen.getByLabelText(/email/i)).toBeInTheDocument())
 
-  it('should require password field', async () => {
-    const user = userEvent.setup();
-    renderLoginPage();
+    await user.type(screen.getByLabelText(/email/i), 'rajesh.patel@agrifresh.com')
+    await user.type(screen.getByLabelText(/password/i), 'password_123')
 
-    const passwordInput = screen.getByLabelText(/password/i);
-    expect(passwordInput).toBeRequired();
-  });
-});
+    const button = screen.getByRole('button', { name: /sign in|log in|login/i })
+    await user.click(button)
+
+    expect(button).toBeDisabled()
+  })
+
+  it('requires email field', async () => {
+    renderLoginPage()
+
+    await waitFor(() => expect(screen.getByLabelText(/email/i)).toBeInTheDocument())
+
+    expect(screen.getByLabelText(/email/i)).toBeRequired()
+  })
+
+  it('requires password field', async () => {
+    renderLoginPage()
+
+    await waitFor(() => expect(screen.getByLabelText(/password/i)).toBeInTheDocument())
+
+    expect(screen.getByLabelText(/password/i)).toBeRequired()
+  })
+})

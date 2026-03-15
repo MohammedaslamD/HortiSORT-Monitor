@@ -122,12 +122,35 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 5: Backend & Database
 
-### Status: PLANNED — ready for execution
+### Status: IN PROGRESS — Chunk 1 complete
 
-| Date       | Task                                      | Status      |
-|------------|-------------------------------------------|-------------|
-| 2026-03-15 | Phase 5 design spec                       | done        |
-| 2026-03-15 | Phase 5 implementation plan (41 tasks)    | done        |
+| Date       | Task                                                        | Status      |
+|------------|-------------------------------------------------------------|-------------|
+| 2026-03-15 | Phase 5 design spec                                         | done        |
+| 2026-03-15 | Phase 5 implementation plan (41 tasks)                      | done        |
+| 2026-03-15 | T1: docker-compose.yml + init-test-db.sql + .gitignore      | done        |
+| 2026-03-15 | T2: server/package.json + tsconfig + .env.example           | done        |
+| 2026-03-15 | T3: server/prisma/schema.prisma (9 enums, 8 models)         | done        |
+| 2026-03-15 | T4: server/prisma/seed.ts (all mock data → Prisma inserts)  | done        |
+| 2026-03-15 | T5: prisma singleton + AppError + env config (Zod)          | done        |
+| 2026-03-15 | T6: JWT utilities (sign/verify access + refresh tokens)     | done        |
+| 2026-03-15 | T7: Express app + auth/validate/errorHandler middleware      | done        |
+| 2026-03-15 | T8: Zod schemas for auth endpoints                          | done        |
+| 2026-03-15 | T9: server authService (login, getUserById, refreshToken)   | done        |
+| 2026-03-15 | T10: auth routes (login, logout, me, refresh)               | done        |
+| 2026-03-15 | T11: server vitest config + .env.test + auth integration tests | done     |
+| 2026-03-15 | T12: frontend apiClient.ts (JWT token store + fetch wrapper) | done       |
+| 2026-03-15 | T13: Vite proxy /api → localhost:4000                       | done        |
+| 2026-03-15 | T14: frontend authService.ts → real API (login/logout/restoreSession) | done |
+| 2026-03-15 | T15: AuthContext → async restoreSession on mount, isLoading:true default | done |
+| 2026-03-15 | T16: ProtectedRoute + PublicRoute → loading spinner, async-safe guards | done |
+
+**Deferred (run from Windows Terminal when Docker is ready):**
+- `docker compose up -d`
+- `cd server && npx prisma generate`
+- `cd server && npx prisma migrate dev --name init`
+- `cd server && npx prisma db seed`
+- `cd server && npm run test:run`
 
 **Plan:** `docs/superpowers/plans/2026-03-15-phase5-backend-database-plan.md`
 **Spec:** `docs/superpowers/specs/2026-03-15-phase5-backend-database-design.md`

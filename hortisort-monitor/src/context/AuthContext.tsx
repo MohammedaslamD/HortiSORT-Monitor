@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { authService } from '../services/authService'
 import type { AuthUser } from '../services/authService'
@@ -6,25 +6,41 @@ import type { AuthUser } from '../services/authService'
 interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
+  /** True while the initial session restore is in flight. */
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 /**
  * Provides authentication state to the component tree.
- * Restores session from localStorage synchronously on first render
- * so protected routes never see a stale null.
+ * On mount, attempts to restore a session via the refresh token cookie.
+ * isLoading is true until the restore attempt completes.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Restore user synchronously from localStorage so protected routes
-  // never see a flash of null on page refresh
-  const [user, setUser] = useState<AuthUser | null>(() => authService.getCurrentUser())
-  const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<AuthUser | null>(null)
+  // Start as true — we don't know yet whether there is a session
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // On mount: attempt to restore session from httpOnly refresh token cookie
+  useEffect(() => {
+    let cancelled = false
+    authService.restoreSession().then((restored) => {
+      if (!cancelled) {
+        setUser(restored)
+        setIsLoading(false)
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setIsLoading(false)
+      }
+    })
+    return () => { cancelled = true }
+  }, [])
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
     setIsLoading(true)
@@ -42,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const logout = useCallback(() => {
-    authService.logout()
+  const logout = useCallback(async (): Promise<void> => {
+    await authService.logout()
     setUser(null)
     setError(null)
   }, [])
