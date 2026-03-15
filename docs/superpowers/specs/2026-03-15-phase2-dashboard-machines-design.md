@@ -24,10 +24,14 @@ Three new service modules under `src/services/`. Each exports plain async functi
 getMachines(filters?: MachineFilters): Promise<Machine[]>
 getMachineById(id: number): Promise<Machine | null>
 getMachineStats(): Promise<MachineStats>
+getMachineHistoryByMachineId(machineId: number): Promise<MachineHistory[]>
 ```
 
-- `MachineFilters`: `{ status?, model?, city?, search? }`
-- `MachineStats`: `{ total, running, idle, down, offline }`
+- `MachineFilters` and `MachineStats` interfaces are defined in `src/types/index.ts` alongside existing types:
+  ```typescript
+  interface MachineFilters { status?: MachineStatus; model?: string; city?: string; search?: string; }
+  interface MachineStats { total: number; running: number; idle: number; down: number; offline: number; }
+  ```
 - `getMachines` filters by status, model, city, and searches machine_code + machine_name
 - All functions are async (return Promises) even though data is local
 
@@ -51,7 +55,7 @@ getRecentDailyLogs(limit: number): Promise<DailyLog[]>
 
 - `getRecentDailyLogs` sorts by `date` descending, returns first `limit` items
 
-### Helper: userLookup
+### Helper: userLookup (`src/utils/userLookup.ts`)
 
 A small utility to resolve user IDs to names from mock data. Used by Machine Detail (customer name, engineer name) and ticket/log displays.
 
@@ -68,7 +72,7 @@ Replaces the placeholder `DashboardPage.tsx`. URL: `/dashboard`.
 
 ```
 Stats Row:  [Total] [Running] [Down] [Idle] [Offline]
-            4-5 cards in a responsive grid (1 col mobile, 2 col tablet, 4-5 col desktop)
+            5 cards in a responsive grid (1 col mobile, 2-3 col tablet, 5 col desktop)
 
 Content:    [Recent Tickets (5)]     [Recent Logs (5)]
             2-column grid (stacks on mobile)
@@ -76,7 +80,7 @@ Content:    [Recent Tickets (5)]     [Recent Logs (5)]
 
 ### Stats Row
 
-4 cards (or 5 if total is separate from the status breakdown):
+5 cards:
 - **Total Machines** — count of all machines, blue accent
 - **Running** — green accent
 - **Down** — red accent
@@ -88,7 +92,7 @@ Each card uses the existing `Card` component and shows a numeric value with a la
 ### Recent Tickets Widget
 
 - Shows 5 most recent tickets (from `ticketService.getRecentTickets(5)`)
-- Each row: ticket_number, severity Badge, title (truncated), status Badge, machine_code (looked up via machineService)
+- Each row: ticket_number, severity Badge, title (truncated), status Badge, machine_code (build a machine ID→code map from `getMachines()` result to avoid N+1 lookups)
 - "View All Tickets" link at bottom navigates to `/tickets`
 
 ### Recent Logs Widget
@@ -133,7 +137,7 @@ Mobile:     Card list instead of table
 
 - Columns: Code, Name, Model, Status (Badge), City, Engineer (user lookup)
 - Row click navigates to `/machines/:id` using `useNavigate`
-- Responsive: on screens < 768px, renders as stacked cards instead of a table
+- Responsive: on screens below Tailwind `md:` breakpoint (768px), renders as stacked cards instead of a table
 
 ### Components
 
@@ -161,6 +165,13 @@ Content:    Tab-specific content below
 - Machine code + name as title
 - Status Badge (color-coded)
 
+### Error State (invalid or non-existent machine ID)
+
+If `getMachineById` returns `null` (invalid ID like `/machines/999` or non-numeric ID), the page shows:
+- "Machine not found" message centered on the page
+- A "Back to Machines" link to navigate back to `/machines`
+- No tabs or content rendered
+
 ### Tabs (client-side, local state)
 
 **Overview Tab:**
@@ -171,6 +182,7 @@ Two cards side by side (stack on mobile):
 **Daily Logs Tab:**
 - Table of all logs for this machine (from `dailyLogService.getDailyLogsByMachineId`)
 - Columns: date, status, fruit_type, tons_processed, shift times, notes
+- DailyLogStatus badge colors: `running` = green, `not_running` = red, `maintenance` = yellow
 - Empty state if no logs
 
 **Tickets Tab:**
@@ -207,7 +219,7 @@ Add to `AppRoutes.tsx`:
 Following AGENTS.md TDD rules. Tests are required for:
 
 ### Service layer (TDD — full Red-Green-Refactor)
-- `machineService.test.ts` — getMachines (with/without filters), getMachineById, getMachineStats
+- `machineService.test.ts` — getMachines (with/without filters), getMachineById, getMachineStats, getMachineHistoryByMachineId
 - `ticketService.test.ts` — getTickets, getTicketsByMachineId, getRecentTickets
 - `dailyLogService.test.ts` — getDailyLogs, getDailyLogsByMachineId, getRecentDailyLogs
 
