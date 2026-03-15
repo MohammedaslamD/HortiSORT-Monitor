@@ -8,7 +8,6 @@ import type {
   TicketStatus,
   TicketSeverity,
   TicketCategory,
-  VisitPurpose,
 } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getTicketById, getTicketComments, addTicketComment, updateTicketStatus } from '../services/ticketService'
