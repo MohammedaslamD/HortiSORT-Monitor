@@ -1,0 +1,10 @@
+# Server
+server/node_modules/
+server/dist/
+server/.env
+
+# Docker
+pgdata/
+
+# OS
+.DS_Store
