@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../services/authService';
 import type { AuthUser } from '../services/authService';
@@ -19,17 +19,11 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * Restores session from localStorage on mount.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  // Restore user synchronously from localStorage so protected routes
+  // never see a flash of null on page refresh
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getCurrentUser());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Restore user from localStorage on mount
-  useEffect(() => {
-    const stored = authService.getCurrentUser();
-    if (stored) {
-      setUser(stored);
-    }
-  }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
