@@ -113,6 +113,7 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | Phase 4 implementation plan               | done        |
 | 2026-03-15 | userService (3 functions + tests)         | done        |
 | 2026-03-15 | activityLogService (1 function + tests)   | done        |
+| 2026-03-15 | MachinesPage (filters + MachineCard grid) | done        |
 
 ---
 
@@ -172,7 +173,7 @@ hortisort-monitor/src/
 │   ├── DashboardPage.tsx            -- Stats + filters + machine grid (Phase 2)
 │   ├── MachineDetailPage.tsx        -- Full detail with tabs (Phase 2)
 │   ├── UpdateStatusPage.tsx         -- Daily log form (Phase 2)
-│   ├── MachinesPage.tsx             -- Placeholder (Phase 4+)
+│   ├── MachinesPage.tsx             -- Full machine list with 4 filters (Phase 4)
 │   ├── TicketsPage.tsx              -- Ticket list with filters + role scoping (Phase 3)
 │   ├── TicketDetailPage.tsx         -- Ticket detail + comments + status actions (Phase 3)
 │   ├── RaiseTicketPage.tsx          -- Raise ticket form (Phase 3)
