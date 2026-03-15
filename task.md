@@ -105,7 +105,7 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 4: MachinesPage + AdminPage
 
-### Status: IN PROGRESS
+### Status: COMPLETE
 
 | Date       | Task                                      | Status      |
 |------------|-------------------------------------------|-------------|
@@ -115,6 +115,8 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | activityLogService (1 function + tests)   | done        |
 | 2026-03-15 | MachinesPage (filters + MachineCard grid) | done        |
 | 2026-03-15 | Admin components (3 components + barrel) | done        |
+| 2026-03-15 | AdminPage (stats + activity + users)      | done        |
+| 2026-03-15 | Phase 4 complete                          | done        |
 
 ---
 
@@ -181,7 +183,7 @@ hortisort-monitor/src/
 │   ├── DailyLogsPage.tsx            -- Daily log list with filters + role scoping (Phase 3)
 │   ├── SiteVisitsPage.tsx           -- Site visit list with filters + role scoping (Phase 3)
 │   ├── LogVisitPage.tsx             -- Log site visit form (Phase 3)
-│   ├── AdminPage.tsx                -- Placeholder (Phase 4)
+│   ├── AdminPage.tsx                -- Admin dashboard: stats + activity + user management (Phase 4)
 │   └── __tests__/LoginPage.test.tsx -- 7 tests
 ├── routes/
 │   ├── AppRoutes.tsx                -- All routes including /visits/new, /tickets/new, /tickets/:id
