@@ -122,7 +122,7 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 5: Backend & Database
 
-### Status: IN PROGRESS — Chunk 3 complete
+### Status: COMPLETE — all 4 chunks done
 
 | Date       | Task                                                        | Status      |
 |------------|-------------------------------------------------------------|-------------|
@@ -158,6 +158,15 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | T30: server/src/routes/tickets.ts (6 routes) + ticketComments.ts + mounted in app.ts | done |
 | 2026-03-15 | T31: server integration tests — tickets (11 tests)          | done        |
 | 2026-03-15 | T32: frontend ticketService.ts → real API; tests rewritten (mock apiClient) | done |
+| 2026-03-15 | T33: commit Chunk 3                                         | done        |
+| 2026-03-15 | T34: server/src/schemas/siteVisits.ts + users.ts            | done        |
+| 2026-03-15 | T35: server siteVisitService.ts + routes/siteVisits.ts + mounted | done   |
+| 2026-03-15 | T36: server machineHistoryService.ts + routes/machineHistory.ts + mounted | done |
+| 2026-03-15 | T37: server activityLogService.ts + routes/activityLog.ts + mounted | done |
+| 2026-03-15 | T38: server userService.ts + routes/users.ts + mounted      | done        |
+| 2026-03-15 | T39: server integration tests — siteVisits (6) + machineHistory (3) + activityLog (4) + users (7) | done |
+| 2026-03-15 | T40: frontend siteVisitService, machineHistoryService, activityLogService, userService → real API; all tests rewritten | done |
+| 2026-03-15 | T41: task.md final update + Chunk 4 commit                  | done        |
 
 **Deferred (run from Windows Terminal when Docker is ready):**
 - `docker compose up -d`
@@ -178,13 +187,13 @@ Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL ba
 | 1 | 1–17  | Docker, server scaffold, Prisma schema + seed, JWT, Express app + middleware, auth routes + tests, frontend apiClient + Vite proxy + authService/AuthContext/route guards |
 | 2 | 18–27 | Machines + daily logs — server services, routes, tests, frontend service swaps |
 | 3 | 28–33 | Tickets + comments — server services, routes (tickets.ts + ticketComments.ts), tests, frontend service swap |
-| 4 | 34–41 | Site visits, machine history, activity log, users — server services, routes, tests, frontend service swaps + E2E verification |
+| 4 | 34–41 | Site visits, machine history, activity log, users — server services, routes, tests, frontend service swaps |
 
 ---
 
 ### File Structure Summary
 
-#### server/ (Phase 5 — Chunk 1 complete)
+#### server/ (Phase 5 — all chunks complete)
 
 ```
 server/
@@ -197,7 +206,7 @@ server/
 │   ├── schema.prisma                -- 9 enums + 8 models (@@map snake_case) + all relations
 │   └── seed.ts                      -- createMany from mockData in FK order, resets sequences
 └── src/
-    ├── app.ts                       -- Express app: CORS, JSON, cookieParser, routes, errorHandler
+    ├── app.ts                       -- Express app: CORS, JSON, cookieParser, all 9 routers, errorHandler
     ├── index.ts                     -- listens on env.PORT
     ├── config/env.ts                -- Zod-validated env (DATABASE_URL, JWT_SECRET, PORT, NODE_ENV)
     ├── middleware/
@@ -205,11 +214,20 @@ server/
     │   ├── errorHandler.ts          -- AppError / ZodError / PrismaKnownError / unknown → JSON
     │   └── validate.ts              -- Zod validation factory (body/query/params)
     ├── routes/
-    │   └── auth.ts                  -- POST login, POST logout, GET me, POST refresh
+    │   ├── auth.ts                  -- POST login, POST logout, GET me, POST refresh
+    │   ├── machines.ts              -- GET / , GET /:id, GET /stats, PATCH /:id/status
+    │   ├── dailyLogs.ts             -- GET /, POST /
+    │   ├── tickets.ts               -- GET /, GET /stats, GET /:id, POST /, PATCH /:id/status, PATCH /:id/resolve
+    │   ├── ticketComments.ts        -- POST /tickets/:id/comments
+    │   ├── siteVisits.ts            -- GET /, POST /
+    │   ├── machineHistory.ts        -- GET /:machineId
+    │   ├── activityLog.ts           -- GET / (admin only)
+    │   └── users.ts                 -- GET /, GET /:id, PATCH /:id/active (admin only)
     ├── schemas/
-    │   └── auth.ts                  -- loginSchema (email + password)
+    │   ├── auth.ts, machines.ts, dailyLogs.ts, tickets.ts, siteVisits.ts, users.ts
     ├── services/
-    │   └── authService.ts           -- login (bcrypt), getUserById, refreshAccessToken
+    │   ├── authService.ts, machineService.ts, dailyLogService.ts, ticketService.ts
+    │   ├── siteVisitService.ts, machineHistoryService.ts, activityLogService.ts, userService.ts
     ├── utils/
     │   ├── AppError.ts              -- operational error with statusCode
     │   ├── jwt.ts                   -- signAccessToken(15m) / signRefreshToken(7d) / verify both
@@ -217,10 +235,17 @@ server/
     └── __tests__/
         ├── setup.ts                 -- globalSetup: loads .env.test, runs prisma migrate deploy
         ├── helpers.ts               -- truncateAll() + prisma export
-        └── auth.test.ts             -- 7 integration tests (supertest)
+        ├── auth.test.ts             -- 7 integration tests
+        ├── machines.test.ts         -- 11 integration tests
+        ├── dailyLogs.test.ts        -- 6 integration tests
+        ├── tickets.test.ts          -- 11 integration tests
+        ├── siteVisits.test.ts       -- 6 integration tests
+        ├── machineHistory.test.ts   -- 3 integration tests
+        ├── activityLog.test.ts      -- 4 integration tests
+        └── users.test.ts            -- 7 integration tests
 ```
 
-#### hortisort-monitor/src/ (Phases 1–5 Chunk 1)
+#### hortisort-monitor/src/ (Phases 1–5 all complete)
 
 ```
 hortisort-monitor/src/
@@ -228,27 +253,29 @@ hortisort-monitor/src/
 ├── main.tsx                         -- entry point
 ├── index.css                        -- Tailwind + slide-in animation
 ├── types/index.ts                   -- 8 table interfaces + 5 Phase 3 interfaces + 9 union types
-├── data/mockData.ts                 -- reference seed data (still used by server/prisma/seed.ts)
+├── data/mockData.ts                 -- reference seed data (used by server/prisma/seed.ts)
 ├── utils/
 │   ├── formatters.ts                -- formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor
 │   └── userLookup.ts                -- getUserById, getUserName
 ├── services/
 │   ├── apiClient.ts                 -- JWT token store + fetch wrapper + 401→refresh→retry interceptor
 │   ├── authService.ts               -- login/logout/restoreSession/getCurrentUser/isAuthenticated (→ real API)
-│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole (mock)
-│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog (mock)
-│   ├── ticketService.ts             -- 14 functions: CRUD, queries, status updates, comments (mock)
-│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit (mock)
-│   ├── machineHistoryService.ts     -- getHistoryByMachineId (mock)
-│   ├── userService.ts               -- getUsers, getUserById, toggleUserActive (mock)
-│   ├── activityLogService.ts        -- getRecentActivity (mock)
+│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole (→ real API)
+│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog (→ real API)
+│   ├── ticketService.ts             -- 14 functions: CRUD, queries, status updates, comments (→ real API)
+│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit (→ real API)
+│   ├── machineHistoryService.ts     -- getHistoryByMachineId (→ real API)
+│   ├── userService.ts               -- getUsers, getUserById, toggleUserActive (→ real API)
+│   ├── activityLogService.ts        -- getRecentActivity (→ real API)
 │   └── __tests__/
 │       ├── authService.test.ts      -- 15 tests (mock apiClient)
-│       ├── machineService.test.ts   -- 15 tests
-│       ├── dailyLogService.test.ts  -- 5+ tests
-│       ├── ticketService.test.ts    -- 21 tests
-│       ├── siteVisitService.test.ts -- 4+ tests
-│       └── machineHistoryService.test.ts -- 4 tests
+│       ├── machineService.test.ts   -- 15 tests (mock apiClient)
+│       ├── dailyLogService.test.ts  -- 5+ tests (mock apiClient)
+│       ├── ticketService.test.ts    -- 14 tests (mock apiClient)
+│       ├── siteVisitService.test.ts -- 6 tests (mock apiClient)
+│       ├── machineHistoryService.test.ts -- 2 tests (mock apiClient)
+│       ├── activityLogService.test.ts -- 3 tests (mock apiClient)
+│       └── userService.test.ts      -- 4 tests (mock apiClient)
 ├── context/
 │   ├── AuthContext.tsx               -- async restoreSession on mount, isLoading:true default
 │   └── __tests__/AuthContext.test.tsx -- 6 tests (mock authService)

@@ -1,31 +1,30 @@
-import { describe, it, expect } from 'vitest'
+import { vi, beforeEach, it, expect } from 'vitest'
+
+vi.mock('../apiClient', () => ({
+  apiClient: {
+    get: vi.fn(),
+  },
+}))
+
+import { apiClient } from '../apiClient'
 import { getHistoryByMachineId } from '../machineHistoryService'
 
-describe('machineHistoryService', () => {
-  describe('getHistoryByMachineId', () => {
-    it('should return 1 entry for machine 3', async () => {
-      const history = await getHistoryByMachineId(3)
-      expect(history).toHaveLength(1)
-      expect(history[0].change_type).toBe('status_change')
-    })
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
-    it('should return 1 entry for machine 1', async () => {
-      const history = await getHistoryByMachineId(1)
-      expect(history).toHaveLength(1)
-      expect(history[0].change_type).toBe('software_update')
-    })
+it('getHistoryByMachineId calls GET /api/v1/machine-history/:machineId', async () => {
+  ;(apiClient.get as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] })
+  const result = await getHistoryByMachineId(3)
+  expect(apiClient.get).toHaveBeenCalledWith('/api/v1/machine-history/3')
+  expect(result).toEqual([])
+})
 
-    it('should return empty array for machine with no history', async () => {
-      const history = await getHistoryByMachineId(999)
-      expect(history).toHaveLength(0)
-    })
-
-    it('should return entries sorted by created_at descending', async () => {
-      // All machines have 1 entry each in mock data, but verify sort logic works
-      // by checking the function handles the data correctly
-      const history = await getHistoryByMachineId(3)
-      expect(history).toHaveLength(1)
-      expect(history[0].created_at).toBe('2026-03-13T10:00:00Z')
-    })
-  })
+it('getHistoryByMachineId returns the data array from the response', async () => {
+  const mockHistory = [
+    { id: 1, machine_id: 3, change_type: 'status_change', old_value: 'idle', new_value: 'running', changed_by: 1, created_at: '2025-01-01T00:00:00Z' },
+  ]
+  ;(apiClient.get as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockHistory })
+  const result = await getHistoryByMachineId(3)
+  expect(result).toEqual(mockHistory)
 })

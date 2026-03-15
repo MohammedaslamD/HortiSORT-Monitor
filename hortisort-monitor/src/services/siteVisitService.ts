@@ -1,40 +1,26 @@
+import { apiClient } from './apiClient'
 import type { SiteVisit, SiteVisitFilters, NewSiteVisitData } from '../types'
-import { MOCK_SITE_VISITS } from '../data/mockData'
 
-/** Returns site visits for a specific machine, sorted by visit_date descending. */
+/** Returns site visits for a specific machine, sorted by visit_date descending (server-side). */
 export async function getSiteVisitsByMachineId(machineId: number): Promise<SiteVisit[]> {
-  return [...MOCK_SITE_VISITS]
-    .filter((v) => v.machine_id === machineId)
-    .sort((a, b) => b.visit_date.localeCompare(a.visit_date))
+  const res = await apiClient.get<SiteVisit[]>(`/api/v1/site-visits?machineId=${machineId}`)
+  return res.data
 }
 
-/** Returns all site visits, optionally filtered. Sorted by visit_date descending. */
+/** Returns all site visits, optionally filtered. */
 export async function getAllSiteVisits(filters?: SiteVisitFilters): Promise<SiteVisit[]> {
-  let result = [...MOCK_SITE_VISITS]
+  const params = new URLSearchParams()
+  if (filters?.engineerId) params.set('engineerId', String(filters.engineerId))
+  if (filters?.machineId) params.set('machineId', String(filters.machineId))
+  if (filters?.purpose) params.set('purpose', filters.purpose)
 
-  if (filters?.engineerId) {
-    result = result.filter((v) => v.engineer_id === filters.engineerId)
-  }
-
-  if (filters?.machineId) {
-    result = result.filter((v) => v.machine_id === filters.machineId)
-  }
-
-  if (filters?.purpose) {
-    result = result.filter((v) => v.visit_purpose === filters.purpose)
-  }
-
-  return result.sort((a, b) => b.visit_date.localeCompare(a.visit_date))
+  const query = params.toString()
+  const res = await apiClient.get<SiteVisit[]>(`/api/v1/site-visits${query ? `?${query}` : ''}`)
+  return res.data
 }
 
-/** Logs a new site visit. Auto-generates id and created_at. */
+/** Logs a new site visit. */
 export async function logSiteVisit(data: NewSiteVisitData): Promise<SiteVisit> {
-  const now = new Date().toISOString()
-  const visit: SiteVisit = {
-    id: MOCK_SITE_VISITS.length + 1,
-    ...data,
-    created_at: now,
-  }
-  MOCK_SITE_VISITS.push(visit)
-  return visit
+  const res = await apiClient.post<SiteVisit>('/api/v1/site-visits', { ...data })
+  return res.data
 }
