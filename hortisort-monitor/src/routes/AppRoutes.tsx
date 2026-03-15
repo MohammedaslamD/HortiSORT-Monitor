@@ -4,6 +4,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { MachinesPage } from '../pages/MachinesPage';
 import { MachineDetailPage } from '../pages/MachineDetailPage';
+import { UpdateStatusPage } from '../pages/UpdateStatusPage';
 import { TicketsPage } from '../pages/TicketsPage';
 import { DailyLogsPage } from '../pages/DailyLogsPage';
 import { SiteVisitsPage } from '../pages/SiteVisitsPage';
@@ -42,6 +43,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <MachineDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/machines/:id/update-status"
+        element={
+          <ProtectedRoute allowedRoles={['engineer', 'admin']}>
+            <UpdateStatusPage />
           </ProtectedRoute>
         }
       />

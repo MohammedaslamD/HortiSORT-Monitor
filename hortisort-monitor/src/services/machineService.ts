@@ -1,4 +1,4 @@
-import type { Machine, MachineFilters, MachineStats, UserRole } from '../types'
+import type { Machine, MachineFilters, MachineStats, MachineStatus, UserRole } from '../types'
 import { MOCK_MACHINES } from '../data/mockData'
 
 /** Return all machines, optionally filtered. All filters are AND-combined. */
@@ -62,4 +62,21 @@ export async function getMachinesByRole(role: UserRole, userId: number): Promise
     case 'admin':
       return [...MOCK_MACHINES]
   }
+}
+
+/**
+ * Mutates the in-memory mock machine record with the given status and timestamp.
+ * Used by UpdateStatusPage to reflect submitted data without a real backend.
+ */
+export async function updateMachineStatus(
+  machineId: number,
+  newStatus: MachineStatus,
+  updatedBy: number,
+): Promise<void> {
+  const machine = MOCK_MACHINES.find((m) => m.id === machineId)
+  if (!machine) throw new Error(`Machine ${machineId} not found`)
+  machine.status = newStatus
+  machine.last_updated = new Date().toISOString()
+  machine.last_updated_by = updatedBy
+  machine.updated_at = new Date().toISOString()
 }
