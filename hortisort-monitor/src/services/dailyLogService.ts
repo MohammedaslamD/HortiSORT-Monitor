@@ -1,4 +1,4 @@
-import type { DailyLog, DailyLogStatus } from '../types'
+import type { DailyLog, DailyLogStatus, DailyLogFilters } from '../types'
 import { MOCK_DAILY_LOGS } from '../data/mockData'
 
 /** Returns all daily logs. */
@@ -44,4 +44,23 @@ export async function addDailyLog(input: NewDailyLogInput): Promise<DailyLog> {
   }
   MOCK_DAILY_LOGS.push(newLog)
   return newLog
+}
+
+/** Returns all daily logs, optionally filtered. Sorted by date descending. */
+export async function getAllDailyLogs(filters?: DailyLogFilters): Promise<DailyLog[]> {
+  let result = [...MOCK_DAILY_LOGS]
+
+  if (filters?.machineId) {
+    result = result.filter((l) => l.machine_id === filters.machineId)
+  }
+
+  if (filters?.date) {
+    result = result.filter((l) => l.date === filters.date)
+  }
+
+  if (filters?.status) {
+    result = result.filter((l) => l.status === filters.status)
+  }
+
+  return result.sort((a, b) => b.date.localeCompare(a.date))
 }
