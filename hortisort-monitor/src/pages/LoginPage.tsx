@@ -1,37 +1,30 @@
-import { useState } from 'react';
-import type { FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/common/Button';
+import { useState, useEffect } from 'react'
+import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { Button } from '../components/common/Button'
 
 /**
  * Login page — email + password form.
  * Redirects to /dashboard on successful authentication.
  */
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, isLoading, error } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { login, isLoading, error, user } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirect to dashboard when user is authenticated
+  // Handles: (1) already-logged-in user visiting /login, (2) post-login redirect
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, isLoading, navigate])
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    await login(email, password);
-
-    // Check if login succeeded (no error thrown means success)
-    // We need to read from authService directly since state update is async
-    // Actually, useAuth sets user state — but navigate needs to fire after state update.
-    // The login function in AuthContext catches errors and sets error state.
-    // If no error, we navigate.
-  }
-
-  // Use effect-like approach: if user is set and we just submitted, navigate
-  const { user } = useAuth();
-
-  // Navigate after successful login
-  if (user && !isLoading) {
-    navigate('/dashboard', { replace: true });
+    e.preventDefault()
+    await login(email, password)
   }
 
   return (
