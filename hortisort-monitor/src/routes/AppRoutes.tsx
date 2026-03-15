@@ -6,6 +6,8 @@ import { MachinesPage } from '../pages/MachinesPage';
 import { MachineDetailPage } from '../pages/MachineDetailPage';
 import { UpdateStatusPage } from '../pages/UpdateStatusPage';
 import { TicketsPage } from '../pages/TicketsPage';
+import { TicketDetailPage } from '../pages/TicketDetailPage';
+import { RaiseTicketPage } from '../pages/RaiseTicketPage';
 import { DailyLogsPage } from '../pages/DailyLogsPage';
 import { SiteVisitsPage } from '../pages/SiteVisitsPage';
 import { AdminPage } from '../pages/AdminPage';
@@ -51,6 +53,22 @@ export function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['engineer', 'admin']}>
             <UpdateStatusPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tickets/new"
+        element={
+          <ProtectedRoute allowedRoles={['engineer', 'admin']}>
+            <RaiseTicketPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tickets/:id"
+        element={
+          <ProtectedRoute>
+            <TicketDetailPage />
           </ProtectedRoute>
         }
       />
