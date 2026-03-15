@@ -263,6 +263,7 @@ src/utils/userLookup.ts
 
 ### Modified files
 ```
+src/types/index.ts               — add MachineFilters and MachineStats interfaces
 src/pages/DashboardPage.tsx          — replace placeholder
 src/pages/MachinesPage.tsx           — replace placeholder
 src/routes/AppRoutes.tsx             — add /machines/:id route
