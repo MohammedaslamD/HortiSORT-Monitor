@@ -90,6 +90,10 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | Extend ticketService (10 functions)       | done        |
 | 2026-03-15 | Extend dailyLogService (getAllDailyLogs)  | done        |
 | 2026-03-15 | Extend siteVisitService (2 functions)     | done        |
+| 2026-03-15 | TicketCard component                      | done        |
+| 2026-03-15 | TicketsPage                               | done        |
+| 2026-03-15 | TicketDetailPage                          | done        |
+| 2026-03-15 | RaiseTicketPage                           | done        |
 
 ### File Structure Summary
 
