@@ -81,7 +81,7 @@ All Phase 2 tasks are done. The app now has:
 
 ## Phase 3: Tickets, Daily Logs & Site Visits
 
-### Status: IN PROGRESS
+### Status: COMPLETE
 
 | Date       | Task                                      | Status      |
 |------------|-------------------------------------------|-------------|
@@ -94,6 +94,12 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | TicketsPage                               | done        |
 | 2026-03-15 | TicketDetailPage                          | done        |
 | 2026-03-15 | RaiseTicketPage                           | done        |
+| 2026-03-15 | DailyLogCard component                    | done        |
+| 2026-03-15 | DailyLogsPage                             | done        |
+| 2026-03-15 | SiteVisitCard component                   | done        |
+| 2026-03-15 | SiteVisitsPage                            | done        |
+| 2026-03-15 | LogVisitPage                              | done        |
+| 2026-03-15 | Phase 3 complete                          | done        |
 
 ### File Structure Summary
 
@@ -102,7 +108,7 @@ hortisort-monitor/src/
 ├── App.tsx                          -- Wired with AuthProvider + Router + PageLayout
 ├── main.tsx                         -- Entry point
 ├── index.css                        -- Tailwind + slide-in animation
-├── types/index.ts                   -- 8 interfaces + 9 union types + MachineFilters + MachineStats
+├── types/index.ts                   -- 8 table interfaces + 5 Phase 3 interfaces + 9 union types + MachineFilters + MachineStats
 ├── data/mockData.ts                 -- 12 machines, 6 users, 15 logs, 10 tickets, 15 comments, 6 visits, 10 history, 10 activity
 ├── utils/
 │   ├── formatters.ts                -- formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor
@@ -110,16 +116,16 @@ hortisort-monitor/src/
 ├── services/
 │   ├── authService.ts               -- login/logout/getCurrentUser/isAuthenticated
 │   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole
-│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent
-│   ├── ticketService.ts             -- getTickets, byMachineId, getOpenTicketCount, getRecent
-│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId
+│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog
+│   ├── ticketService.ts             -- 14 functions (CRUD, queries, status updates, comments)
+│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit
 │   ├── machineHistoryService.ts     -- getHistoryByMachineId
 │   └── __tests__/
 │       ├── authService.test.ts      -- 13 tests
 │       ├── machineService.test.ts   -- 15 tests
-│       ├── dailyLogService.test.ts  -- 5 tests
-│       ├── ticketService.test.ts    -- 6 tests
-│       ├── siteVisitService.test.ts -- 4 tests
+│       ├── dailyLogService.test.ts  -- 5+ tests
+│       ├── ticketService.test.ts    -- 6+ tests
+│       ├── siteVisitService.test.ts -- 4+ tests
 │       └── machineHistoryService.test.ts -- 4 tests
 ├── context/
 │   ├── AuthContext.tsx               -- AuthProvider + useAuth
@@ -135,6 +141,15 @@ hortisort-monitor/src/
 │   ├── machines/
 │   │   ├── index.ts                 -- Barrel export
 │   │   └── MachineCard.tsx          -- Machine summary card with role-based actions
+│   ├── tickets/
+│   │   ├── index.ts                 -- Barrel export
+│   │   └── TicketCard.tsx           -- Ticket summary card (Phase 3)
+│   ├── logs/
+│   │   ├── index.ts                 -- Barrel export
+│   │   └── DailyLogCard.tsx         -- Daily log card (Phase 3)
+│   ├── visits/
+│   │   ├── index.ts                 -- Barrel export
+│   │   └── SiteVisitCard.tsx        -- Site visit card (Phase 3)
 │   └── layout/
 │       ├── index.ts, Navbar.tsx, Sidebar.tsx, BottomNav.tsx, PageLayout.tsx
 ├── pages/
@@ -142,14 +157,17 @@ hortisort-monitor/src/
 │   ├── DashboardPage.tsx            -- Stats + filters + machine grid (Phase 2)
 │   ├── MachineDetailPage.tsx        -- Full detail with tabs (Phase 2)
 │   ├── UpdateStatusPage.tsx         -- Daily log form (Phase 2)
-│   ├── MachinesPage.tsx             -- Placeholder (Phase 3+)
-│   ├── TicketsPage.tsx              -- Placeholder (Phase 3+)
-│   ├── DailyLogsPage.tsx            -- Placeholder (Phase 3+)
-│   ├── SiteVisitsPage.tsx           -- Placeholder (Phase 3+)
+│   ├── MachinesPage.tsx             -- Placeholder (Phase 4+)
+│   ├── TicketsPage.tsx              -- Ticket list with filters + role scoping (Phase 3)
+│   ├── TicketDetailPage.tsx         -- Ticket detail + comments + status actions (Phase 3)
+│   ├── RaiseTicketPage.tsx          -- Raise ticket form (Phase 3)
+│   ├── DailyLogsPage.tsx            -- Daily log list with filters + role scoping (Phase 3)
+│   ├── SiteVisitsPage.tsx           -- Site visit list with filters + role scoping (Phase 3)
+│   ├── LogVisitPage.tsx             -- Log site visit form (Phase 3)
 │   ├── AdminPage.tsx                -- Placeholder (Phase 4)
 │   └── __tests__/LoginPage.test.tsx -- 7 tests
 ├── routes/
-│   ├── AppRoutes.tsx                -- All routes including /machines/:id and /machines/:id/update-status
+│   ├── AppRoutes.tsx                -- All routes including /visits/new, /tickets/new, /tickets/:id
 │   ├── ProtectedRoute.tsx           -- Role-based route guard
 │   └── __tests__/ProtectedRoute.test.tsx -- 6 tests
 └── test/
