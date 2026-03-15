@@ -1,17 +1,23 @@
 import { getUsers, getUserById, toggleUserActive } from '../userService'
 import { MOCK_USERS } from '../../data/mockData'
 
-/** Snapshot of original is_active values — restored after each test to prevent state leaking. */
-let originalActiveStates: Map<number, boolean>
+/** Snapshot of mutable fields — restored after each test to prevent state leaking. */
+let originalStates: Map<number, { is_active: boolean; updated_at: string }>
 
 describe('userService', () => {
   beforeEach(() => {
-    originalActiveStates = new Map(MOCK_USERS.map((u) => [u.id, u.is_active]))
+    originalStates = new Map(
+      MOCK_USERS.map((u) => [u.id, { is_active: u.is_active, updated_at: u.updated_at }]),
+    )
   })
 
   afterEach(() => {
     for (const user of MOCK_USERS) {
-      user.is_active = originalActiveStates.get(user.id) ?? true
+      const original = originalStates.get(user.id)
+      if (original) {
+        user.is_active = original.is_active
+        user.updated_at = original.updated_at
+      }
     }
   })
 

@@ -8,7 +8,8 @@ export async function getUsers(): Promise<User[]> {
 
 /** Returns a single user by ID, or null if not found. */
 export async function getUserById(id: number): Promise<User | null> {
-  return MOCK_USERS.find((u) => u.id === id) ?? null
+  const found = MOCK_USERS.find((u) => u.id === id)
+  return found ? { ...found } : null
 }
 
 /** Toggles a user's is_active flag. Returns the updated user. Throws if not found. */
