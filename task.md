@@ -77,6 +77,20 @@ All Phase 2 tasks are done. The app now has:
 - `/machines/:id` — any authenticated user
 - `/machines/:id/update-status` — engineer + admin only (role guard)
 
+---
+
+## Phase 3: Tickets, Daily Logs & Site Visits
+
+### Status: IN PROGRESS
+
+| Date       | Task                                      | Status      |
+|------------|-------------------------------------------|-------------|
+| 2026-03-15 | Phase 3 design spec                       | done        |
+| 2026-03-15 | Phase 3 new types                         | done        |
+| 2026-03-15 | Extend ticketService (10 functions)       | done        |
+| 2026-03-15 | Extend dailyLogService (getAllDailyLogs)  | done        |
+| 2026-03-15 | Extend siteVisitService (2 functions)     | done        |
+
 ### File Structure Summary
 
 ```
