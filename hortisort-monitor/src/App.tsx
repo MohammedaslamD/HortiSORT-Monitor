@@ -1,11 +1,38 @@
-function App() {
+import { BrowserRouter, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { PageLayout } from './components/layout/PageLayout';
+import { AppRoutes } from './routes/AppRoutes';
+
+/**
+ * Inner app that decides whether to show the layout shell.
+ * LoginPage is rendered without the sidebar/navbar.
+ */
+function AppContent() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const location = useLocation();
+
+  const isLoginRoute = location.pathname === '/login';
+
+  // No layout shell on login page
+  if (isLoginRoute || !isAuthenticated || !user) {
+    return <AppRoutes />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold text-center py-8 text-primary-600">
-        HortiSort Monitor
-      </h1>
-    </div>
-  )
+    <PageLayout userName={user.name} userRole={user.role} onLogout={logout}>
+      <AppRoutes />
+    </PageLayout>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
