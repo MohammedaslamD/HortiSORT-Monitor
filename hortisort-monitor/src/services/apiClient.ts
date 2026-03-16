@@ -2,10 +2,14 @@
  * API client with JWT token management and automatic refresh.
  *
  * - Stores the current access token in module scope (not localStorage)
+ * - Stores the refresh token in sessionStorage (per-tab, so multiple users
+ *   can be simultaneously logged in across different browser tabs)
  * - Attaches Bearer token to every request
  * - On 401 response: attempts to refresh the token once, then retries the original request
  * - If refresh also fails: clears the token and redirects to /login
  */
+
+const REFRESH_TOKEN_KEY = 'hortisort_refresh_token'
 
 let accessToken: string | null = null
 
@@ -19,6 +23,18 @@ export function getAccessToken(): string | null {
 
 export function clearAccessToken(): void {
   accessToken = null
+}
+
+export function setRefreshToken(token: string): void {
+  sessionStorage.setItem(REFRESH_TOKEN_KEY, token)
+}
+
+export function getRefreshToken(): string | null {
+  return sessionStorage.getItem(REFRESH_TOKEN_KEY)
+}
+
+export function clearRefreshToken(): void {
+  sessionStorage.removeItem(REFRESH_TOKEN_KEY)
 }
 
 // -------------------------------------------------------------------------
@@ -58,6 +74,7 @@ async function request<T>(
     }
     // Refresh failed — redirect to login
     clearAccessToken()
+    clearRefreshToken()
     window.location.href = '/login'
     throw new Error('Session expired')
   }
@@ -72,9 +89,12 @@ async function request<T>(
 
 async function tryRefresh(): Promise<boolean> {
   try {
+    const storedRefreshToken = getRefreshToken()
     const res = await fetch('/api/v1/auth/refresh', {
       method: 'POST',
       credentials: 'include',
+      headers: storedRefreshToken ? { 'Content-Type': 'application/json' } : {},
+      body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined,
     })
     if (!res.ok) return false
     const body = (await res.json()) as ApiResponse<{ accessToken: string }>

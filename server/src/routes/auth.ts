@@ -24,7 +24,8 @@ authRouter.post(
       const { email, password } = req.body as { email: string; password: string }
       const { user, accessToken, refreshToken } = await authService.login(email, password)
       res.cookie(REFRESH_COOKIE, refreshToken, COOKIE_OPTIONS)
-      res.json({ data: { accessToken, user } })
+      // Also return refreshToken in the body so per-tab sessionStorage can be used
+      res.json({ data: { accessToken, refreshToken, user } })
     } catch (err) {
       next(err)
     }
@@ -60,7 +61,8 @@ authRouter.post(
   '/refresh',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const token = req.cookies[REFRESH_COOKIE] as string | undefined
+      // Accept refresh token from request body (per-tab sessionStorage) or httpOnly cookie
+      const token = (req.body as { refreshToken?: string }).refreshToken ?? req.cookies[REFRESH_COOKIE] as string | undefined
       if (!token) {
         res.status(401).json({ error: 'No refresh token' })
         return

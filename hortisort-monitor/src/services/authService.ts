@@ -1,4 +1,4 @@
-import { apiClient, setAccessToken, clearAccessToken, getAccessToken } from './apiClient'
+import { apiClient, setAccessToken, clearAccessToken, getAccessToken, setRefreshToken, clearRefreshToken, getRefreshToken } from './apiClient'
 import type { User } from '../types'
 
 /** Stored user data (without sensitive fields). */
@@ -6,13 +6,15 @@ export type AuthUser = Omit<User, 'password_hash'>
 
 interface LoginResponse {
   accessToken: string
+  refreshToken: string
   user: AuthUser
 }
 
 /**
  * Authentication service — communicates with the real API.
  * Access token is held in memory (apiClient module scope).
- * Refresh token is stored in an httpOnly cookie managed by the server.
+ * Refresh token is stored in sessionStorage (per-tab) so that multiple
+ * users can be simultaneously logged in across different browser tabs.
  */
 export const authService = {
   /**
@@ -23,6 +25,8 @@ export const authService = {
   async login(email: string, password: string): Promise<AuthUser> {
     const res = await apiClient.post<LoginResponse>('/api/v1/auth/login', { email, password })
     setAccessToken(res.data.accessToken)
+    // Store refresh token in sessionStorage so each tab maintains its own session
+    setRefreshToken(res.data.refreshToken)
     return res.data.user
   },
 
@@ -36,6 +40,7 @@ export const authService = {
       // Ignore server errors — always clear the local token
     } finally {
       clearAccessToken()
+      clearRefreshToken()
     }
   },
 
@@ -46,11 +51,20 @@ export const authService = {
    */
   async restoreSession(): Promise<AuthUser | null> {
     try {
+      const storedRefreshToken = getRefreshToken()
+      // No per-tab refresh token means no session to restore for this tab
+      if (!storedRefreshToken) return null
+
       const refreshRes = await fetch('/api/v1/auth/refresh', {
         method: 'POST',
         credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
       })
-      if (!refreshRes.ok) return null
+      if (!refreshRes.ok) {
+        clearRefreshToken()
+        return null
+      }
       const refreshBody = (await refreshRes.json()) as { data: { accessToken: string } }
       setAccessToken(refreshBody.data.accessToken)
 
@@ -58,6 +72,7 @@ export const authService = {
       return meRes.data
     } catch {
       clearAccessToken()
+      clearRefreshToken()
       return null
     }
   },

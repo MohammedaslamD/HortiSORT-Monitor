@@ -225,7 +225,31 @@ Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL ba
 
 ---
 
-## Phase 5 Post-Implementation: Bug Fixes (2026-03-16 session 2)
+## Phase 5 Post-Implementation: Bug Fixes (2026-03-16 session 3)
+
+### Status: COMPLETE
+
+| Date       | Task                                                                 | Status      |
+|------------|----------------------------------------------------------------------|-------------|
+| 2026-03-16 | Fix: multi-tab auth — second login overwrote shared httpOnly refresh cookie, forcing both tabs to the same session | done |
+| 2026-03-16 | Fix: server `POST /auth/login` now returns `refreshToken` in JSON body alongside the cookie | done |
+| 2026-03-16 | Fix: server `POST /auth/refresh` now accepts token from request body first, falls back to cookie | done |
+| 2026-03-16 | Fix: frontend `apiClient.ts` — added `setRefreshToken`/`getRefreshToken`/`clearRefreshToken` using `sessionStorage` (per-tab) | done |
+| 2026-03-16 | Fix: frontend `apiClient.ts` — `tryRefresh()` sends per-tab refresh token in request body | done |
+| 2026-03-16 | Fix: frontend `authService.ts` — `login()` saves refresh token to sessionStorage; `logout()` + `restoreSession()` clear/use it | done |
+| 2026-03-16 | Update: `authService.test.ts` — mocks extended for new token helpers; 3 new restoreSession tests added | done |
+
+### Root Cause
+
+httpOnly cookies are shared across all browser tabs for the same origin. When a second user logged in from Tab B, the server's `Set-Cookie: refresh_token=...` response overwrote the first user's refresh cookie in the browser jar. Any subsequent token refresh from Tab A (first user) used the second user's refresh token, returning the wrong session — manifesting as "forced login as the other user after page refresh".
+
+### Fix
+
+Switched the refresh token storage from the shared httpOnly cookie to **`sessionStorage`** on the frontend. `sessionStorage` is per-tab and not shared across tabs, so Tab A and Tab B each hold their own refresh token independently. The server still sets the httpOnly cookie (for any non-JS consumers) but the frontend now sends the refresh token explicitly in the request body. The server's `/auth/refresh` endpoint accepts the token from the request body first, falling back to the cookie.
+
+---
+
+
 
 ### Status: IN PROGRESS
 
@@ -330,7 +354,7 @@ hortisort-monitor/src/
 │   ├── userService.ts               -- getUsers, getUserById, toggleUserActive (→ real API)
 │   ├── activityLogService.ts        -- getRecentActivity (→ real API)
 │   └── __tests__/
-│       ├── authService.test.ts      -- 15 tests (mock apiClient)
+│       ├── authService.test.ts      -- 19 tests (mock apiClient, covers refreshToken sessionStorage)
 │       ├── machineService.test.ts   -- 15 tests (mock apiClient)
 │       ├── dailyLogService.test.ts  -- 5+ tests (mock apiClient)
 │       ├── ticketService.test.ts    -- 14 tests (mock apiClient)

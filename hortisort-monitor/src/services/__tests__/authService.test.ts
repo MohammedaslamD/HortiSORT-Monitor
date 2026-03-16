@@ -3,6 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 // Mock apiClient and token helpers before importing authService
 vi.mock('../apiClient', () => {
   let _token: string | null = null
+  let _refreshToken: string | null = null
   return {
     apiClient: {
       get: vi.fn(),
@@ -11,6 +12,9 @@ vi.mock('../apiClient', () => {
     setAccessToken: vi.fn((t: string) => { _token = t }),
     clearAccessToken: vi.fn(() => { _token = null }),
     getAccessToken: vi.fn(() => _token),
+    setRefreshToken: vi.fn((t: string) => { _refreshToken = t }),
+    clearRefreshToken: vi.fn(() => { _refreshToken = null }),
+    getRefreshToken: vi.fn(() => _refreshToken),
   }
 })
 
@@ -18,7 +22,7 @@ vi.mock('../apiClient', () => {
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-import { apiClient, setAccessToken, clearAccessToken, getAccessToken } from '../apiClient'
+import { apiClient, setAccessToken, clearAccessToken, getAccessToken, setRefreshToken, clearRefreshToken, getRefreshToken } from '../apiClient'
 import { authService } from '../authService'
 
 const mockPost = apiClient.post as ReturnType<typeof vi.fn>
@@ -45,7 +49,7 @@ describe('authService', () => {
   // --- login ---
 
   it('calls POST /api/v1/auth/login with email and password', async () => {
-    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', user: MOCK_USER } })
+    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', refreshToken: 'ref123', user: MOCK_USER } })
 
     await authService.login('rajesh.patel@agrifresh.com', 'password_123')
 
@@ -56,15 +60,23 @@ describe('authService', () => {
   })
 
   it('stores the access token after login', async () => {
-    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', user: MOCK_USER } })
+    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', refreshToken: 'ref123', user: MOCK_USER } })
 
     await authService.login('rajesh.patel@agrifresh.com', 'password_123')
 
     expect(setAccessToken).toHaveBeenCalledWith('tok123')
   })
 
+  it('stores the refresh token in sessionStorage after login', async () => {
+    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', refreshToken: 'ref123', user: MOCK_USER } })
+
+    await authService.login('rajesh.patel@agrifresh.com', 'password_123')
+
+    expect(setRefreshToken).toHaveBeenCalledWith('ref123')
+  })
+
   it('returns the user object from the login response', async () => {
-    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', user: MOCK_USER } })
+    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', refreshToken: 'ref123', user: MOCK_USER } })
 
     const result = await authService.login('rajesh.patel@agrifresh.com', 'password_123')
 
@@ -73,7 +85,7 @@ describe('authService', () => {
 
   it('does not include password_hash in returned user', async () => {
     const userWithHash = { ...MOCK_USER, password_hash: 'hashed' }
-    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', user: userWithHash } })
+    mockPost.mockResolvedValue({ data: { accessToken: 'tok123', refreshToken: 'ref123', user: userWithHash } })
 
     const result = await authService.login('rajesh.patel@agrifresh.com', 'password_123')
 
@@ -108,6 +120,7 @@ describe('authService', () => {
     await authService.logout()
 
     expect(clearAccessToken).toHaveBeenCalled()
+    expect(clearRefreshToken).toHaveBeenCalled()
   })
 
   it('clears the access token even if logout request fails', async () => {
@@ -116,11 +129,22 @@ describe('authService', () => {
     await authService.logout()
 
     expect(clearAccessToken).toHaveBeenCalled()
+    expect(clearRefreshToken).toHaveBeenCalled()
   })
 
   // --- restoreSession ---
 
+  it('returns null when no refresh token is stored in sessionStorage', async () => {
+    ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue(null)
+
+    const result = await authService.restoreSession()
+
+    expect(result).toBeNull()
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('returns null when refresh endpoint returns non-ok', async () => {
+    ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({ ok: false })
 
     const result = await authService.restoreSession()
@@ -129,6 +153,7 @@ describe('authService', () => {
   })
 
   it('returns user when refresh + me succeed', async () => {
+    ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ data: { accessToken: 'newTok' } }),
@@ -142,7 +167,23 @@ describe('authService', () => {
     expect(result).toEqual(MOCK_USER)
   })
 
-  it('returns null and clears token when /me throws after refresh', async () => {
+  it('sends refreshToken in request body to /auth/refresh', async () => {
+    ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { accessToken: 'newTok' } }),
+    })
+    mockGet.mockResolvedValue({ data: MOCK_USER })
+
+    await authService.restoreSession()
+
+    const fetchCall = mockFetch.mock.calls[0]
+    const fetchBody = JSON.parse(fetchCall[1].body as string) as { refreshToken: string }
+    expect(fetchBody.refreshToken).toBe('stored-ref-tok')
+  })
+
+  it('returns null and clears tokens when /me throws after refresh', async () => {
+    ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ data: { accessToken: 'newTok' } }),
@@ -152,6 +193,7 @@ describe('authService', () => {
     const result = await authService.restoreSession()
 
     expect(clearAccessToken).toHaveBeenCalled()
+    expect(clearRefreshToken).toHaveBeenCalled()
     expect(result).toBeNull()
   })
 
