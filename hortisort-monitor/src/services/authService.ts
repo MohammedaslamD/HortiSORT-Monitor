@@ -32,6 +32,8 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       await apiClient.post('/api/v1/auth/logout')
+    } catch {
+      // Ignore server errors — always clear the local token
     } finally {
       clearAccessToken()
     }

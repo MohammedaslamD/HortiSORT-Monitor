@@ -22,7 +22,10 @@ export async function getDailyLogsByMachineId(machineId: number): Promise<DailyL
 
 /** Returns the most recent daily logs, sorted by date descending. */
 export async function getRecentDailyLogs(limit: number): Promise<DailyLog[]> {
-  const res = await apiClient.get<DailyLog[]>(`/api/v1/daily-logs?limit=${limit}&sort=date:desc`)
+  const params = new URLSearchParams()
+  params.set('limit', String(limit))
+  params.set('sort', 'date:desc')
+  const res = await apiClient.get<DailyLog[]>(`/api/v1/daily-logs?${params.toString()}`)
   return res.data
 }
 

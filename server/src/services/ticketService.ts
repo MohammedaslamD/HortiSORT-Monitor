@@ -56,7 +56,12 @@ export async function getTickets(
           ],
         }
       : user.role === 'engineer'
-        ? { assigned_to: user.id }
+        ? {
+            OR: [
+              { assigned_to: user.id },
+              { raised_by: user.id },
+            ],
+          }
         : {}
 
   return prisma.ticket.findMany({
@@ -180,7 +185,12 @@ export async function getTicketStats(user: AuthUser) {
           ],
         }
       : user.role === 'engineer'
-        ? { assigned_to: user.id }
+        ? {
+            OR: [
+              { assigned_to: user.id },
+              { raised_by: user.id },
+            ],
+          }
         : {}
 
   const openGroups = await prisma.ticket.groupBy({

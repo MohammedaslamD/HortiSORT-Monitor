@@ -10,7 +10,7 @@ export const authRouter = Router()
 const REFRESH_COOKIE = 'refresh_token'
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'strict' as const,
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as 'strict' | 'lax',
   secure: process.env.NODE_ENV === 'production',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 }
@@ -36,7 +36,7 @@ authRouter.post(
   '/logout',
   authenticate,
   (_req: Request, res: Response): void => {
-    res.clearCookie(REFRESH_COOKIE, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' })
+    res.clearCookie(REFRESH_COOKIE, { httpOnly: true, sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', secure: process.env.NODE_ENV === 'production' })
     res.json({ data: { message: 'Logged out' } })
   },
 )

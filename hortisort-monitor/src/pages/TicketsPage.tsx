@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 
 import type { Ticket, Machine, TicketStatus, TicketSeverity, TicketCategory } from '../types'
 import { useAuth } from '../context/AuthContext'
-import { getTickets, getTicketsByAssignedTo, getTicketsByRaisedBy, getTicketsByMachineIds } from '../services/ticketService'
+import { getTickets } from '../services/ticketService'
 import { getMachinesByRole } from '../services/machineService'
 import { getUserName } from '../utils/userLookup'
 import { TicketCard } from '../components/tickets'
@@ -43,8 +43,10 @@ const CATEGORY_OPTIONS = [
  * Tickets list page with role-scoped data, search, and status/severity/category filters.
  *
  * - admin: sees all tickets
- * - engineer: sees tickets assigned to or raised by them (deduplicated)
- * - customer: sees tickets for their machines
+ * - engineer: sees tickets assigned to or raised by them
+ * - customer: sees tickets for their machines (by customer_id or raised_by)
+ *
+ * Role-scoping is handled entirely server-side via JWT.
  */
 export function TicketsPage() {
   const { user } = useAuth()
@@ -75,29 +77,8 @@ export function TicketsPage() {
       try {
         const fetchedMachines = await getMachinesByRole()
 
-        let fetchedTickets: Ticket[]
-
-        if (user!.role === 'admin') {
-          fetchedTickets = await getTickets()
-        } else if (user!.role === 'engineer') {
-          /* Engineer sees tickets assigned to or raised by them */
-          const [assigned, raised] = await Promise.all([
-            getTicketsByAssignedTo(user!.id),
-            getTicketsByRaisedBy(user!.id),
-          ])
-          const seen = new Set<number>()
-          fetchedTickets = []
-          for (const t of [...assigned, ...raised]) {
-            if (!seen.has(t.id)) {
-              seen.add(t.id)
-              fetchedTickets.push(t)
-            }
-          }
-        } else {
-          /* Customer sees tickets for their machines */
-          const machineIds = fetchedMachines.map((m) => m.id)
-          fetchedTickets = await getTicketsByMachineIds(machineIds)
-        }
+        /* Role-scoping is handled server-side via JWT — one call for all roles */
+        const fetchedTickets = await getTickets()
 
         if (cancelled) return
 

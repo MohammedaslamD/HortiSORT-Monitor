@@ -1,6 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 
-export const prisma = new PrismaClient()
+// Pass datasourceUrl explicitly so the Prisma query engine uses the value
+// injected into process.env by vitest.config.ts `env` block (hortisort_test),
+// rather than reading .env from disk on its own (which would give hortisort_dev).
+export const prisma = new PrismaClient({
+  datasources: { db: { url: process.env.DATABASE_URL } },
+})
 
 /**
  * Truncates all tables in FK-safe order. Call in beforeEach to isolate tests.

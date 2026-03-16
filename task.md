@@ -168,15 +168,49 @@ All Phase 2 tasks are done. The app now has:
 | 2026-03-15 | T40: frontend siteVisitService, machineHistoryService, activityLogService, userService → real API; all tests rewritten | done |
 | 2026-03-15 | T41: task.md final update + Chunk 4 commit                  | done        |
 
-**Deferred (run from Windows Terminal when Docker is ready):**
-- `docker compose up -d`
-- `cd server && npx prisma generate`
-- `cd server && npx prisma migrate dev --name init`
-- `cd server && npx prisma db seed`
-- `cd server && npm run test:run`
-
 **Plan:** `docs/superpowers/plans/2026-03-15-phase5-backend-database-plan.md`
 **Spec:** `docs/superpowers/specs/2026-03-15-phase5-backend-database-design.md`
+
+---
+
+## Phase 5 Post-Implementation: Environment & Test Fixes
+
+### Status: IN PROGRESS — server tests still failing
+
+| Date       | Task                                                                 | Status      |
+|------------|----------------------------------------------------------------------|-------------|
+| 2026-03-16 | PostgreSQL local install: user `hortisort`, DB `hortisort_dev` created | done      |
+| 2026-03-16 | `ALTER USER hortisort CREATEDB` (required for Prisma shadow DB)      | done        |
+| 2026-03-16 | Migration `20260316043641_init` run successfully on `hortisort_dev`  | done        |
+| 2026-03-16 | `prisma db seed` run successfully on `hortisort_dev`                 | done        |
+| 2026-03-16 | `hortisort_test` DB created; `prisma migrate deploy` run against it  | done        |
+| 2026-03-16 | `vitest.config.ts` — added `envFile: '.env.test'`, `pool: 'forks'`  | done        |
+| 2026-03-16 | `server/package.json` `test:run` — removed `--env-file` flag        | done        |
+| 2026-03-16 | `vite.config.ts` (frontend) — added `pool: 'forks'`, `singleFork: true` | done   |
+| 2026-03-16 | Frontend bug fix: `authService.logout` swallowed error in `try/finally` | done    |
+| 2026-03-16 | Frontend bug fix: `dailyLogService.getRecentDailyLogs` unencoded `:` in URL sort param | done |
+| 2026-03-16 | Frontend tests: 92/92 passing ✅                                     | done        |
+| 2026-03-16 | Root cause identified: PrismaClient singleton reads `DATABASE_URL` before `.env.test` loads in test worker forks | done |
+| 2026-03-16 | Fix: `src/__tests__/envSetup.ts` — new `setupFiles` entry that calls `dotenv.config(.env.test, override:true)` before any import | done |
+| 2026-03-16 | Fix: `vitest.config.ts` — added `setupFiles: ['./src/__tests__/envSetup.ts']` | done |
+| 2026-03-16 | Fix: `src/utils/prisma.ts` — pass `datasources: { db: { url: process.env.DATABASE_URL } }` to PrismaClient constructor | done |
+| 2026-03-16 | Fix: `src/__tests__/helpers.ts` — same `datasourceUrl` fix for test prisma client | done |
+| 2026-03-16 | Verify server tests pass (awaiting Windows Terminal run)             | **PENDING** |
+| 2026-03-16 | Start backend server (`npm run dev` in `server/`)                   | pending     |
+| 2026-03-16 | Start frontend server (`npm run dev` in `hortisort-monitor/`)        | pending     |
+| 2026-03-16 | Live demo / smoke test                                               | pending     |
+
+### Root Cause Detail
+
+`PrismaClient` is instantiated at module load time. With Vitest `pool: 'forks'`, each test file runs in a separate Node.js process. The `envFile: '.env.test'` config loads env vars for the worker — but only **after** module imports run. When the test file does `import { app } from '../app.ts'`, the `app.ts` import chain loads `src/utils/prisma.ts`, which creates the `PrismaClient` singleton using whatever `DATABASE_URL` was in env at that moment (the production `.env`, pointing to `hortisort_dev`).
+
+Result: `truncateAll()` in `helpers.ts` truncates `hortisort_dev`, while the test HTTP requests (via `app`) also hit `hortisort_dev` — but the `helpers.ts` `prisma` client (also pointing to `hortisort_dev`) sees rows that were never cleared because `RESTART IDENTITY CASCADE` doesn't remove rows inserted by previous tests. Duplicate email constraint on second `beforeEach`.
+
+### Fix Applied
+
+1. `src/__tests__/envSetup.ts` — new file, registered as `setupFiles` in vitest config. Calls `dotenv.config({ path: '.env.test', override: true })` synchronously before any test module is imported in the worker fork.
+2. `src/utils/prisma.ts` — `new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL } } })` so even if loaded slightly early it reads from env at call time.
+3. `src/__tests__/helpers.ts` — same defensive fix for the test-side `PrismaClient`.
 
 ### What Phase 5 builds
 
@@ -188,6 +222,30 @@ Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL ba
 | 2 | 18–27 | Machines + daily logs — server services, routes, tests, frontend service swaps |
 | 3 | 28–33 | Tickets + comments — server services, routes (tickets.ts + ticketComments.ts), tests, frontend service swap |
 | 4 | 34–41 | Site visits, machine history, activity log, users — server services, routes, tests, frontend service swaps |
+
+---
+
+## Phase 5 Post-Implementation: Bug Fixes (2026-03-16 session 2)
+
+### Status: IN PROGRESS
+
+| Date       | Task                                                                 | Status      |
+|------------|----------------------------------------------------------------------|-------------|
+| 2026-03-16 | Fix: CORS origin regex — was `localhost:3000` only, now allows any `localhost:<port>` | done |
+| 2026-03-16 | Fix: `sameSite: 'strict'` → `'lax'` on refresh token cookie so Chrome accepts it | done |
+| 2026-03-16 | Fix: `UpdateStatusPage` was using fake `setTimeout` mock submit — now calls `addDailyLog` + `updateMachineStatus` real API | done |
+| 2026-03-16 | Fix: Engineer ticket scoping — backend `roleWhere` was `assigned_to` only; now `OR [assigned_to, raised_by]` | done |
+| 2026-03-16 | Fix: Engineer ticket stats — same `OR` fix applied in `getTicketStats` | done |
+| 2026-03-16 | Fix: `TicketsPage` was making extra `?assignedTo` / `?raisedBy` API calls that double-filtered against server `roleWhere`, returning empty results | done |
+| 2026-03-16 | Simplify: `TicketsPage` now calls `getTickets()` once for all roles; server handles scoping | done |
+| 2026-03-16 | Verify all pages work end-to-end for all roles in browser | **PENDING** |
+
+### Root Causes Fixed
+
+**Engineer/Customer seeing wrong or empty tickets:**
+- The frontend `TicketsPage` was doing role-specific API calls: engineers called `?assignedTo=<id>` and `?raisedBy=<id>` as separate requests, then merged client-side. But the backend *also* applies `roleWhere` (server-side JWT scope). Stacking `?assignedTo=3` on top of `roleWhere = { assigned_to: 3 }` was effectively AND-ing both — fine for assigned, but `?raisedBy=3 AND assigned_to=3` returned nothing since no ticket is both raised by AND assigned to the same engineer.
+- Additionally, the backend engineer `roleWhere` only included `assigned_to`, not `raised_by`. Engineers who raise tickets (e.g. on behalf of others) would never see them.
+- Fix: backend `roleWhere` for engineers now uses `OR [assigned_to, raised_by]`. Frontend simplified to always call `getTickets()` — server role-scoping handles everything.
 
 ---
 

@@ -1,5 +1,8 @@
 import { z } from 'zod'
-import 'dotenv/config'
+
+// NOTE: dotenv is intentionally NOT imported here.
+// The entry point (src/index.ts) loads .env before importing this module.
+// In tests, vitest's envFile + setupFiles load .env.test instead.
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),

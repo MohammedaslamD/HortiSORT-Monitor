@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
-import type { Machine, DailyLogStatus } from '../types';
+import type { Machine, DailyLogStatus, MachineStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { getMachineById } from '../services/machineService';
+import { getMachineById, updateMachineStatus } from '../services/machineService';
+import { addDailyLog } from '../services/dailyLogService';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
@@ -129,7 +130,7 @@ export function UpdateStatusPage() {
   }
 
   // ---------------------------------------------------------------------------
-  // Submit handler (simulates success for mock-data app)
+  // Submit handler — creates a daily log and updates the machine status
   // ---------------------------------------------------------------------------
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -137,17 +138,40 @@ export function UpdateStatusPage() {
     if (!validate()) return;
 
     setIsSubmitting(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
 
-    // Simulate a short network delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+      // Create a daily log entry for today
+      await addDailyLog({
+        machine_id: machine.id,
+        date: today,
+        status,
+        fruit_type: fruitType,
+        tons_processed: parseFloat(tonsProcessed),
+        shift_start: shiftStart,
+        shift_end: shiftEnd,
+        notes,
+        updated_by: user.id,
+      });
 
-    setIsSubmitting(false);
-    setShowToast(true);
+      // Map daily log status to machine status
+      const machineStatusMap: Record<DailyLogStatus, MachineStatus> = {
+        running: 'running',
+        not_running: 'down',
+        maintenance: 'idle',
+      };
+      await updateMachineStatus(machine.id, machineStatusMap[status], user.id);
 
-    // Navigate back to machine detail after a brief pause
-    setTimeout(() => {
-      navigate(`/machines/${machine.id}`);
-    }, 1500);
+      setShowToast(true);
+      setTimeout(() => {
+        navigate(`/machines/${machine.id}`);
+      }, 1500);
+    } catch (err) {
+      // Show error in toast — reuse showToast by temporarily setting a message
+      alert(err instanceof Error ? err.message : 'Failed to update status');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   // ---------------------------------------------------------------------------
