@@ -1,0 +1,38 @@
+
+> hortisort-server@1.0.0 test:debug
+> vitest run src/__tests__/debug.test.ts --reporter=verbose
+
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mD:/Hackathon web app/server[39m
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "hortisort_test", schema "public" at "localhost:5432"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.
+[90mstdout[2m | src/__tests__/debug.test.ts[2m > [22m[2mdebug test 1: login should return 200
+[22m[39mhelpers prisma user count: 1
+app prisma user count: 1
+helpers DATABASE_URL: postgresql://hortisort:hortisort_dev@localhost:5432/hortisort_test
+
+[90mstdout[2m | src/__tests__/debug.test.ts[2m > [22m[2mdebug test 1: login should return 200
+[22m[39mlogin status: [33m200[39m
+
+ [32m✓[39m src/__tests__/debug.test.ts[2m > [22mdebug test 1: login should return 200[33m 1868[2mms[22m[39m
+[90mstdout[2m | src/__tests__/debug.test.ts[2m > [22m[2mdebug test 2: login should return 200 again (second beforeEach)
+[22m[39mhelpers prisma user count: 1
+app prisma user count: 1
+
+[90mstdout[2m | src/__tests__/debug.test.ts[2m > [22m[2mdebug test 2: login should return 200 again (second beforeEach)
+[22m[39mlogin status: [33m200[39m
+
+ [32m✓[39m src/__tests__/debug.test.ts[2m > [22mdebug test 2: login should return 200 again (second beforeEach)[33m 1378[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 13:10:36
+[2m   Duration [22m 8.79s[2m (transform 466ms, setup 0ms, import 1.64s, tests 3.26s, environment 0ms)[22m
+

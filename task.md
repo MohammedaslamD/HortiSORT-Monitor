@@ -238,7 +238,11 @@ Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL ba
 | 2026-03-16 | Fix: Engineer ticket stats — same `OR` fix applied in `getTicketStats` | done |
 | 2026-03-16 | Fix: `TicketsPage` was making extra `?assignedTo` / `?raisedBy` API calls that double-filtered against server `roleWhere`, returning empty results | done |
 | 2026-03-16 | Simplify: `TicketsPage` now calls `getTickets()` once for all roles; server handles scoping | done |
-| 2026-03-16 | Verify all pages work end-to-end for all roles in browser | **PENDING** |
+| 2026-03-16 | Fix: seed.ts — add truncateAll() before createMany so reseed clears old data | done |
+| 2026-03-16 | Fix: machines 8–12 customer_id changed to 5 (admin-owned, not Sunita) | done |
+| 2026-03-16 | Add: new customer Vikram Mehta (id=7) + machine 8 assigned to him | done |
+| 2026-03-16 | Reseed database (truncate + fresh insert) | done |
+| 2026-03-16 | Verify customer machine counts in browser — Rajesh=2, Sunita=2, Vikram=1 | done ✅ |
 
 ### Root Causes Fixed
 
