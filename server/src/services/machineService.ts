@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma.ts'
 import { AppError } from '../utils/AppError.ts'
+import { logActivity } from './activityLogService.ts'
 import type { MachineStatus } from '@prisma/client'
 
 interface AuthUser {
@@ -104,7 +105,8 @@ export async function getMachineStats(user: AuthUser) {
 }
 
 /**
- * Update a machine's status and last_updated metadata.
+ * Update a machine's status, auto-record a MachineHistory row, and write
+ * a fire-and-forget activity log entry.
  */
 export async function updateMachineStatus(
   id: number,
@@ -114,12 +116,33 @@ export async function updateMachineStatus(
   const machine = await prisma.machine.findUnique({ where: { id } })
   if (!machine) throw new AppError(`Machine ${id} not found`, 404)
 
-  return prisma.machine.update({
-    where: { id },
-    data: {
-      status,
-      last_updated: new Date(),
-      last_updated_by: userId,
-    },
-  })
+  const [updated] = await prisma.$transaction([
+    prisma.machine.update({
+      where: { id },
+      data: {
+        status,
+        last_updated: new Date(),
+        last_updated_by: userId,
+      },
+    }),
+    prisma.machineHistory.create({
+      data: {
+        machine_id: id,
+        change_type: 'status_change',
+        old_value: machine.status,
+        new_value: status,
+        changed_by: userId,
+      },
+    }),
+  ])
+
+  logActivity(
+    userId,
+    'status_updated',
+    'machine',
+    id,
+    `Machine status changed from ${machine.status} to ${status}`,
+  )
+
+  return updated
 }

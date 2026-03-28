@@ -219,3 +219,41 @@ it('PATCH /machines/:id/status - invalid status returns 400', async () => {
     .send({ status: 'broken' })
   expect(res.status).toBe(400)
 })
+
+// -------------------------------------------------------------------------
+// Machine history auto-recording
+// -------------------------------------------------------------------------
+
+it('PATCH /machines/:id/status - creates a machine history record', async () => {
+  await request(app)
+    .patch(`/api/v1/machines/${machineId}/status`)
+    .set('Authorization', `Bearer ${engineerToken}`)
+    .send({ status: 'idle' })
+
+  const history = await prisma.machineHistory.findMany({
+    where: { machine_id: machineId, change_type: 'status_change' },
+  })
+  expect(history).toHaveLength(1)
+  expect(history[0].old_value).toBe('running')
+  expect(history[0].new_value).toBe('idle')
+  expect(history[0].changed_by).toBe(engineerId)
+})
+
+// -------------------------------------------------------------------------
+// Activity log on machine status update
+// -------------------------------------------------------------------------
+
+it('PATCH /machines/:id/status - writes an activity log entry', async () => {
+  await request(app)
+    .patch(`/api/v1/machines/${machineId}/status`)
+    .set('Authorization', `Bearer ${engineerToken}`)
+    .send({ status: 'idle' })
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'machine', entity_id: machineId },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+  expect(logs[0].action).toBe('status_updated')
+})
