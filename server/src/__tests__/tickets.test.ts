@@ -295,3 +295,59 @@ it('POST /tickets/:id/comments - adds a comment to the ticket', async () => {
   expect(comment.ticket_id).toBe(ticketId)
   expect(comment.message).toBe('Please look into this urgently')
 })
+
+// -------------------------------------------------------------------------
+// Activity log writes
+// -------------------------------------------------------------------------
+
+it('POST /tickets - writes an activity log entry', async () => {
+  const res = await request(app)
+    .post('/api/v1/tickets')
+    .set('Authorization', `Bearer ${customerToken}`)
+    .send({
+      machine_id: machineId,
+      assigned_to: engineerId,
+      severity: 'P3_medium',
+      category: 'software',
+      title: 'Log test ticket',
+      description: 'Checking activity log',
+    })
+  expect(res.status).toBe(201)
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const createdTicketId = (res.body.data as { id: number }).id
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'ticket', entity_id: createdTicketId },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+  expect(logs[0].action).toBe('ticket_created')
+})
+
+it('PATCH /tickets/:id/status - writes an activity log entry', async () => {
+  await request(app)
+    .patch(`/api/v1/tickets/${ticketId}/status`)
+    .set('Authorization', `Bearer ${engineerToken}`)
+    .send({ status: 'in_progress' })
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'ticket', entity_id: ticketId, action: 'status_updated' },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+})
+
+it('PATCH /tickets/:id/resolve - writes an activity log entry', async () => {
+  await request(app)
+    .patch(`/api/v1/tickets/${ticketId}/resolve`)
+    .set('Authorization', `Bearer ${engineerToken}`)
+    .send({ root_cause: 'Faulty sensor', solution: 'Replaced sensor' })
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'ticket', entity_id: ticketId, action: 'ticket_resolved' },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+})

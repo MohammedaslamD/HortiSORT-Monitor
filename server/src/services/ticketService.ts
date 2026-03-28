@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma.ts'
 import { AppError } from '../utils/AppError.ts'
+import { logActivity } from './activityLogService.ts'
 import type { TicketStatus, TicketSeverity, TicketCategory } from '@prisma/client'
 
 interface AuthUser {
@@ -20,7 +21,6 @@ interface TicketFilters {
 
 interface CreateTicketData {
   machine_id: number
-  assigned_to: number
   severity: TicketSeverity
   category: TicketCategory
   title: string
@@ -105,16 +105,19 @@ export async function getTicketById(id: number) {
 }
 
 /**
- * Create a new ticket. Ticket number is auto-generated. SLA is set from severity.
+ * Create a new ticket. Auto-assigns to the machine's engineer_id. SLA is set from severity.
  */
 export async function createTicket(data: CreateTicketData, userId: number) {
+  const machine = await prisma.machine.findUnique({ where: { id: data.machine_id } })
+  if (!machine) throw new AppError(`Machine ${data.machine_id} not found`, 404)
+
   const ticket_number = `TKT-${Date.now()}`
-  return prisma.ticket.create({
+  const ticket = await prisma.ticket.create({
     data: {
       ticket_number,
       machine_id: data.machine_id,
       raised_by: userId,
-      assigned_to: data.assigned_to,
+      assigned_to: machine.engineer_id,
       severity: data.severity,
       category: data.category,
       title: data.title,
@@ -122,6 +125,9 @@ export async function createTicket(data: CreateTicketData, userId: number) {
       sla_hours: SLA_HOURS[data.severity],
     },
   })
+
+  logActivity(userId, 'ticket_created', 'ticket', ticket.id, `Ticket ${ticket.ticket_number} created`)
+  return ticket
 }
 
 /**
@@ -130,6 +136,7 @@ export async function createTicket(data: CreateTicketData, userId: number) {
 export async function updateTicketStatus(
   id: number,
   status: TicketStatus,
+  userId: number,
 ) {
   const ticket = await prisma.ticket.findUnique({ where: { id } })
   if (!ticket) throw new AppError(`Ticket ${id} not found`, 404)
@@ -139,10 +146,13 @@ export async function updateTicketStatus(
       ? { reopen_count: { increment: 1 }, reopened_at: new Date() }
       : {}
 
-  return prisma.ticket.update({
+  const updated = await prisma.ticket.update({
     where: { id },
     data: { status, ...extraData },
   })
+
+  logActivity(userId, 'status_updated', 'ticket', id, `Ticket status changed to ${status}`)
+  return updated
 }
 
 /**
@@ -151,6 +161,7 @@ export async function updateTicketStatus(
 export async function resolveTicket(
   id: number,
   data: ResolveTicketData,
+  userId: number,
 ) {
   const ticket = await prisma.ticket.findUnique({ where: { id } })
   if (!ticket) throw new AppError(`Ticket ${id} not found`, 404)
@@ -159,7 +170,7 @@ export async function resolveTicket(
     (Date.now() - ticket.created_at.getTime()) / 60000,
   )
 
-  return prisma.ticket.update({
+  const resolved = await prisma.ticket.update({
     where: { id },
     data: {
       status: 'resolved',
@@ -170,6 +181,9 @@ export async function resolveTicket(
       resolution_time_mins,
     },
   })
+
+  logActivity(userId, 'ticket_resolved', 'ticket', id, `Ticket resolved`)
+  return resolved
 }
 
 /**

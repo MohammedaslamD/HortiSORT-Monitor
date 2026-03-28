@@ -17,7 +17,7 @@ export const ticketQuerySchema = z.object({
 
 export const createTicketSchema = z.object({
   machine_id: z.number().int().positive(),
-  assigned_to: z.number().int().positive(),
+  assigned_to: z.number().int().positive().optional(), // now optional; backend auto-assigns from machine.engineer_id
   severity: z.enum(['P1_critical', 'P2_high', 'P3_medium', 'P4_low']),
   category: z.enum(['hardware', 'software', 'sensor', 'electrical', 'other']),
   title: z.string().min(1),

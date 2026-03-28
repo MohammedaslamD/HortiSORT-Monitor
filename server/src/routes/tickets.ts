@@ -82,7 +82,7 @@ ticketsRouter.patch(
   validate(updateTicketStatusSchema),
   async (req, res, next) => {
     try {
-      const ticket = await updateTicketStatus(Number(req.params.id), req.body.status)
+      const ticket = await updateTicketStatus(Number(req.params.id), req.body.status, req.user!.userId)
       res.json({ data: ticket })
     } catch (err) {
       next(err)
@@ -98,7 +98,7 @@ ticketsRouter.patch(
   validate(resolveTicketSchema),
   async (req, res, next) => {
     try {
-      const ticket = await resolveTicket(Number(req.params.id), req.body)
+      const ticket = await resolveTicket(Number(req.params.id), req.body, req.user!.userId)
       res.json({ data: ticket })
     } catch (err) {
       next(err)
