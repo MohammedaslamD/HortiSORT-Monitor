@@ -2,6 +2,7 @@ import request from 'supertest'
 import bcrypt from 'bcrypt'
 import { app } from '../app.ts'
 import { prisma, truncateAll } from './helpers.ts'
+import { logActivity } from '../services/activityLogService.ts'
 
 // -------------------------------------------------------------------------
 // Helpers
@@ -129,4 +130,23 @@ it('GET /activity-log - customer is forbidden (403)', async () => {
 it('GET /activity-log - unauthenticated returns 401', async () => {
   const res = await request(app).get('/api/v1/activity-log')
   expect(res.status).toBe(401)
+})
+
+// -------------------------------------------------------------------------
+// logActivity helper
+// -------------------------------------------------------------------------
+
+it('logActivity - inserts a row into activity_log', async () => {
+  logActivity(adminId, 'test_action', 'user', adminId, 'test details')
+
+  // Give the fire-and-forget a tick to complete
+  await new Promise((r) => setTimeout(r, 50))
+
+  const rows = await prisma.activityLog.findMany({
+    where: { user_id: adminId, action: 'test_action' },
+  })
+  expect(rows).toHaveLength(1)
+  expect(rows[0].action).toBe('test_action')
+  expect(rows[0].entity_type).toBe('user')
+  expect(rows[0].details).toBe('test details')
 })
