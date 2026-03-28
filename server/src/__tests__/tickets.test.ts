@@ -351,3 +351,29 @@ it('PATCH /tickets/:id/resolve - writes an activity log entry', async () => {
   })
   expect(logs.length).toBeGreaterThanOrEqual(1)
 })
+
+// -------------------------------------------------------------------------
+// GET /tickets/:id/comments
+// -------------------------------------------------------------------------
+
+it('GET /tickets/:id/comments - returns empty array when no comments', async () => {
+  const res = await request(app)
+    .get(`/api/v1/tickets/${ticketId}/comments`)
+    .set('Authorization', `Bearer ${adminToken}`)
+  expect(res.status).toBe(200)
+  expect(Array.isArray(res.body.data)).toBe(true)
+  expect(res.body.data).toHaveLength(0)
+})
+
+it('GET /tickets/:id/comments - returns comments after one is posted', async () => {
+  await request(app)
+    .post(`/api/v1/tickets/${ticketId}/comments`)
+    .set('Authorization', `Bearer ${customerToken}`)
+    .send({ message: 'Urgent fix needed' })
+
+  const res = await request(app)
+    .get(`/api/v1/tickets/${ticketId}/comments`)
+    .set('Authorization', `Bearer ${adminToken}`)
+  expect(res.status).toBe(200)
+  expect((res.body.data as Array<{ message: string }>)[0].message).toBe('Urgent fix needed')
+})
