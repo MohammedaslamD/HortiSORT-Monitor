@@ -27,7 +27,7 @@ usersRouter.get('/:id', authenticate, requireRole('admin'), async (req, res, nex
 // PATCH /users/:id/active
 usersRouter.patch('/:id/active', authenticate, requireRole('admin'), async (req, res, next) => {
   try {
-    const user = await toggleUserActive(Number(req.params.id))
+    const user = await toggleUserActive(Number(req.params.id), req.user!.userId)
     res.json({ data: user })
   } catch (err) {
     next(err)

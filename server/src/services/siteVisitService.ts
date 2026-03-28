@@ -1,4 +1,5 @@
 import { prisma } from '../utils/prisma.ts'
+import { logActivity } from './activityLogService.ts'
 import type { VisitPurpose } from '@prisma/client'
 
 interface AuthUser {
@@ -58,13 +59,13 @@ export async function getSiteVisits(
 }
 
 /**
- * Create a new site visit record.
+ * Create a new site visit record and write a fire-and-forget activity log entry.
  */
 export async function createSiteVisit(
   data: CreateSiteVisitData,
-  _userId: number,
+  userId: number,
 ) {
-  return prisma.siteVisit.create({
+  const visit = await prisma.siteVisit.create({
     data: {
       machine_id: data.machine_id,
       engineer_id: data.engineer_id,
@@ -77,4 +78,7 @@ export async function createSiteVisit(
       next_visit_due: data.next_visit_due ? new Date(data.next_visit_due) : null,
     },
   })
+
+  logActivity(userId, 'site_visit_logged', 'machine', data.machine_id, `Site visit logged for machine ${data.machine_id}`)
+  return visit
 }

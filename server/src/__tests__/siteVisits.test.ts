@@ -205,3 +205,29 @@ it('POST /site-visits - customer cannot create a site visit (403)', async () => 
     })
   expect(res.status).toBe(403)
 })
+
+// -------------------------------------------------------------------------
+// Activity log on site visit create
+// -------------------------------------------------------------------------
+
+it('POST /site-visits - writes an activity log entry', async () => {
+  const res = await request(app)
+    .post('/api/v1/site-visits')
+    .set('Authorization', `Bearer ${engineerToken}`)
+    .send({
+      machine_id: machineId,
+      engineer_id: engineerId,
+      visit_date: '2026-03-28',
+      visit_purpose: 'routine',
+      findings: 'All good',
+      actions_taken: 'Checked sensors',
+    })
+  expect(res.status).toBe(201)
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'machine', entity_id: machineId, action: 'site_visit_logged' },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+})

@@ -148,3 +148,20 @@ it('PATCH /users/:id/active - engineer is forbidden (403)', async () => {
     .set('Authorization', `Bearer ${engineerToken}`)
   expect(res.status).toBe(403)
 })
+
+// -------------------------------------------------------------------------
+// Activity log on user toggle
+// -------------------------------------------------------------------------
+
+it('PATCH /users/:id/active - writes an activity log entry', async () => {
+  await request(app)
+    .patch(`/api/v1/users/${engineerId}/active`)
+    .set('Authorization', `Bearer ${adminToken}`)
+
+  await new Promise((r) => setTimeout(r, 50))
+
+  const logs = await prisma.activityLog.findMany({
+    where: { entity_type: 'user', entity_id: engineerId, action: 'user_toggled_active' },
+  })
+  expect(logs.length).toBeGreaterThanOrEqual(1)
+})

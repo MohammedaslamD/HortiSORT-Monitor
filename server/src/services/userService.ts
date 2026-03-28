@@ -1,5 +1,6 @@
 import { prisma } from '../utils/prisma.ts'
 import { AppError } from '../utils/AppError.ts'
+import { logActivity } from './activityLogService.ts'
 
 const userSelect = {
   id: true,
@@ -38,14 +39,18 @@ export async function getUserById(id: number) {
 
 /**
  * Toggle a user's is_active flag. Throws 404 if not found.
+ * Writes a fire-and-forget activity log entry attributed to callerUserId.
  */
-export async function toggleUserActive(id: number) {
+export async function toggleUserActive(id: number, callerUserId: number) {
   const user = await prisma.user.findUnique({ where: { id } })
   if (!user) throw new AppError(`User ${id} not found`, 404)
 
-  return prisma.user.update({
+  const updated = await prisma.user.update({
     where: { id },
     data: { is_active: !user.is_active },
     select: userSelect,
   })
+
+  logActivity(callerUserId, 'user_toggled_active', 'user', id, `User ${id} active status toggled`)
+  return updated
 }
