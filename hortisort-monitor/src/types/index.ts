@@ -88,7 +88,6 @@ export interface ResolutionData {
 export interface NewTicketData {
   machine_id: number
   raised_by: number
-  assigned_to: number
   severity: TicketSeverity
   category: TicketCategory
   title: string

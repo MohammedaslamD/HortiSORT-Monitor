@@ -68,7 +68,7 @@ export function AppRoutes() {
       <Route
         path="/tickets/new"
         element={
-          <ProtectedRoute allowedRoles={['engineer', 'admin']}>
+          <ProtectedRoute>
             <RaiseTicketPage />
           </ProtectedRoute>
         }

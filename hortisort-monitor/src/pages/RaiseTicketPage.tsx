@@ -36,9 +36,10 @@ const CATEGORY_OPTIONS = [
 /**
  * Form page for raising a new support ticket.
  *
- * Accessible to engineers and admins. Machine picker is role-scoped.
+ * Accessible to all authenticated users. Machine picker is role-scoped.
  * Severity is chosen via radio buttons with SLA hints.
  * On success, redirects to the newly created ticket's detail page.
+ * The backend auto-assigns the ticket to the machine's engineer.
  */
 export function RaiseTicketPage() {
   const navigate = useNavigate()
@@ -112,7 +113,6 @@ export function RaiseTicketPage() {
       const newTicket = await createTicket({
         machine_id: Number(machineId),
         raised_by: user.id,
-        assigned_to: 5, // Default to admin (Aslam Sheikh)
         severity,
         category: category as TicketCategory,
         title: title.trim(),

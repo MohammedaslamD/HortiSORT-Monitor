@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { SiteVisit, Machine, VisitPurpose } from '../types'
+import type { SiteVisit, Machine, User, VisitPurpose } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getAllSiteVisits } from '../services/siteVisitService'
 import { getMachinesByRole } from '../services/machineService'
+import { getUsers } from '../services/userService'
 import { getUserName } from '../utils/userLookup'
 import { SiteVisitCard } from '../components/visits'
 import { Button, Select } from '../components/common'
-import { MOCK_USERS } from '../data/mockData'
 
 // -----------------------------------------------------------------------------
 // Filter options
@@ -25,7 +25,7 @@ const PURPOSE_OPTIONS = [
 /**
  * Site visits page with role-scoped data and machine/purpose/engineer filters.
  *
- * - admin: sees all visits, gets an engineer filter dropdown
+ * - admin: sees all visits, gets an engineer filter dropdown (populated via live API)
  * - engineer: sees own visits only
  *
  * "Log Visit" button links to /visits/new.
@@ -37,6 +37,7 @@ export function SiteVisitsPage() {
   // Data state
   const [allVisits, setAllVisits] = useState<SiteVisit[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
+  const [engineers, setEngineers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -61,15 +62,17 @@ export function SiteVisitsPage() {
           ? { engineerId: user!.id }
           : undefined
 
-        const [fetchedVisits, fetchedMachines] = await Promise.all([
+        const [fetchedVisits, fetchedMachines, fetchedUsers] = await Promise.all([
           getAllSiteVisits(filters),
           getMachinesByRole(),
+          getUsers(),
         ])
 
         if (cancelled) return
 
         setAllVisits(fetchedVisits)
         setMachines(fetchedMachines)
+        setEngineers(fetchedUsers.filter((u) => u.role === 'engineer'))
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Failed to load site visits.')
@@ -99,15 +102,13 @@ export function SiteVisitsPage() {
     })),
   ]
 
-  // Engineer filter options — admin only, list all engineers from MOCK_USERS
+  // Engineer filter options — admin only, fetched from live API
   const engineerFilterOptions = [
     { value: '', label: 'All Engineers' },
-    ...MOCK_USERS
-      .filter((u) => u.role === 'engineer')
-      .map((u) => ({
-        value: String(u.id),
-        label: u.name,
-      })),
+    ...engineers.map((u) => ({
+      value: String(u.id),
+      label: u.name,
+    })),
   ]
 
   // Client-side filtering
