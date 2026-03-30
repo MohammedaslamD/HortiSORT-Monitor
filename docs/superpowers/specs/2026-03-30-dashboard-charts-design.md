@@ -58,8 +58,9 @@ Option A — charts inserted between stats cards and machine card grid:
 
 ```bash
 npm install recharts
-npm install --save-dev @types/recharts  # if needed
 ```
+
+Recharts ships its own TypeScript declarations since v2 — no `@types/recharts` package is needed or available on npm.
 
 Recharts is composable React components over SVG, has first-class TypeScript support, and adds ~500 KB to the bundle (gzipped ~150 KB). No other charting library is introduced.
 
@@ -148,9 +149,20 @@ export { ThroughputChart } from './ThroughputChart'
 No new state variables needed — all data is already fetched.
 
 ### Data derivation
-Add a `last7DaysLogs` derived value (computed inline, no new state):
+
+Add two derived values (computed inline, no new state):
 
 ```typescript
+// Full fleet stats — always unfiltered, for MachineStatusChart
+const allMachinesStats: MachineStats = {
+  total: machines.length,
+  running: machines.filter((m) => m.status === 'running').length,
+  idle: machines.filter((m) => m.status === 'idle').length,
+  down: machines.filter((m) => m.status === 'down').length,
+  offline: machines.filter((m) => m.status === 'offline').length,
+}
+
+// Last 7 days of logs for ThroughputChart
 const sevenDaysAgo = new Date()
 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 const last7DaysLogs = allDailyLogs.filter(
@@ -160,6 +172,8 @@ const last7DaysLogs = allDailyLogs.filter(
 
 `allDailyLogs` replaces the current `todayLogs` variable — `getDailyLogs()` is already called; just stop filtering to today only, keep all returned logs, and filter to 7 days client-side for the chart.
 
+**Note:** The existing `stats` variable (derived from `filteredMachines`) is unchanged and continues to drive `StatsCards`. `MachineStatusChart` receives `allMachinesStats` so it always reflects the full fleet regardless of any active search/status filter.
+
 ### JSX additions
 
 Between `<StatsCards />` and the filter bar, add:
@@ -167,7 +181,7 @@ Between `<StatsCards />` and the filter bar, add:
 ```tsx
 {/* Charts section */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <MachineStatusChart stats={stats} />
+  <MachineStatusChart stats={allMachinesStats} />
   {user.role !== 'customer' && (
     <TicketSeverityChart tickets={allTickets} />
   )}
@@ -183,7 +197,7 @@ When `user.role === 'customer'`, the grid collapses to 1 column and `MachineStat
 
 ```
 DashboardPage (fetches once on mount)
-  ├── getMachinesByRole()  →  machines[]      →  stats (derived)  →  MachineStatusChart
+  ├── getMachinesByRole()  →  machines[]      →  allMachinesStats (derived)  →  MachineStatusChart
   ├── getTickets()         →  allTickets[]    →  TicketSeverityChart (admin/eng only)
   └── getDailyLogs()       →  allDailyLogs[]  →  last7DaysLogs (filtered) → ThroughputChart
 ```
@@ -201,7 +215,7 @@ No new API endpoints or service calls are required.
 | `src/components/dashboard/TicketSeverityChart.tsx` | **New** |
 | `src/components/dashboard/ThroughputChart.tsx` | **New** |
 | `src/components/dashboard/index.ts` | Add 3 new exports |
-| `src/pages/DashboardPage.tsx` | Use `allDailyLogs`, add chart section to JSX |
+| `src/pages/DashboardPage.tsx` | Rename `todayLogs` → `allDailyLogs` (no other consumers), add `allMachinesStats` derived value, add chart section to JSX |
 | `src/components/dashboard/__tests__/MachineStatusChart.test.tsx` | **New** |
 | `src/components/dashboard/__tests__/TicketSeverityChart.test.tsx` | **New** |
 | `src/components/dashboard/__tests__/ThroughputChart.test.tsx` | **New** |
@@ -223,13 +237,22 @@ Each chart gets its own test file with:
 - Customer: `MachineStatusChart` and `ThroughputChart` present, `TicketSeverityChart` absent
 
 ### Mocking Recharts in tests
-Recharts renders SVG; tests use happy-dom. Mock recharts at the module level to avoid SVG rendering issues:
+Recharts renders SVG; tests use happy-dom. Mock recharts at the module level to avoid SVG rendering issues. Each chart uses `ResponsiveContainer` as an outer wrapper — mock it too. Full set of components used across all three charts:
 
 ```typescript
 vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
   Pie: () => <div data-testid="pie" />,
-  // ... minimal mocks for each used component
+  AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
+  Area: () => <div data-testid="area" />,
+  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  Bar: () => <div data-testid="bar" />,
+  XAxis: () => null,
+  YAxis: () => null,
+  Tooltip: () => null,
+  Legend: () => null,
+  Cell: () => null,
 }))
 ```
 
