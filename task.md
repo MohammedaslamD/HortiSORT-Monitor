@@ -387,3 +387,43 @@ hortisort-monitor/src/
     ├── setup.ts
     └── utils.tsx
 ```
+
+---
+
+## Phase 6: Dashboard Charts
+
+### Status: COMPLETE
+
+| Date       | Task                                                               | Status |
+|------------|--------------------------------------------------------------------|--------|
+| 2026-03-30 | Design spec (`docs/superpowers/specs/2026-03-30-dashboard-charts-design.md`) | done |
+| 2026-03-30 | Implementation plan (`docs/superpowers/plans/2026-03-30-dashboard-charts.md`) | done |
+| 2026-03-30 | Add `recharts ^3.8.1` to `hortisort-monitor/package.json`         | done   |
+| 2026-03-30 | `MachineStatusChart` component + 3 unit tests (RED→GREEN)          | done   |
+| 2026-03-30 | `TicketSeverityChart` component + 3 unit tests (RED→GREEN)         | done   |
+| 2026-03-30 | `ThroughputChart` component + 3 unit tests (RED→GREEN)             | done   |
+| 2026-03-30 | Barrel export (`components/dashboard/index.ts`) updated            | done   |
+| 2026-03-30 | Chunk 1 commit: `feat: add MachineStatusChart, TicketSeverityChart, ThroughputChart components` | done |
+| 2026-03-30 | `DashboardPage.test.tsx` — 9 new tests (RED)                       | done   |
+| 2026-03-30 | `DashboardPage.tsx` updated — charts wired, role-based visibility   | done   |
+| 2026-03-30 | All 122 frontend tests passing; type-check clean                   | done   |
+| 2026-03-30 | Chunk 2 commit: `feat: wire dashboard charts into DashboardPage with role-based visibility` | done |
+| 2026-03-30 | E2E Suite 9 (6 TCs) — all PASS; `E2E_TEST_REPORT.md` updated (27→33 total TCs) | done |
+
+### What Phase 6 builds
+
+Three Recharts-powered charts added to the DashboardPage for all roles:
+
+| Chart | Component | Visibility |
+|-------|-----------|------------|
+| Machine Status donut | `MachineStatusChart` | All roles |
+| Ticket Severity grouped bar | `TicketSeverityChart` | Engineer + Admin only |
+| 7-day Throughput area | `ThroughputChart` | All roles |
+
+### Key implementation notes
+
+- Recharts v3.8.1 was already in `node_modules` but not in `package.json` — added manually
+- `node_modules` must be installed natively on Windows (not WSL) for Vite 8 / rolldown
+- Recharts `Tooltip` `formatter` requires wide value type (`number | string | readonly (string | number)[] | undefined`) in v3.x
+- `DashboardPage`: renamed `todayLogs→allDailyLogs`, added `allMachinesStats` and `last7DaysLogs` derived values
+- `DailyLog.notes` is non-nullable — fixture data uses `notes: ''` not `notes: null`
