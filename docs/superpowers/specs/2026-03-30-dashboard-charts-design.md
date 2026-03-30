@@ -258,6 +258,23 @@ vi.mock('recharts', () => ({
 
 ---
 
+## E2E Playwright Verification
+
+After implementation, manually verify the charts in the live browser using the Playwright MCP tool. Results are recorded in `E2E_TEST_REPORT.md` as a new **Suite 9 — Dashboard Charts** section.
+
+### Test cases
+
+| TC | Role | Steps | Expected |
+|----|------|--------|----------|
+| 9.1 | Admin | Login as `aslam@hortisort.com`, navigate to `/dashboard` | Machine Status donut, Ticket Severity bar, and Throughput area charts all visible |
+| 9.2 | Admin | Inspect Machine Status chart | Shows all 12 machines split by status (running/idle/down/offline) |
+| 9.3 | Admin | Inspect Ticket Severity chart | Shows ticket bars grouped by P1–P4 severity |
+| 9.4 | Admin | Inspect Throughput chart | Shows area chart with last 7 days of data |
+| 9.5 | Engineer | Login as `amit.sharma@hortisort.com`, navigate to `/dashboard` | All three charts visible, scoped to engineer's machines |
+| 9.6 | Customer | Login as `rajesh.patel@agrifresh.com`, navigate to `/dashboard` | Machine Status and Throughput charts visible; Ticket Severity chart absent |
+
+---
+
 ## Acceptance Criteria
 
 1. Admin dashboard shows all three charts with real data
@@ -267,3 +284,5 @@ vi.mock('recharts', () => ({
 5. All existing 104 tests continue to pass
 6. At least 9 new tests added (3 per chart component) + DashboardPage role tests updated
 7. `npm run build` passes with no TypeScript errors
+8. E2E Suite 9 (6 test cases) recorded in `E2E_TEST_REPORT.md`
+9. Implementation committed to git with conventional commit message
