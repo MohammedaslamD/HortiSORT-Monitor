@@ -44,7 +44,7 @@ export function ThroughputChart({ logs }: ThroughputChartProps) {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }} unit=" t" />
-            <Tooltip formatter={(value: number | string | Array<string | number>) => [`${value} t`, 'Tons']} />
+            <Tooltip formatter={(value: number | string | readonly (string | number)[] | undefined) => [`${value ?? ''} t`, 'Tons']} />
             <Area
               type="monotone"
               dataKey="tons"

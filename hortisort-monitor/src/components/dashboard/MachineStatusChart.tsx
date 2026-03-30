@@ -49,7 +49,7 @@ export function MachineStatusChart({ stats }: MachineStatusChartProps) {
                 />
               ))}
             </Pie>
-            <Tooltip formatter={(value: number | string | Array<string | number>) => [`${value}`, 'Machines']} />
+            <Tooltip formatter={(value: number | string | readonly (string | number)[] | undefined) => [`${value ?? ''}`, 'Machines']} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

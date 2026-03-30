@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { getMachinesByRole } from '../services/machineService';
 import { getTickets } from '../services/ticketService';
 import { getDailyLogs } from '../services/dailyLogService';
-import { StatsCards } from '../components/dashboard/StatsCards';
+import { StatsCards, MachineStatusChart, TicketSeverityChart, ThroughputChart } from '../components/dashboard'
 import { MachineCard } from '../components/machines/MachineCard';
 import { Input, Select } from '../components/common';
 
@@ -39,7 +39,7 @@ export function DashboardPage() {
   // ---------------------------------------------------------------------------
   const [machines, setMachines] = useState<Machine[]>([]);
   const [allTickets, setAllTickets] = useState<Ticket[]>([]);
-  const [todayLogs, setTodayLogs] = useState<DailyLog[]>([]);
+  const [allDailyLogs, setAllDailyLogs] = useState<DailyLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,10 +72,7 @@ export function DashboardPage() {
 
         setMachines(fetchedMachines);
         setAllTickets(fetchedTickets);
-
-        // Keep only today's logs for efficient per-machine lookup
-        const today = new Date().toISOString().split('T')[0];
-        setTodayLogs(fetchedLogs.filter((log) => log.date === today));
+        setAllDailyLogs(fetchedLogs);
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : 'Failed to load dashboard data.');
@@ -124,6 +121,22 @@ export function DashboardPage() {
     machines.some((m) => m.id === t.machine_id),
   ).length;
 
+  // Full fleet stats for MachineStatusChart — always unfiltered, unaffected by search/status filter
+  const allMachinesStats: MachineStats = {
+    total:   machines.length,
+    running: machines.filter((m) => m.status === 'running').length,
+    idle:    machines.filter((m) => m.status === 'idle').length,
+    down:    machines.filter((m) => m.status === 'down').length,
+    offline: machines.filter((m) => m.status === 'offline').length,
+  }
+
+  // Last 7 days of logs for ThroughputChart
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const last7DaysLogs = allDailyLogs.filter(
+    (log) => new Date(log.date) >= sevenDaysAgo,
+  )
+
   // ---------------------------------------------------------------------------
   // Per-machine helpers
   // ---------------------------------------------------------------------------
@@ -138,9 +151,11 @@ export function DashboardPage() {
   );
 
   const getTodayLogForMachine = useCallback(
-    (machineId: number): DailyLog | undefined =>
-      todayLogs.find((log) => log.machine_id === machineId),
-    [todayLogs],
+    (machineId: number): DailyLog | undefined => {
+      const today = new Date().toISOString().split('T')[0]
+      return allDailyLogs.find((log) => log.machine_id === machineId && log.date === today)
+    },
+    [allDailyLogs],
   );
 
   // ---------------------------------------------------------------------------
@@ -190,6 +205,15 @@ export function DashboardPage() {
         <>
           {/* Stats cards row */}
           <StatsCards stats={stats} openTicketCount={openTicketCount} />
+
+          {/* Charts section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MachineStatusChart stats={allMachinesStats} />
+            {user.role !== 'customer' && (
+              <TicketSeverityChart tickets={allTickets} />
+            )}
+          </div>
+          <ThroughputChart logs={last7DaysLogs} />
 
           {/* Filter / search bar */}
           <div className="flex flex-col sm:flex-row gap-3">
