@@ -1,0 +1,59 @@
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import type { MachineStats } from '../../types'
+
+interface MachineStatusChartProps {
+  /** Full unfiltered fleet stats — not affected by dashboard search/filter. */
+  stats: MachineStats
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  running: '#22c55e',
+  idle:    '#eab308',
+  down:    '#ef4444',
+  offline: '#94a3b8',
+}
+
+/**
+ * Donut chart showing the breakdown of machine statuses across the fleet.
+ * Receives pre-derived stats from DashboardPage — no data fetching.
+ */
+export function MachineStatusChart({ stats }: MachineStatusChartProps) {
+  const data = [
+    { name: 'Running', value: stats.running },
+    { name: 'Idle',    value: stats.idle },
+    { name: 'Down',    value: stats.down },
+    { name: 'Offline', value: stats.offline },
+  ].filter((d) => d.value > 0)
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3">Machine Status</h3>
+      {stats.total === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-8">No machines available</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={85}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {data.map((entry) => (
+                <Cell
+                  key={entry.name}
+                  fill={STATUS_COLORS[entry.name.toLowerCase()] ?? '#94a3b8'}
+                />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value: number | string | Array<string | number>) => [`${value}`, 'Machines']} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  )
+}
