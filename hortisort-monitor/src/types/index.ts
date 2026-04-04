@@ -324,3 +324,25 @@ export interface ActivityLog {
   details: string;
   created_at: string;
 }
+
+// -----------------------------------------------------------------------------
+// API Payload interfaces (for user management)
+// -----------------------------------------------------------------------------
+
+/** Payload for creating a new user account. */
+export interface CreateUserPayload {
+  name: string
+  email: string
+  phone: string
+  whatsapp_number?: string
+  role: UserRole
+  password: string
+}
+
+/** Payload for updating an existing user's profile. */
+export interface UpdateUserPayload {
+  name: string
+  phone: string
+  whatsapp_number?: string
+  role: UserRole
+}
