@@ -1,10 +1,11 @@
 # E2E Test Report — HortiSort Monitor
 
-**Date:** 28 Mar 2026 (bugs fixed and live-verified 30 Mar 2026)
+**Date:** 28 Mar 2026 (last updated 4 Apr 2026)
 **Branch:** `feature/phase5-backend`
-**Commit:** `a6f80a8`
+**Commit:** `e15472d`
 **Frontend:** `http://172.28.144.1:3000`
 **Backend:** `http://172.28.144.1:4000`
+**Total TCs:** 43 (33 → 43 with Suite 10)
 
 ---
 
@@ -116,6 +117,29 @@
 | Total test cases | 33 |
 | ✅ PASS | 33 |
 | ❌ FAIL | 0 |
+
+---
+
+## Suite 10 — Admin User Management
+
+**Date:** 4 Apr 2026
+**Branch:** `feature/phase5-backend`
+**Commit:** `e15472d`
+
+| TC | Description | Result | Notes |
+|----|-------------|--------|-------|
+| 10.1 | Navigate to Admin → click "+ Add User" | ✅ PASS | `CreateUserModal` opens with title "Add New User" |
+| 10.2 | Submit empty form | ✅ PASS | Validation errors: Name is required, Email is required, Phone is required, Password is required, etc. |
+| 10.3 | Fill valid form (name: "Test Engineer", email: "test.eng@hortisort.com", phone: "9000000099", role: engineer, password: "password_123") → submit | ✅ PASS | Modal closes, "Test Engineer" appears at top of user table, Total Users 7→8 |
+| 10.4 | Click "Edit" on the newly created user | ✅ PASS | `EditUserModal` opens titled "Edit User — Test Engineer" with form pre-filled |
+| 10.5 | Change name to "Test Engineer Updated" → Save | ✅ PASS | Modal closes, row updates to "Test Engineer Updated" |
+| 10.6 | Click "Edit" on customer user Rajesh Patel | ✅ PASS | "Assigned Machines" section visible with HS-2024-0001 and HS-2024-0002 listed |
+| 10.7 | Click "Delete" on "Test Engineer Updated" | ✅ PASS | `DeleteUserModal` shows "Are you sure you want to permanently delete Test Engineer Updated?" |
+| 10.8 | Confirm delete | ✅ PASS | Modal closes, "Test Engineer Updated" removed from table, Total Users 8→7 |
+| 10.9 | Click "Delete" on Amit Sharma (has existing tickets/site visits) | ✅ PASS | Modal shows inline error "Cannot delete — user has existing records. Deactivate instead."; user not removed; dialog stays open |
+| 10.10 | Verify Deactivate and Delete are disabled for Aslam Sheikh's own row | ✅ PASS | Both buttons have `disabled` attribute on the admin's own row |
+
+**Suite 10 result: 10/10 PASS**
 
 ---
 

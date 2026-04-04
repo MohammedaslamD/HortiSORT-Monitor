@@ -427,3 +427,58 @@ Three Recharts-powered charts added to the DashboardPage for all roles:
 - Recharts `Tooltip` `formatter` requires wide value type (`number | string | readonly (string | number)[] | undefined`) in v3.x
 - `DashboardPage`: renamed `todayLogs→allDailyLogs`, added `allMachinesStats` and `last7DaysLogs` derived values
 - `DailyLog.notes` is non-nullable — fixture data uses `notes: ''` not `notes: null`
+
+---
+
+## Phase 7: Admin User Management (CRUD)
+
+### Status: COMPLETE
+
+### Completed Tasks
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-04-04 | Design spec (`docs/superpowers/specs/2026-04-04-admin-user-management-design.md`) | done |
+| 2026-04-04 | Implementation plan (`docs/superpowers/plans/2026-04-04-admin-user-management.md`) | done |
+| 2026-04-04 | Server schemas: `createUserSchema`, `updateUserSchema`, `assignMachinesSchema` | done |
+| 2026-04-04 | Server service: `createUser`, `updateUser`, `assignMachinesToUser`, `deleteUser` | done |
+| 2026-04-04 | Server routes: POST /users, PATCH /users/:id, PATCH /users/:id/machines, DELETE /users/:id | done |
+| 2026-04-04 | 13 new server integration tests (22 total in users.test.ts; 80 total server tests pass) | done |
+| 2026-04-04 | Chunk 1 commit: `feat: add create/edit/assign-machines/delete user endpoints` | done |
+| 2026-04-04 | Frontend types: `CreateUserPayload`, `UpdateUserPayload` | done |
+| 2026-04-04 | Frontend service: `createUser`, `updateUser`, `assignMachinesToUser`, `deleteUser` | done |
+| 2026-04-04 | 4 new userService unit tests (8 total pass) | done |
+| 2026-04-04 | Chunk 2 commit: `feat: add createUser, updateUser, assignMachinesToUser, deleteUser to frontend userService` | done |
+| 2026-04-04 | `CreateUserModal` component + 3 unit tests (RED→GREEN) | done |
+| 2026-04-04 | `EditUserModal` component + 4 unit tests (RED→GREEN) | done |
+| 2026-04-04 | `DeleteUserModal` component + 3 unit tests (RED→GREEN) | done |
+| 2026-04-04 | Admin barrel export updated with 3 new modals | done |
+| 2026-04-04 | Chunk 3 commit: `feat: add CreateUserModal, EditUserModal, DeleteUserModal components` | done |
+| 2026-04-04 | `UserTable.tsx` updated: Edit/Delete per row, "+ Add User" button | done |
+| 2026-04-04 | `AdminPage.tsx` updated: modal state, handlers, modal JSX wired | done |
+| 2026-04-04 | `AdminPage.test.tsx` created: 4 tests (render + 3 modal open tests) — all PASS | done |
+| 2026-04-04 | Chunk 4 commit: `feat: wire CreateUserModal, EditUserModal, DeleteUserModal into AdminPage` | done |
+| 2026-04-04 | E2E Suite 10 (10 TCs) — all PASS; `E2E_TEST_REPORT.md` updated (33→43 total TCs) | done |
+| 2026-04-04 | Final commit: `docs: add Suite 10 E2E results and Phase 7 completion entry` | done |
+
+### What Phase 7 builds
+
+Full admin user management (CRUD) wired end-to-end:
+
+| Feature | Backend | Frontend |
+|---------|---------|----------|
+| Create user | POST /api/v1/users (bcrypt hash, 409 on dup email) | CreateUserModal with validation |
+| Edit user | PATCH /api/v1/users/:id (name, phone, whatsapp, role) | EditUserModal pre-filled |
+| Assign machines | PATCH /api/v1/users/:id/machines | Checkbox list in EditUserModal (customers only) |
+| Delete user | DELETE /api/v1/users/:id (403 self, 409 if has records) | DeleteUserModal with inline error |
+
+### Key implementation notes
+
+- `AppError` constructor: `new AppError(message, statusCode)` — message first
+- Server uses `bcrypt` (not `bcryptjs`) — `import bcrypt from 'bcrypt'`
+- `validate` middleware: `validate(schema)` or `validate(schema, 'body')` — schema first
+- `Machine.customer_id` is non-nullable; `assignMachinesToUser` only assigns, no unassign-to-null
+- `PATCH /:id/machines` declared before `PATCH /:id` in route file
+- Frontend `apiClient` is a named export — mock factory: `vi.mock('../apiClient', () => ({ apiClient: {...} }))`
+- `vi.mock` factory is hoisted — top-level variables referenced in factory cause ReferenceError; use `beforeEach` with `vi.mocked()` instead
+- Full vitest suite times out in WSL (~50s per test file due to happy-dom env setup); individual files verified
