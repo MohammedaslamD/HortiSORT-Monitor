@@ -4,8 +4,11 @@ import { Button } from '../common/Button'
 
 interface UserTableProps {
   users: User[]
-  currentUserId: number
+  currentUserId?: number
   onToggleActive: (userId: number) => void
+  onEdit?: (user: User) => void
+  onDelete?: (user: User) => void
+  onAddUser?: () => void
 }
 
 /** Maps user role to Badge color. */
@@ -21,9 +24,18 @@ const ROLE_COLOR_MAP: Record<UserRole, 'purple' | 'blue' | 'green'> = {
  * Email and created columns are hidden on mobile.
  * The currently logged-in admin's deactivate button is disabled.
  */
-export function UserTable({ users, currentUserId, onToggleActive }: UserTableProps) {
+export function UserTable({ users, currentUserId, onToggleActive, onEdit, onDelete, onAddUser }: UserTableProps) {
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Users</h2>
+        {onAddUser && (
+          <Button variant="primary" size="sm" onClick={onAddUser}>
+            + Add User
+          </Button>
+        )}
+      </div>
+      <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -72,20 +84,42 @@ export function UserTable({ users, currentUserId, onToggleActive }: UserTablePro
                   {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Button
-                    variant={user.is_active ? 'danger' : 'primary'}
-                    size="sm"
-                    onClick={() => onToggleActive(user.id)}
-                    disabled={isSelf}
-                  >
-                    {user.is_active ? 'Deactivate' : 'Activate'}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {onEdit && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => onEdit(user)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    <Button
+                      variant={user.is_active ? 'danger' : 'primary'}
+                      size="sm"
+                      onClick={() => onToggleActive(user.id)}
+                      disabled={isSelf}
+                    >
+                      {user.is_active ? 'Deactivate' : 'Activate'}
+                    </Button>
+                    {onDelete && (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => onDelete(user)}
+                        disabled={isSelf}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
+    </div>
     </div>
   )
 }
