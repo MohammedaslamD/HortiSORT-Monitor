@@ -166,8 +166,8 @@ export function LogVisitPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500">Loading...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading...</p>
         </div>
       </div>
     )
@@ -185,11 +185,11 @@ export function LogVisitPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Log Site Visit</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Log Site Visit</h2>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5 space-y-5">
         {/* Machine picker */}
         <Select
           label="Machine"
@@ -227,10 +227,10 @@ export function LogVisitPage() {
               onChange={(e) => setTicketId(e.target.value)}
             />
             {!machineId && (
-              <p className="mt-1 text-sm text-gray-500">Select a machine first</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Select a machine first</p>
             )}
             {machineId && openTickets.length === 0 && (
-              <p className="mt-1 text-sm text-gray-500">No open tickets for this machine</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">No open tickets for this machine</p>
             )}
           </div>
         )}

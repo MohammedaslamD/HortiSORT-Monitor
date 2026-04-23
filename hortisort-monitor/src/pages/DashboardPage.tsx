@@ -205,7 +205,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page heading */}
-      <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h2>
 
       {/* Error banner */}
       {error && (
@@ -217,7 +217,7 @@ export function DashboardPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
         </div>
       ) : (
         <>
@@ -256,8 +256,8 @@ export function DashboardPage() {
 
           {/* Machine grid or empty state */}
           {filteredMachines.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No machines found.</p>
+            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+              <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No machines found.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

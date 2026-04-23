@@ -240,8 +240,8 @@ export function MachineDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500">Loading machine details...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading machine details...</p>
         </div>
       </div>
     );
@@ -258,8 +258,8 @@ export function MachineDetailPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900">Machine not found</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine not found</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           The machine you're looking for doesn't exist or you don't have access to it.
         </p>
         <Link
@@ -282,18 +282,18 @@ export function MachineDetailPage() {
       {/* Back link */}
       <button
         onClick={() => navigate(-1)}
-        className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+        className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 flex items-center gap-1"
       >
         &larr; Back
       </button>
 
       {/* Step 1: Machine info header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
-            <p className="text-xs font-mono text-gray-400 mb-0.5">{machine.machine_code}</p>
-            <h2 className="text-xl font-bold text-gray-900">{machine.machine_name}</h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mb-0.5">{machine.machine_code}</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{machine.machine_name}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
               {machine.model} &bull; SN: {machine.serial_number}
             </p>
           </div>
@@ -304,40 +304,40 @@ export function MachineDetailPage() {
 
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
           <div>
-            <span className="text-gray-500">Customer</span>
-            <p className="font-medium text-gray-900">{getUserName(machine.customer_id)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Customer</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(machine.customer_id)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Engineer</span>
-            <p className="font-medium text-gray-900">{getUserName(machine.engineer_id)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Engineer</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(machine.engineer_id)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Location</span>
-            <p className="font-medium text-gray-900 text-xs leading-tight">{machine.location}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Location</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100 text-xs leading-tight">{machine.location}</p>
           </div>
           <div>
-            <span className="text-gray-500">City / State</span>
-            <p className="font-medium text-gray-900">{machine.city}, {machine.state}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">City / State</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{machine.city}, {machine.state}</p>
           </div>
           <div>
-            <span className="text-gray-500">Installed</span>
-            <p className="font-medium text-gray-900">{formatDate(machine.installation_date)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Installed</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(machine.installation_date)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Last Updated</span>
-            <p className="font-medium text-gray-900">{formatRelativeTime(machine.last_updated)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Last Updated</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{formatRelativeTime(machine.last_updated)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Updated By</span>
-            <p className="font-medium text-gray-900">{getUserName(machine.last_updated_by)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Updated By</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(machine.last_updated_by)}</p>
           </div>
         </div>
       </div>
 
       {/* Step 2: Today's production */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-700">Today's Production</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Today's Production</h3>
           {sessions.length > 0 && (
             <span className="inline-flex items-center gap-1.5 text-xs text-green-600">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -348,15 +348,15 @@ export function MachineDetailPage() {
         {todayLog ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
             <div>
-              <span className="text-gray-500">Fruit Type</span>
-              <p className="font-medium text-gray-900">{todayLog.fruit_type}</p>
+              <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Fruit Type</span>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{todayLog.fruit_type}</p>
             </div>
             <div>
-              <span className="text-gray-500">Tons Processed</span>
-              <p className="font-medium text-gray-900">{todayLog.tons_processed} t</p>
+              <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Tons Processed</span>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{todayLog.tons_processed} t</p>
             </div>
             <div>
-              <span className="text-gray-500">Status</span>
+              <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Status</span>
               <p className="mt-0.5">
                 <Badge color={getDailyLogStatusColor(todayLog.status)} size="sm">
                   {DAILY_LOG_STATUS_LABEL[todayLog.status]}
@@ -364,28 +364,28 @@ export function MachineDetailPage() {
               </p>
             </div>
             <div>
-              <span className="text-gray-500">Shift Start</span>
-              <p className="font-medium text-gray-900">{todayLog.shift_start}</p>
+              <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Shift Start</span>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{todayLog.shift_start}</p>
             </div>
             <div>
-              <span className="text-gray-500">Shift End</span>
-              <p className="font-medium text-gray-900">{todayLog.shift_end}</p>
+              <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Shift End</span>
+              <p className="font-medium text-gray-900 dark:text-gray-100">{todayLog.shift_end}</p>
             </div>
             {todayLog.notes && (
               <div className="col-span-2 sm:col-span-3">
-                <span className="text-gray-500">Notes</span>
-                <p className="text-gray-700">{todayLog.notes}</p>
+                <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Notes</span>
+                <p className="text-gray-700 dark:text-gray-300">{todayLog.notes}</p>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-gray-400 text-sm">No production data for today.</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm">No production data for today.</p>
         )}
 
         {/* TDMS live session lots */}
         {sessions.length > 0 && (
-          <div className="mt-5 border-t border-gray-100 pt-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <div className="mt-5 border-t border-gray-100 dark:border-gray-800 pt-4">
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
               Live Production Lots (TDMS)
             </h4>
             <ProductionLotTable sessions={sessions} />
@@ -395,7 +395,7 @@ export function MachineDetailPage() {
 
       {/* Step 3: Tab navigation */}
       <div>
-        <div className="border-b border-gray-200 flex overflow-x-auto">
+        <div className="border-b border-gray-200 dark:border-gray-800 flex overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -404,7 +404,7 @@ export function MachineDetailPage() {
                 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
                 ${activeTab === tab.key
                   ? 'border-primary-600 text-primary-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+                  : 'border-transparent text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:border-gray-700'}
               `.trim()}
               aria-current={activeTab === tab.key ? 'page' : undefined}
             >
@@ -424,7 +424,7 @@ export function MachineDetailPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-gray-500 border-b border-gray-200">
+                      <tr className="text-left text-gray-500 dark:text-gray-400 dark:text-gray-500 border-b border-gray-200 dark:border-gray-800">
                         <th className="pb-2 pr-4 font-medium">Date</th>
                         <th className="pb-2 pr-4 font-medium">Status</th>
                         <th className="pb-2 pr-4 font-medium">Fruit</th>
@@ -436,8 +436,8 @@ export function MachineDetailPage() {
                     </thead>
                     <tbody>
                       {dailyLogs.map((log) => (
-                        <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-2 pr-4 text-gray-900 whitespace-nowrap">
+                        <tr key={log.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950">
+                          <td className="py-2 pr-4 text-gray-900 dark:text-gray-100 whitespace-nowrap">
                             {formatDate(log.date)}
                           </td>
                           <td className="py-2 pr-4">
@@ -445,17 +445,17 @@ export function MachineDetailPage() {
                               {DAILY_LOG_STATUS_LABEL[log.status]}
                             </Badge>
                           </td>
-                          <td className="py-2 pr-4 text-gray-700">{log.fruit_type || '—'}</td>
-                          <td className="py-2 pr-4 text-gray-700">
+                          <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">{log.fruit_type || '—'}</td>
+                          <td className="py-2 pr-4 text-gray-700 dark:text-gray-300">
                             {log.tons_processed > 0 ? `${log.tons_processed} t` : '—'}
                           </td>
-                          <td className="py-2 pr-4 text-gray-500 text-xs whitespace-nowrap">
+                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs whitespace-nowrap">
                             {log.shift_start} – {log.shift_end}
                           </td>
-                          <td className="py-2 pr-4 text-gray-500 text-xs max-w-xs truncate">
+                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400 dark:text-gray-500 text-xs max-w-xs truncate">
                             {log.notes || '—'}
                           </td>
-                          <td className="py-2 text-gray-700 whitespace-nowrap">
+                          <td className="py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">
                             {getUserName(log.updated_by)}
                           </td>
                         </tr>
@@ -476,7 +476,7 @@ export function MachineDetailPage() {
                 tickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="bg-white rounded-lg border border-gray-200 p-4"
+                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -487,16 +487,16 @@ export function MachineDetailPage() {
                           <Badge color={getTicketStatusColor(ticket.status)} size="sm">
                             {ticket.status.replace('_', ' ')}
                           </Badge>
-                          <span className="text-xs text-gray-400 font-mono">
+                          <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">
                             {ticket.ticket_number}
                           </span>
                         </div>
-                        <h4 className="text-sm font-semibold text-gray-900">{ticket.title}</h4>
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{ticket.title}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-2">
                           {ticket.description}
                         </p>
                       </div>
-                      <div className="text-xs text-gray-500 sm:text-right space-y-0.5 whitespace-nowrap">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 sm:text-right space-y-0.5 whitespace-nowrap">
                         <p>Raised by: {getUserName(ticket.raised_by)}</p>
                         <p>Assigned to: {getUserName(ticket.assigned_to)}</p>
                         <p>{formatDate(ticket.created_at)}</p>
@@ -515,35 +515,35 @@ export function MachineDetailPage() {
                 <EmptyState message="No site visits recorded." />
               ) : (
                 siteVisits.map((visit) => (
-                  <div key={visit.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div key={visit.id} className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {formatDate(visit.visit_date)}
                         </span>
                         <Badge color={getVisitPurposeColor(visit.visit_purpose)} size="sm">
                           {VISIT_PURPOSE_LABEL[visit.visit_purpose]}
                         </Badge>
                       </div>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                         Engineer: {getUserName(visit.engineer_id)}
                       </span>
                     </div>
 
                     <div className="space-y-1 text-sm">
-                      <p className="text-gray-700">
+                      <p className="text-gray-700 dark:text-gray-300">
                         <span className="font-medium">Findings: </span>{visit.findings}
                       </p>
-                      <p className="text-gray-700">
+                      <p className="text-gray-700 dark:text-gray-300">
                         <span className="font-medium">Actions: </span>{visit.actions_taken}
                       </p>
                       {visit.parts_replaced && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">
                           Parts replaced: {visit.parts_replaced}
                         </p>
                       )}
                       {visit.next_visit_due && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">
                           Next visit due: {formatDate(visit.next_visit_due)}
                         </p>
                       )}
@@ -567,23 +567,23 @@ export function MachineDetailPage() {
                     <div key={entry.id} className="relative mb-4">
                       {/* Timeline dot */}
                       <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-gray-400 border-2 border-white" />
-                      <div className="bg-white rounded-lg border border-gray-200 p-3">
+                      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge color="blue" size="sm">
                             {CHANGE_TYPE_LABEL[entry.change_type]}
                           </Badge>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
                             {formatDate(entry.created_at)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700">
-                          <span className="line-through text-gray-400 mr-1">{entry.old_value}</span>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          <span className="line-through text-gray-400 dark:text-gray-500 mr-1">{entry.old_value}</span>
                           &rarr; <span className="font-medium">{entry.new_value}</span>
                         </p>
                         {entry.notes && (
-                          <p className="text-xs text-gray-500 mt-1">{entry.notes}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">{entry.notes}</p>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                           by {getUserName(entry.changed_by)}
                         </p>
                       </div>
@@ -622,8 +622,8 @@ interface EmptyStateProps {
 /** Centered empty-state message for tabs with no data. */
 function EmptyState({ message }: EmptyStateProps) {
   return (
-    <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-      <p className="text-gray-500 text-sm">{message}</p>
+    <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+      <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">{message}</p>
     </div>
   );
 }

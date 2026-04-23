@@ -135,15 +135,15 @@ export function EditUserModal({ isOpen, user, onClose, onUpdated }: EditUserModa
         {/* Machine assignment — customers only */}
         {role === 'customer' && machines.length > 0 && (
           <div>
-            <p className="mb-2 text-sm font-medium text-gray-700">Assigned Machines</p>
-            <div className="max-h-40 overflow-y-auto rounded-md border border-gray-200 p-2 space-y-1">
+            <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Assigned Machines</p>
+            <div className="max-h-40 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-800 p-2 space-y-1">
               {machines.map(m => (
                 <label key={m.id} className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
                     type="checkbox"
                     checked={selectedMachineIds.includes(m.id)}
                     onChange={() => toggleMachine(m.id)}
-                    className="rounded border-gray-300"
+                    className="rounded border-gray-300 dark:border-gray-700"
                   />
                   <span>{m.machine_code} — {m.machine_name} ({m.city})</span>
                 </label>

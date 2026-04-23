@@ -249,8 +249,8 @@ export function TicketDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500">Loading ticket details...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading ticket details...</p>
         </div>
       </div>
     )
@@ -265,8 +265,8 @@ export function TicketDetailPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900">Ticket not found</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ticket not found</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           The ticket you're looking for doesn't exist or you don't have access to it.
         </p>
         <Link
@@ -294,18 +294,18 @@ export function TicketDetailPage() {
       {/* Back link */}
       <button
         onClick={() => navigate(-1)}
-        className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+        className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 flex items-center gap-1"
       >
         &larr; Back
       </button>
 
       {/* Section 1: Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
-            <p className="text-xs font-mono text-gray-400 mb-0.5">{ticket.ticket_number}</p>
-            <h2 className="text-xl font-bold text-gray-900">{ticket.title}</h2>
-            <p className="text-sm text-gray-600 mt-1">{ticket.description}</p>
+            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mb-0.5">{ticket.ticket_number}</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{ticket.title}</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-1">{ticket.description}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Badge color={getSeverityBadgeColor(ticket.severity)} size="md">
@@ -320,9 +320,9 @@ export function TicketDetailPage() {
         {/* Section 2: Info grid */}
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
           <div>
-            <span className="text-gray-500">Machine</span>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Machine</span>
             {machine ? (
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-gray-900 dark:text-gray-100">
                 <Link
                   to={`/machines/${machine.id}`}
                   className="text-primary-600 hover:text-primary-700 underline"
@@ -331,11 +331,11 @@ export function TicketDetailPage() {
                 </Link>
               </p>
             ) : (
-              <p className="font-medium text-gray-900">Unknown</p>
+              <p className="font-medium text-gray-900 dark:text-gray-100">Unknown</p>
             )}
           </div>
           <div>
-            <span className="text-gray-500">Category</span>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Category</span>
             <p className="mt-0.5">
               <Badge color={getCategoryColor(ticket.category)} size="sm">
                 {CATEGORY_LABEL[ticket.category]}
@@ -343,20 +343,20 @@ export function TicketDetailPage() {
             </p>
           </div>
           <div>
-            <span className="text-gray-500">Raised By</span>
-            <p className="font-medium text-gray-900">{getUserName(ticket.raised_by)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Raised By</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(ticket.raised_by)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Assigned To</span>
-            <p className="font-medium text-gray-900">{getUserName(ticket.assigned_to)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Assigned To</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(ticket.assigned_to)}</p>
           </div>
           <div>
-            <span className="text-gray-500">Created</span>
-            <p className="font-medium text-gray-900">{formatDate(ticket.created_at)}</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Created</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(ticket.created_at)}</p>
           </div>
           <div>
-            <span className="text-gray-500">SLA</span>
-            <p className="font-medium text-gray-900">{ticket.sla_hours} hours</p>
+            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">SLA</span>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{ticket.sla_hours} hours</p>
           </div>
         </div>
       </div>
@@ -411,33 +411,33 @@ export function TicketDetailPage() {
       )}
 
       {/* Section 4: Comment thread */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
           Comments ({comments.length})
         </h3>
 
         {comments.length === 0 ? (
-          <p className="text-sm text-gray-400">No comments yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
         ) : (
           <div className="space-y-3 mb-4">
             {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-50 rounded-md p-3 border border-gray-100">
+              <div key={comment.id} className="bg-gray-50 dark:bg-gray-950 rounded-md p-3 border border-gray-100 dark:border-gray-800">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {getUserName(comment.user_id)}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     {formatRelativeTime(comment.created_at)}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700">{comment.message}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{comment.message}</p>
               </div>
             ))}
           </div>
         )}
 
         {/* Section 5: Add comment form */}
-        <div className="border-t border-gray-200 pt-4 mt-4">
+        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
           <TextArea
             label="Add a comment"
             placeholder="Type your comment..."
@@ -461,8 +461,8 @@ export function TicketDetailPage() {
 
       {/* Section 6: Status update panel (engineer + admin only) */}
       {isEngineerOrAdmin && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Update Status</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Update Status</h3>
 
           <div className="space-y-4">
             <Select
@@ -474,7 +474,7 @@ export function TicketDetailPage() {
 
             {/* Resolution fields (only when resolving) */}
             {statusUpdateStatus === 'resolved' && (
-              <div className="space-y-3 border-t border-gray-200 pt-3">
+              <div className="space-y-3 border-t border-gray-200 dark:border-gray-800 pt-3">
                 <TextArea
                   label="Root Cause"
                   placeholder="Describe the root cause..."

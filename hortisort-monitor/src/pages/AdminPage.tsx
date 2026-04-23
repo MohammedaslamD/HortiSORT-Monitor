@@ -150,7 +150,7 @@ export function AdminPage() {
   return (
     <div className="space-y-8">
       {/* Page heading */}
-      <h2 className="text-xl font-semibold text-gray-900">Admin Dashboard</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Admin Dashboard</h2>
 
       {/* Error banner */}
       {error && (
@@ -162,7 +162,7 @@ export function AdminPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
         </div>
       ) : (
         <>
@@ -178,16 +178,16 @@ export function AdminPage() {
 
           {/* Section 2: Recent Activity */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
               <ActivityFeed activities={activities} />
             </div>
           </div>
 
           {/* Section 3: User Management */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">User Management</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
               <UserTable
                 users={users}
                 currentUserId={user?.id}

@@ -42,7 +42,7 @@ export function DeleteUserModal({ isOpen, user, onClose, onDeleted }: DeleteUser
           {error}
         </div>
       )}
-      <p className="mb-6 text-sm text-gray-700">
+      <p className="mb-6 text-sm text-gray-700 dark:text-gray-300">
         Are you sure you want to permanently delete{' '}
         <strong>{user.name}</strong>? This action cannot be undone.
       </p>

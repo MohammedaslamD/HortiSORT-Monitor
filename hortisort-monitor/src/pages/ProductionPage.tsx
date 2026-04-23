@@ -52,12 +52,12 @@ export function ProductionPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Page heading */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Production</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Production</h1>
 
       {/* Live indicator */}
       <div className="flex items-center gap-2 mb-4">
         <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-sm text-gray-500">Live — updates every 15 s</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Live — updates every 15 s</span>
       </div>
 
       {/* Error state */}
@@ -69,7 +69,7 @@ export function ProductionPage() {
 
       {/* Loading state */}
       {isLoading ? (
-        <div className="text-gray-500 py-12 text-center">Loading production data…</div>
+        <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500 py-12 text-center">Loading production data…</div>
       ) : (
         <ProductionLotTable sessions={sessions} />
       )}

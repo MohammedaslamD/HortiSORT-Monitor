@@ -56,10 +56,10 @@ export function SiteVisitCard({
   engineerName,
 }: SiteVisitCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
       {/* Top row: date + purpose badge */}
       <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-        <span className="text-sm font-medium text-gray-900">{formatDate(visit.visit_date)}</span>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatDate(visit.visit_date)}</span>
         <Badge color={getPurposeColor(visit.visit_purpose)} size="sm">
           {PURPOSE_LABEL[visit.visit_purpose]}
         </Badge>
@@ -67,20 +67,20 @@ export function SiteVisitCard({
 
       {/* Machine code + name */}
       <p className="text-sm mb-1">
-        <span className="font-mono text-xs text-gray-400 mr-1">{machineCode}</span>
-        <span className="font-semibold text-gray-900">{machineName}</span>
+        <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">{machineCode}</span>
+        <span className="font-semibold text-gray-900 dark:text-gray-100">{machineName}</span>
       </p>
 
       {/* Engineer */}
-      <p className="text-xs text-gray-500 mb-2">Engineer: {engineerName}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">Engineer: {engineerName}</p>
 
       {/* Findings + Actions */}
       <div className="space-y-1 text-sm mb-2">
-        <p className="text-gray-700">
+        <p className="text-gray-700 dark:text-gray-300">
           <span className="font-medium">Findings: </span>
           {truncate(visit.findings, 80)}
         </p>
-        <p className="text-gray-700">
+        <p className="text-gray-700 dark:text-gray-300">
           <span className="font-medium">Actions: </span>
           {truncate(visit.actions_taken, 80)}
         </p>
@@ -88,10 +88,10 @@ export function SiteVisitCard({
 
       {/* Optional: parts replaced + next visit */}
       {visit.parts_replaced && (
-        <p className="text-xs text-gray-500">Parts: {visit.parts_replaced}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Parts: {visit.parts_replaced}</p>
       )}
       {visit.next_visit_due && (
-        <p className="text-xs text-gray-500">Next visit: {formatDate(visit.next_visit_due)}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Next visit: {formatDate(visit.next_visit_due)}</p>
       )}
     </div>
   )

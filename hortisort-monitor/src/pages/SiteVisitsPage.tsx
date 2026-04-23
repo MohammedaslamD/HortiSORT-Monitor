@@ -125,7 +125,7 @@ export function SiteVisitsPage() {
     <div className="space-y-6">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Site Visits</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Site Visits</h2>
         <Button variant="primary" onClick={() => navigate('/visits/new')}>
           Log Visit
         </Button>
@@ -141,7 +141,7 @@ export function SiteVisitsPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
         </div>
       ) : (
         <>
@@ -175,8 +175,8 @@ export function SiteVisitsPage() {
 
           {/* Results or empty state */}
           {filteredVisits.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No site visits found.</p>
+            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+              <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No site visits found.</p>
             </div>
           ) : (
             <div className="space-y-3">

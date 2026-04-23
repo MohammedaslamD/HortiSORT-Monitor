@@ -28,7 +28,7 @@ export function UserTable({ users, currentUserId, onToggleActive, onEdit, onDele
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Users</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Users</h2>
         {onAddUser && (
           <Button variant="primary" size="sm" onClick={onAddUser}>
             + Add User
@@ -36,38 +36,38 @@ export function UserTable({ users, currentUserId, onToggleActive, onEdit, onDele
         )}
       </div>
       <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+        <thead className="bg-gray-50 dark:bg-gray-950">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Name
             </th>
-            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Email
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Role
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Status
             </th>
-            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Created
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
           {users.map((user) => {
             const isSelf = user.id === currentUserId
             return (
               <tr key={user.id}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                   {user.name}
                 </td>
-                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   {user.email}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
@@ -80,7 +80,7 @@ export function UserTable({ users, currentUserId, onToggleActive, onEdit, onDele
                     {user.is_active ? 'active' : 'inactive'}
                   </Badge>
                 </td>
-                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">

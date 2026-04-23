@@ -202,7 +202,7 @@ export function UpdateStatusPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          <p className="text-gray-500 text-sm">Loading machine data...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading machine data...</p>
         </div>
       </div>
     );
@@ -225,8 +225,8 @@ export function UpdateStatusPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900">Machine not found</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine not found</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           The machine you're looking for doesn't exist or you don't have access to it.
         </p>
         <Link
@@ -256,16 +256,16 @@ export function UpdateStatusPage() {
       <div className="max-w-lg mx-auto space-y-6">
         {/* Page title */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Update Status &mdash; {machine.machine_code}
           </h2>
         </div>
 
         {/* Machine info header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900">{machine.machine_name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{machine.machine_code}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{machine.machine_name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">{machine.machine_code}</p>
           </div>
           <Badge color={getStatusBadgeColor(machine.status)} size="sm">
             {machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
@@ -273,10 +273,10 @@ export function UpdateStatusPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-5" noValidate>
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5 space-y-5" noValidate>
           {/* Status — Radio buttons */}
           <fieldset>
-            <legend className="block text-sm font-medium text-gray-700 mb-2">
+            <legend className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Status <span className="text-red-500">*</span>
             </legend>
             <div className="flex flex-wrap gap-3">
@@ -288,7 +288,7 @@ export function UpdateStatusPage() {
                     transition-colors duration-150
                     ${status === opt.value
                       ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                      : 'border-gray-300 bg-white hover:bg-gray-50'
+                      : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:bg-gray-950'
                     }
                   `.trim()}
                 >
@@ -300,7 +300,7 @@ export function UpdateStatusPage() {
                     onChange={() => setStatus(opt.value)}
                     className="text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700 font-medium">{opt.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{opt.label}</span>
                 </label>
               ))}
             </div>

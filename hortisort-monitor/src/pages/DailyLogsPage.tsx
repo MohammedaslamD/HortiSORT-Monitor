@@ -117,7 +117,7 @@ export function DailyLogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h2 className="text-xl font-semibold text-gray-900">Daily Logs</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Daily Logs</h2>
 
       {/* Error banner */}
       {error && (
@@ -129,7 +129,7 @@ export function DailyLogsPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
         </div>
       ) : (
         <>
@@ -161,8 +161,8 @@ export function DailyLogsPage() {
 
           {/* Results or empty state */}
           {filteredLogs.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No logs found.</p>
+            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+              <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No logs found.</p>
             </div>
           ) : (
             <div className="space-y-3">

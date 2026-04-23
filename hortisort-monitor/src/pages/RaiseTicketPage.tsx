@@ -142,8 +142,8 @@ export function RaiseTicketPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500">Loading...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading...</p>
         </div>
       </div>
     )
@@ -161,11 +161,11 @@ export function RaiseTicketPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Raise Ticket</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Raise Ticket</h2>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5 space-y-5">
         {/* Machine picker */}
         <Select
           label="Machine"
@@ -177,7 +177,7 @@ export function RaiseTicketPage() {
 
         {/* Severity radio buttons */}
         <fieldset>
-          <legend className="block text-sm font-medium text-gray-700 mb-2">Severity</legend>
+          <legend className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity</legend>
           <div className="space-y-2">
             {SEVERITY_OPTIONS.map((opt) => (
               <label
@@ -186,7 +186,7 @@ export function RaiseTicketPage() {
                   flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors
                   ${severity === opt.value
                     ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-200 hover:bg-gray-50'}
+                    : 'border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950'}
                 `.trim()}
               >
                 <input
@@ -198,8 +198,8 @@ export function RaiseTicketPage() {
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500"
                 />
                 <div>
-                  <span className="text-sm font-medium text-gray-900">{opt.label}</span>
-                  <span className="text-xs text-gray-500 ml-2">{opt.sla}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{opt.label}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-2">{opt.sla}</span>
                 </div>
               </label>
             ))}
