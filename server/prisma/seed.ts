@@ -12,6 +12,9 @@ async function main() {
   await prisma.ticketComment.deleteMany()
   await prisma.ticket.deleteMany()
   await prisma.dailyLog.deleteMany()
+  await prisma.machineError.deleteMany()
+  await prisma.productionSession.deleteMany()
+  await prisma.machineApiKey.deleteMany()
   await prisma.machine.deleteMany()
   await prisma.user.deleteMany()
   console.log('Tables truncated')
@@ -184,6 +187,24 @@ async function main() {
     skipDuplicates: true,
   })
   console.log('Activity log seeded')
+
+  // -------------------------------------------------------------------------
+  // 9. Machine API Keys (one per machine, for watcher script auth)
+  // -------------------------------------------------------------------------
+  await prisma.machineError.deleteMany()
+  await prisma.productionSession.deleteMany()
+  await prisma.machineApiKey.deleteMany()
+
+  const machineIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  await prisma.machineApiKey.createMany({
+    data: machineIds.map((id) => ({
+      machine_id: id,
+      api_key: `hs-key-machine-${String(id).padStart(3, '0')}-dev`,
+      is_active: true,
+    })),
+    skipDuplicates: true,
+  })
+  console.log('Machine API keys seeded')
 
   // -------------------------------------------------------------------------
   // Reset auto-increment sequences so future inserts don't collide with seeded IDs
