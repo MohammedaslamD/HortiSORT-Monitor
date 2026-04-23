@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { getMachinesByRole } from '../services/machineService';
 import { getTickets } from '../services/ticketService';
 import { getDailyLogs } from '../services/dailyLogService';
+import { getAllTodaySessions } from '../services/productionSessionService';
+import { useProductionSocket } from '../hooks/useProductionSocket';
 import { StatsCards, MachineStatusChart, TicketSeverityChart, ThroughputChart } from '../components/dashboard'
 import { MachineCard } from '../components/machines/MachineCard';
 import { Input, Select } from '../components/common';
@@ -40,6 +42,7 @@ export function DashboardPage() {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [allTickets, setAllTickets] = useState<Ticket[]>([]);
   const [allDailyLogs, setAllDailyLogs] = useState<DailyLog[]>([]);
+  const [inProductionCount, setInProductionCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,11 +71,17 @@ export function DashboardPage() {
           getDailyLogs(),
         ]);
 
+        // Non-critical: fetch running production count (fails silently)
+        const today = new Date().toISOString().slice(0, 10);
+        const sessions = await getAllTodaySessions(today, { status: 'running' }).catch(() => []);
+        const runningMachineIds = new Set(sessions.map((s) => s.machine_id));
+
         if (cancelled) return;
 
         setMachines(fetchedMachines);
         setAllTickets(fetchedTickets);
         setAllDailyLogs(fetchedLogs);
+        setInProductionCount(runningMachineIds.size);
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : 'Failed to load dashboard data.');
@@ -120,6 +129,15 @@ export function DashboardPage() {
     (ACTIVE_TICKET_STATUSES as readonly string[]).includes(t.status) &&
     machines.some((m) => m.id === t.machine_id),
   ).length;
+
+  // Live Socket.io updates — bump inProductionCount when a new 'running' session arrives
+  const { lastSession } = useProductionSocket({ allMachines: true });
+  useEffect(() => {
+    if (!lastSession) return;
+    if (lastSession.status === 'running') {
+      setInProductionCount((prev) => prev + 1);
+    }
+  }, [lastSession]);
 
   // Full fleet stats for MachineStatusChart — always unfiltered, unaffected by search/status filter
   const allMachinesStats: MachineStats = {
@@ -204,7 +222,7 @@ export function DashboardPage() {
       ) : (
         <>
           {/* Stats cards row */}
-          <StatsCards stats={stats} openTicketCount={openTicketCount} />
+          <StatsCards stats={stats} openTicketCount={openTicketCount} inProductionCount={inProductionCount} />
 
           {/* Charts section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
