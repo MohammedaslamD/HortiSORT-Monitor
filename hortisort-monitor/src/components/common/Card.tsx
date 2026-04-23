@@ -34,7 +34,7 @@ export function Card({
   return (
     <div
       className={`
-        bg-white rounded-lg shadow-sm border border-gray-200
+        bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800
         ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow duration-150' : ''}
         ${className}
       `.trim()}
@@ -59,7 +59,7 @@ export function Card({
 
 function CardHeader({ children, className = '' }: CardHeaderProps) {
   return (
-    <div className={`px-4 py-3 border-b border-gray-200 ${className}`}>
+    <div className={`px-4 py-3 border-b border-gray-200 dark:border-gray-800 ${className}`}>
       {children}
     </div>
   );
@@ -71,7 +71,7 @@ function CardBody({ children, className = '' }: CardBodyProps) {
 
 function CardFooter({ children, className = '' }: CardFooterProps) {
   return (
-    <div className={`px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg ${className}`}>
+    <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 rounded-b-lg ${className}`}>
       {children}
     </div>
   );
