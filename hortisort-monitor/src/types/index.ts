@@ -346,3 +346,55 @@ export interface UpdateUserPayload {
   whatsapp_number?: string
   role: UserRole
 }
+
+// -----------------------------------------------------------------------------
+// Table: production_sessions
+// -----------------------------------------------------------------------------
+
+/** Status of a production lot. */
+export type ProductionStatus = 'running' | 'completed' | 'error'
+
+/** A single production lot session reported by the TDMS watcher. */
+export interface ProductionSession {
+  id: number
+  machine_id: number
+  lot_number: number
+  /** ISO date string YYYY-MM-DD */
+  session_date: string
+  start_time: string
+  stop_time: string | null
+  fruit_type: string | null
+  /** Decimal stored as string from Prisma; parse with parseFloat() before display. */
+  quantity_kg: string | null
+  status: ProductionStatus
+  raw_tdms_rows: unknown | null
+  created_at: string
+  updated_at: string
+  machine?: { machine_code: string; machine_name: string }
+}
+
+// -----------------------------------------------------------------------------
+// Table: machine_errors
+// -----------------------------------------------------------------------------
+
+/** An error event reported by the TDMS watcher for a machine. */
+export interface MachineError {
+  id: number
+  machine_id: number
+  occurred_at: string
+  error_code: string | null
+  message: string | null
+  raw_line: string | null
+  created_at: string
+}
+
+// -----------------------------------------------------------------------------
+// Query filters for production sessions
+// -----------------------------------------------------------------------------
+
+export interface ProductionSessionFilters {
+  machine_id?: number
+  date?: string
+  status?: ProductionStatus
+  limit?: number
+}
