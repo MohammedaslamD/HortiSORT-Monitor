@@ -2,13 +2,16 @@ import { render } from '@testing-library/react'
 import type { RenderOptions } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from '../context/ThemeContext'
 
 /** Wraps component with all required providers for integration tests */
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
-    <BrowserRouter>
-      {children}
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        {children}
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

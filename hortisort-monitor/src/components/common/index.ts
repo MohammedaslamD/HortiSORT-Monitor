@@ -6,3 +6,4 @@ export { Select } from './Select';
 export { TextArea } from './TextArea';
 export { Modal } from './Modal';
 export { Toast } from './Toast';
+export { ThemeToggle } from './ThemeToggle';
