@@ -11,6 +11,8 @@ import { siteVisitsRouter } from './routes/siteVisits.ts'
 import { machineHistoryRouter } from './routes/machineHistory.ts'
 import { activityLogRouter } from './routes/activityLog.ts'
 import { usersRouter } from './routes/users.ts'
+import { productionSessionsRouter } from './routes/productionSessions.ts'
+import { machineErrorsRouter } from './routes/machineErrors.ts'
 
 export const app = express()
 
@@ -33,6 +35,8 @@ app.use('/api/v1/site-visits', siteVisitsRouter)
 app.use('/api/v1/machine-history', machineHistoryRouter)
 app.use('/api/v1/activity-log', activityLogRouter)
 app.use('/api/v1/users', usersRouter)
+app.use('/api/v1/production-sessions', productionSessionsRouter)
+app.use('/api/v1/machine-errors', machineErrorsRouter)
 
 // -------------------------------------------------------------------------
 // Error handler (must be last)

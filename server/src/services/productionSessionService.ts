@@ -1,4 +1,5 @@
 import { prisma } from '../utils/prisma.ts'
+import { Prisma } from '@prisma/client'
 
 interface UpsertSessionData {
   lot_number: number
@@ -33,7 +34,7 @@ export async function upsertSession(machine_id: number, data: UpsertSessionData)
     fruit_type: data.fruit_type ?? null,
     quantity_kg: data.quantity_kg ?? null,
     status: data.status,
-    raw_tdms_rows: data.raw_tdms_rows ?? null,
+    raw_tdms_rows: (data.raw_tdms_rows ?? Prisma.JsonNull) as Prisma.InputJsonValue | typeof Prisma.JsonNull,
   }
   return prisma.productionSession.upsert({
     where,
