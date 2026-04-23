@@ -42,12 +42,12 @@ const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
 export function BottomNav({ userRole: _userRole }: BottomNavProps) {
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex flex-col items-center gap-0.5 py-1 px-2 text-xs font-medium transition-colors ${
-      isActive ? 'text-primary-600' : 'text-gray-500'
+      isActive ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
     }`;
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 lg:hidden"
       aria-label="Mobile navigation"
     >
       <div className="flex items-center justify-around h-14">

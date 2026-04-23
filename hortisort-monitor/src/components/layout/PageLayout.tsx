@@ -23,7 +23,7 @@ export function PageLayout({ children, userName, userRole, onLogout }: PageLayou
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <Navbar
         userName={userName}
         userRole={userRole}

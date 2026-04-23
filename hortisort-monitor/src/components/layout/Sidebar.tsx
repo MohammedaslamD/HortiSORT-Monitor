@@ -70,8 +70,8 @@ export function Sidebar({ userRole, isOpen, onClose }: SidebarProps) {
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
       isActive
-        ? 'bg-primary-50 text-primary-700'
-        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100'
     }`;
 
   return (
@@ -88,7 +88,7 @@ export function Sidebar({ userRole, isOpen, onClose }: SidebarProps) {
       {/* Sidebar panel */}
       <aside
         className={`
-          fixed top-14 left-0 z-30 h-[calc(100vh-3.5rem)] w-60 bg-white border-r border-gray-200
+          fixed top-14 left-0 z-30 h-[calc(100vh-3.5rem)] w-60 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
           transform transition-transform duration-200 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
