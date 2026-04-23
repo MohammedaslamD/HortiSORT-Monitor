@@ -147,10 +147,13 @@ model Machine {
   engineer          User          @relation("EngineerMachines", fields: [engineer_id], references: [id])
   last_updated_user User          @relation("LastUpdatedByUser", fields: [last_updated_by], references: [id])
 
-  daily_logs        DailyLog[]
-  tickets           Ticket[]
-  site_visits       SiteVisit[]
-  machine_history   MachineHistory[]
+  daily_logs          DailyLog[]
+  tickets             Ticket[]
+  site_visits         SiteVisit[]
+  machine_history     MachineHistory[]
+  production_sessions ProductionSession[]
+  machine_errors      MachineError[]
+  api_key             MachineApiKey?
 
   @@index([status])
   @@index([customer_id])
@@ -290,4 +293,53 @@ model ActivityLog {
   @@index([user_id])
   @@index([entity_type, entity_id])
   @@map("activity_log")
+}
+
+model ProductionSession {
+  id           Int       @id @default(autoincrement())
+  machine_id   Int
+  lot_number   Int
+  session_date DateTime  @db.Date
+  start_time   DateTime  @db.Timestamptz
+  stop_time    DateTime? @db.Timestamptz
+  fruit_type   String?   @db.VarChar(100)
+  quantity_kg  Decimal?  @db.Decimal(10, 2)
+  status       String    @db.VarChar(20)
+  raw_tdms_rows Json?
+  created_at   DateTime  @default(now()) @db.Timestamptz
+  updated_at   DateTime  @updatedAt @db.Timestamptz
+
+  machine      Machine   @relation(fields: [machine_id], references: [id])
+
+  @@unique([machine_id, session_date, lot_number])
+  @@index([machine_id])
+  @@index([session_date])
+  @@map("production_sessions")
+}
+
+model MachineError {
+  id          Int      @id @default(autoincrement())
+  machine_id  Int
+  occurred_at DateTime @db.Timestamptz
+  error_code  String?  @db.VarChar(100)
+  message     String?
+  raw_line    String?
+  created_at  DateTime @default(now()) @db.Timestamptz
+
+  machine     Machine  @relation(fields: [machine_id], references: [id])
+
+  @@index([machine_id])
+  @@map("machine_errors")
+}
+
+model MachineApiKey {
+  id         Int      @id @default(autoincrement())
+  machine_id Int      @unique
+  api_key    String   @unique @db.VarChar(128)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  machine    Machine  @relation(fields: [machine_id], references: [id])
+
+  @@map("machine_api_keys")
 }
