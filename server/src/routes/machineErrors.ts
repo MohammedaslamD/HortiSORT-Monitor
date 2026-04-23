@@ -4,6 +4,7 @@ import { machineAuthenticate } from '../middleware/machineAuth.ts'
 import { validate } from '../middleware/validate.ts'
 import { createMachineErrorSchema, machineErrorQuerySchema } from '../schemas/machineErrors.ts'
 import { createError, getTodayErrors } from '../services/machineErrorService.ts'
+import { broadcastMachineError } from '../socket/productionSocket.ts'
 
 export const machineErrorsRouter = Router()
 
@@ -15,6 +16,7 @@ machineErrorsRouter.post(
   async (req, res, next) => {
     try {
       const error = await createError(req.machine_id!, req.body)
+      broadcastMachineError(req.machine_id!, error)
       res.status(201).json({ data: error })
     } catch (err) {
       next(err)

@@ -8,6 +8,7 @@ import {
   getTodaySessionsByMachineId,
   getSessions,
 } from '../services/productionSessionService.ts'
+import { broadcastSessionUpdate } from '../socket/productionSocket.ts'
 
 export const productionSessionsRouter = Router()
 
@@ -20,6 +21,7 @@ productionSessionsRouter.post(
   async (req, res, next) => {
     try {
       const session = await upsertSession(req.machine_id!, req.body)
+      broadcastSessionUpdate(req.machine_id!, session)
       res.status(201).json({ data: session })
     } catch (err) {
       next(err)
