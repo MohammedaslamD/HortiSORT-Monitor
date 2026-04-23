@@ -11,6 +11,7 @@ import type {
   TicketStatus,
   VisitPurpose,
   ChangeType,
+  ProductionSession,
 } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { getMachineById } from '../services/machineService';
@@ -18,9 +19,12 @@ import { getDailyLogsByMachineId } from '../services/dailyLogService';
 import { getTicketsByMachineId } from '../services/ticketService';
 import { getSiteVisitsByMachineId } from '../services/siteVisitService';
 import { getHistoryByMachineId } from '../services/machineHistoryService';
+import { getTodaySessions } from '../services/productionSessionService';
+import { useProductionSocket } from '../hooks/useProductionSocket';
 import { getUserName } from '../utils/userLookup';
 import { formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor } from '../utils/formatters';
 import { Badge, Button } from '../components/common';
+import { ProductionLotTable } from '../components/production';
 
 // -----------------------------------------------------------------------------
 // Tab types
@@ -137,6 +141,7 @@ export function MachineDetailPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [siteVisits, setSiteVisits] = useState<SiteVisit[]>([]);
   const [history, setHistory] = useState<MachineHistory[]>([]);
+  const [sessions, setSessions] = useState<ProductionSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('production');
@@ -180,6 +185,10 @@ export function MachineDetailPage() {
           getHistoryByMachineId(machineId),
         ]);
 
+        // Fetch today's TDMS sessions (non-critical — don't fail whole page if this errors)
+        const today = new Date().toISOString().slice(0, 10);
+        const todaySessions = await getTodaySessions(machineId, today).catch(() => []);
+
         if (cancelled) return;
 
         // Production history: sorted by date descending
@@ -188,6 +197,7 @@ export function MachineDetailPage() {
         setTickets([...tkts].sort((a, b) => b.created_at.localeCompare(a.created_at)));
         setSiteVisits(visits);
         setHistory(hist);
+        setSessions(todaySessions);
       } catch {
         if (!cancelled) setNotFound(true);
       } finally {
@@ -204,6 +214,24 @@ export function MachineDetailPage() {
   // ---------------------------------------------------------------------------
   const today = new Date().toISOString().slice(0, 10);
   const todayLog = dailyLogs.find((l) => l.date === today);
+
+  // ---------------------------------------------------------------------------
+  // Live TDMS session updates via Socket.io
+  // ---------------------------------------------------------------------------
+  const machineId = id ? Number(id) : undefined;
+  const { lastSession } = useProductionSocket({ machineId: machineId && !Number.isNaN(machineId) ? machineId : undefined });
+  useEffect(() => {
+    if (!lastSession) return;
+    setSessions((prev) => {
+      const idx = prev.findIndex((s) => s.lot_number === lastSession.lot_number);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = lastSession;
+        return updated;
+      }
+      return [lastSession, ...prev];
+    });
+  }, [lastSession]);
 
   // ---------------------------------------------------------------------------
   // Loading state (Step 10)
@@ -308,7 +336,15 @@ export function MachineDetailPage() {
 
       {/* Step 2: Today's production */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Today's Production</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-700">Today's Production</h3>
+          {sessions.length > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-green-600">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              Live
+            </span>
+          )}
+        </div>
         {todayLog ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
             <div>
@@ -344,6 +380,16 @@ export function MachineDetailPage() {
           </div>
         ) : (
           <p className="text-gray-400 text-sm">No production data for today.</p>
+        )}
+
+        {/* TDMS live session lots */}
+        {sessions.length > 0 && (
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Live Production Lots (TDMS)
+            </h4>
+            <ProductionLotTable sessions={sessions} />
+          </div>
         )}
       </div>
 
