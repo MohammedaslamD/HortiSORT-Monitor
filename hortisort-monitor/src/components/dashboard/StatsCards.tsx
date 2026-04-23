@@ -35,16 +35,16 @@ export function StatsCards({ stats, openTicketCount, inProductionCount }: StatsC
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <span
               className={`w-3 h-3 rounded-full ${card.dotColor}`}
               aria-hidden="true"
             />
-            <span className="text-sm text-gray-500">{card.label}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{card.label}</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{card.value}</p>
         </div>
       ))}
     </div>

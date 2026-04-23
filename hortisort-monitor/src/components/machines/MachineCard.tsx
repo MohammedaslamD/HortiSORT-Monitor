@@ -45,26 +45,26 @@ export function MachineCard({
       <Card.Body className="flex flex-col gap-2">
         {/* Top row: machine code + status badge */}
         <div className="flex items-center justify-between">
-          <span className="font-bold text-gray-900">{machine.machine_code}</span>
+          <span className="font-bold text-gray-900 dark:text-gray-100">{machine.machine_code}</span>
           <Badge color={getStatusBadgeColor(machine.status)} size="sm">
             {machine.status}
           </Badge>
         </div>
 
         {/* Second row: model + location */}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {machine.model} &bull; {machine.city}, {machine.state}
         </p>
 
         {/* Third row: today's production (conditional) */}
         {todayLog && (
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             Today: {todayLog.fruit_type} &mdash; {todayLog.tons_processed}t
           </p>
         )}
 
         {/* Fourth row: last updated */}
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           Last updated: {formatRelativeTime(machine.last_updated)} by{' '}
           {getUserName(machine.last_updated_by)}
         </p>
