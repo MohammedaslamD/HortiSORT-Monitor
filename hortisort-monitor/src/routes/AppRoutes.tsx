@@ -13,6 +13,7 @@ import { DailyLogsPage } from '../pages/DailyLogsPage'
 import { SiteVisitsPage } from '../pages/SiteVisitsPage'
 import { LogVisitPage } from '../pages/LogVisitPage'
 import { AdminPage } from '../pages/AdminPage'
+import { ProductionPage } from '../pages/ProductionPage'
 
 /**
  * All application routes.
@@ -99,6 +100,14 @@ export function AppRoutes() {
       />
 
       {/* Protected — engineer + admin only */}
+      <Route
+        path="/production"
+        element={
+          <ProtectedRoute allowedRoles={['engineer', 'admin']}>
+            <ProductionPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/visits/new"
         element={
