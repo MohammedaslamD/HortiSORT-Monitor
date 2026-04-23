@@ -19,6 +19,6 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
     pool: 'forks',
-    singleFork: true,
+    fileParallelism: false,
   },
 })
