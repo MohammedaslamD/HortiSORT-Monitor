@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { render } from '../../test/utils'
 import { LoginPage } from '../LoginPage'
@@ -16,7 +15,6 @@ vi.mock('react-router-dom', async () => {
 const mockAdmin = { id: 5, name: 'Aslam Sheikh', email: 'aslam@hortisort.com', role: 'admin' as const, is_active: true }
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ user: mockAdmin }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 vi.mock('../../services/authService', () => ({
@@ -29,26 +27,24 @@ vi.mock('../../services/authService', () => ({
   },
 }))
 
-vi.mock('../../services/machineService', () => ({
-  getMachinesByRole: vi.fn().mockResolvedValue([]),
+vi.mock('../../services/liveMetricsService', () => ({
+  liveMetricsService: {
+    getFleetSummary: vi.fn().mockResolvedValue({
+      total_machines: 12, running: 6, idle: 2, down: 2, offline: 2,
+      in_production: 3, today_throughput_tons: 18.4,
+      trend_running_vs_yesterday: 1, trend_throughput_pct: 12,
+      open_tickets: { total: 6, p1: 2, p2: 2, p3: 1, p4: 1 },
+    }),
+    getMachineMetrics: vi.fn().mockResolvedValue([]),
+    getThroughputSeries: vi.fn().mockResolvedValue([]),
+  },
 }))
-vi.mock('../../services/ticketService', () => ({
-  getTickets: vi.fn().mockResolvedValue([]),
+vi.mock('../../services/alertService', () => ({
+  alertService: { getAlerts: vi.fn().mockResolvedValue([]) },
 }))
-vi.mock('../../services/dailyLogService', () => ({
-  getDailyLogs: vi.fn().mockResolvedValue([]),
+vi.mock('../../services/activityService', () => ({
+  activityService: { getActivity: vi.fn().mockResolvedValue([]) },
 }))
-
-// Minimal Recharts stubs to avoid ResizeObserver in happy-dom
-vi.mock('recharts', async () => {
-  const actual = await vi.importActual<typeof import('recharts')>('recharts')
-  return {
-    ...actual,
-    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="responsive-container">{children}</div>
-    ),
-  }
-})
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -76,7 +72,7 @@ function setupLocalStorage(initial: Record<string, string> = {}) {
 // ---------------------------------------------------------------------------
 const pages = [
   { name: 'LoginPage', Component: LoginPage, probe: /sign in/i },
-  { name: 'DashboardPage', Component: DashboardPage, probe: /dashboard/i },
+  { name: 'DashboardPage', Component: DashboardPage, probe: /TOTAL MACHINES/i },
 ]
 
 describe.each(pages)('$name renders in both themes', ({ Component, probe }) => {
