@@ -1,50 +1,34 @@
-import { useState } from 'react';
-import type { ReactNode } from 'react';
-import { Navbar } from './Navbar';
-import { Sidebar } from './Sidebar';
-import { BottomNav } from './BottomNav';
-import type { UserRole } from '../../types';
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { Topbar } from './Topbar'
+import { Sidebar } from './Sidebar'
+import type { UserRole } from '../../types'
 
 interface PageLayoutProps {
-  children: ReactNode;
-  userName: string;
-  userRole: UserRole;
-  onLogout: () => void;
+  children: ReactNode
+  pageTitle: string
+  userName: string
+  userRole: UserRole
+  onLogout: () => void
 }
 
 /**
- * Main application layout shell.
- * - Navbar at top
- * - Sidebar on left (collapsible on mobile)
- * - Content area (scrollable)
- * - BottomNav on mobile
+ * Application shell: Topbar + (Sidebar | drawer) + main content area.
+ * `userName` and `onLogout` are accepted now and consumed by chunk-9's
+ * NotificationBell / user-chip enhancements; they intentionally remain
+ * unused here.
  */
-export function PageLayout({ children, userName, userRole, onLogout }: PageLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+export function PageLayout({ children, pageTitle, userRole }: PageLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
-      <Navbar
-        userName={userName}
-        userRole={userRole}
-        onLogout={onLogout}
-        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-      />
-
-      <div className="flex">
-        <Sidebar
-          userRole={userRole}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
-
-        {/* Main content area */}
-        <main className="flex-1 p-4 lg:p-6 pb-20 lg:pb-6 min-h-[calc(100vh-3.5rem)]">
+    <div className="min-h-screen flex flex-col bg-bg text-fg-2">
+      <Topbar pageTitle={pageTitle} onOpenSidebar={() => setSidebarOpen(true)} />
+      <div className="flex flex-1 min-h-0">
+        <Sidebar userRole={userRole} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 min-w-0 overflow-auto px-5 py-5 lg:px-6">
           {children}
         </main>
       </div>
-
-      <BottomNav userRole={userRole} />
     </div>
-  );
+  )
 }
