@@ -1056,16 +1056,27 @@ import type { MachineLiveMetrics, FleetSummary, ThroughputPoint } from '../types
 export const MOCK_MACHINE_METRICS: MachineLiveMetrics[] = [
   { machine_id: 1, tons_per_hour: 2.4, uptime_percent: 90, progress_percent: 90, current_fruit: 'Banana' },
   { machine_id: 2, tons_per_hour: 1.9, uptime_percent: 75, progress_percent: 75, current_fruit: 'Mango' },
+  // M-003: down (sorting halted, tons null, progress < 50)
   { machine_id: 3, tons_per_hour: null, uptime_percent: 30, progress_percent: 30, current_fruit: null },
-  { machine_id: 4, tons_per_hour: null, uptime_percent: 0, progress_percent: 0, current_fruit: null },
+  // M-004: idle (tons null, progress >= 50 retained from prior shift)
+  { machine_id: 4, tons_per_hour: null, uptime_percent: 60, progress_percent: 55, current_fruit: null },
   { machine_id: 5, tons_per_hour: 3.1, uptime_percent: 85, progress_percent: 85, current_fruit: 'Grapes' },
   { machine_id: 6, tons_per_hour: 2.7, uptime_percent: 70, progress_percent: 70, current_fruit: 'Pomegranate' },
+  // M-007: offline (tons null AND uptime 0)
   { machine_id: 7, tons_per_hour: null, uptime_percent: 0, progress_percent: 0, current_fruit: null },
   { machine_id: 8, tons_per_hour: 1.5, uptime_percent: 60, progress_percent: 60, current_fruit: 'Mango' },
-  { machine_id: 9, tons_per_hour: 2.2, uptime_percent: 80, progress_percent: 80, current_fruit: 'Apple' },
-  { machine_id: 10, tons_per_hour: 1.8, uptime_percent: 65, progress_percent: 65, current_fruit: 'Banana' },
+  // M-009: idle (tons null, progress >= 50)
+  { machine_id: 9, tons_per_hour: null, uptime_percent: 55, progress_percent: 50, current_fruit: null },
+  // M-010: down (tons null, progress < 50)
+  { machine_id: 10, tons_per_hour: null, uptime_percent: 25, progress_percent: 20, current_fruit: null },
+  // M-011: offline
   { machine_id: 11, tons_per_hour: null, uptime_percent: 0, progress_percent: 0, current_fruit: null },
-  { machine_id: 12, tons_per_hour: null, uptime_percent: 0, progress_percent: 0, current_fruit: null },
+  // M-012: offline (note: only first 8 are rendered as tiles per spec; the remaining 4 still need to balance the fleet totals)
+  // After the 8-tile slice (ids 1..8): 5 running (1,2,5,6,8) + 1 down (3) + 1 idle (4) + 1 offline (7).
+  // Fleet summary aggregates ALL 12, not the slice. With ids 9-12 above:
+  // running: 1,2,5,6,8 = 5 → +1 below to reach 6 → swap id 12 to running
+  { machine_id: 12, tons_per_hour: 2.0, uptime_percent: 70, progress_percent: 70, current_fruit: 'Apple' },
+  // Final tally (ids 1-12): 6 running (1,2,5,6,8,12), 2 idle (4,9), 2 down (3,10), 2 offline (7,11) — matches MOCK_FLEET_SUMMARY.
 ]
 
 export const MOCK_FLEET_SUMMARY: FleetSummary = {
@@ -1337,6 +1348,9 @@ describe('useLivePolling', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.useRealTimers()
+    // Restore happy-dom defaults so document accessors don't leak between tests
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible', writable: true })
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false, writable: true })
   })
 
   it('calls the fetcher once on mount and stores data', async () => {
@@ -1441,9 +1455,7 @@ export function useLivePolling<T>(
       try {
         const data = await fetcherRef.current()
         if (cancelled) return
-        setState((prev) => ({ data, loading: false, error: null }))
-        // mark prev unused — keep last-good when no new data arrived (compiler appeasement)
-        void prev
+        setState({ data, loading: false, error: null })
       } catch (err) {
         if (cancelled) return
         const msg = err instanceof Error ? err.message : 'Polling failed'
@@ -1479,7 +1491,7 @@ export function useLivePolling<T>(
 }
 ```
 
-> **Compiler note:** the `void prev` line will fail `noUnusedLocals` or look weird; rewrite the success path to `setState({ data, loading: false, error: null })` (no functional updater) since we don't need the previous data on success. Adjust before commit. Reviewer to confirm.
+> **Compiler note:** the success path uses `setState({...})` (not the updater form) to avoid `noUnusedParameters` on a `prev` we don't need. The error path keeps the updater because it must preserve last-good `data`.
 
 - [ ] **1.4.4 Run** the hook test file. Expected: PASS (5 tests).
 - [ ] **1.4.5 Run** `npm run test:run`. Expected: total ≥ Phase A baseline + chunk 0 (≥ 192) + 13 (4+2+2+5).
@@ -1808,7 +1820,7 @@ export function Sparkline({ points, height = 140 }: SparklineProps) {
       <path d={actualD} fill="none" stroke="#38bdf8" strokeWidth="2" />
       <path d={targetD} fill="none" stroke="#4ade80" strokeWidth="1.5" strokeDasharray="3,3" />
       <circle cx={(points.length - 1) * xStep} cy={yScale(last.actual)} r="4" fill="#38bdf8" />
-      <circle cx={(points.length - 1) * xStep} cy={yScale(last.actual)} r="9" fill="#38bdf8" opacity="0.2" />
+      <circle cx={(points.length - 1) * xStep} cy={yScale(last.actual)} r="9" fill="#38bdf8" opacity="0.2" className="animate-pulse-dot" />
     </svg>
   )
 }
@@ -2272,11 +2284,10 @@ Time formatting: a small inline helper `formatRelative(iso)` that returns "Nm ag
   Skeleton:
 
 ```tsx
-import { render, screen, waitFor } from '../../test/utils'
+import { render, screen } from '../../test/utils'
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ user: { id: 1, name: 'Aslam', role: 'admin', email: 'a@a', is_active: true } }),
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 vi.mock('../../services/liveMetricsService', () => ({
@@ -2396,14 +2407,14 @@ export function DashboardPage() {
     <div className="space-y-4">
       {/* Stat row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatCard accent="blue"  label="TOTAL MACHINES" icon={<>\u2699</>} value={fleet.total_machines} sub={`Across 4 sites`} />
-        <StatCard accent="green" label="RUNNING" dot="green" icon={<>\u25B6</>} value={fleet.running} valueColor="#4ade80"
+        <StatCard accent="blue"  label="TOTAL MACHINES" icon={'\u2699'} value={fleet.total_machines} sub={`Across 4 sites`} />
+        <StatCard accent="green" label="RUNNING" dot="green" icon={'\u25B6'} value={fleet.running} valueColor="#4ade80"
           trend={fleet.trend_running_vs_yesterday >= 0 ? { direction: 'up', value: `${fleet.trend_running_vs_yesterday}` } : { direction: 'down', value: `${Math.abs(fleet.trend_running_vs_yesterday)}` }}
           sub="from yesterday" />
-        <StatCard accent="green" label="IN PRODUCTION" dot="green" icon={<>\u2638</>} value={fleet.in_production} valueColor="#4ade80" sub="Live TDMS sessions" />
-        <StatCard accent="red"   label="OPEN TICKETS" dot="red" icon={<>\u2691</>} value={fleet.open_tickets.total} valueColor="#ef4444"
+        <StatCard accent="green" label="IN PRODUCTION" dot="green" icon={'\u2638'} value={fleet.in_production} valueColor="#4ade80" sub="Live TDMS sessions" />
+        <StatCard accent="red"   label="OPEN TICKETS" dot="red" icon={'\u2691'} value={fleet.open_tickets.total} valueColor="#ef4444"
           sub={`${fleet.open_tickets.p1} P1 Critical · ${fleet.open_tickets.total - fleet.open_tickets.p1} open`} />
-        <StatCard accent="cyan"  label="TODAY THROUGHPUT" icon={<>\u2696</>}
+        <StatCard accent="cyan"  label="TODAY THROUGHPUT" icon={'\u2696'}
           value={<>{fleet.today_throughput_tons}<span className="text-sm text-fg-4"> t</span></>}
           valueColor="#22d3ee"
           trend={{ direction: fleet.trend_throughput_pct >= 0 ? 'up' : 'down', value: `${Math.abs(fleet.trend_throughput_pct)}%` }}
@@ -2484,17 +2495,18 @@ export function DashboardPage() {
 }
 ```
 
-> **JSX glyph note:** `<>\u2699</>` etc. won't compile as fragments — they must be string children. Use `{'\u2699'}` instead, e.g. `icon={'\u2699'}`. Reviewer to confirm and adjust.
+> **JSX glyph note:** The `icon` prop receives a string via `{'\u2699'}` (an expression containing a unicode-escaped string literal), NOT `<>\u2699</>` (which would render the literal six characters `\u2699`). All five stat cards above already use the correct `{'\u...'}` form.
 
 - [ ] **1.18.3 Run** the DashboardPage test file. Iterate fixes until GREEN.
-- [ ] **1.18.4 Run** `npm run test:run`. Expected: GREEN; total ≥ baseline + chunk 0 + chunk 1 (rough floor: 192 + 13 service+hook + ~30 component tests + dashboard ≈ 240+).
+- [ ] **1.18.4 Run** `npm run test:run`. Expected: GREEN; total ≥ 230 (math: 192 chunk-0 baseline − 9 deleted legacy DashboardPage tests + ~49 new = ~232 floor).
 - [ ] **1.18.5 Run** `npm run build`. Expected: GREEN.
 - [ ] **1.18.6 Commit `feat(dashboard): rewrite as Command Center using Phase B primitives`.**
 
 ### Step 1.19: Update page-level dark-mode smoke test
 
 - [ ] **1.19.1 Modify `src/pages/__tests__/dark-mode.test.tsx`:**
-  - Replace the `vi.mock('../../services/machineService' …)` etc. with mocks for the new 3 services (or simply add the new mocks alongside; legacy mocks are harmless since the new dashboard doesn't import the legacy services). Add:
+  - **Remove** the legacy service mocks for `machineService`, `ticketService`, `dailyLogService` — the new `DashboardPage` no longer imports them, so the mocks are dead weight and confuse future readers.
+  - **Add** mocks for the three new services:
 
 ```ts
 vi.mock('../../services/liveMetricsService', () => ({
@@ -2515,7 +2527,7 @@ vi.mock('../../services/activityService', () => ({ activityService: { getActivit
 
 ### Step 1.20: Final per-chunk gate
 
-- [ ] **1.20.1 Run** `npm run test:run`. Expected: GREEN, total ≥ 240. Update Phase B ratchet floor in this plan section if number is higher.
+- [ ] **1.20.1 Run** `npm run test:run`. Expected: GREEN, total ≥ 230. Update Phase B ratchet floor in this plan section if observed number is higher.
 - [ ] **1.20.2 Run** `npm run build`. Expected: GREEN.
 - [ ] **1.20.3 Run** `npm run lint`. Expected: zero new errors beyond the 8 pre-existing (chunk 0 left budget at 8).
 - [ ] **1.20.4 Manual smoke** — login as `aslam@hortisort.com / password_123`, navigate to `/dashboard`:
