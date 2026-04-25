@@ -1,34 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect } from 'react'
 
-/** Toast notification type — determines color scheme and icon. */
-type ToastType = 'success' | 'error' | 'warning' | 'info';
+/** Toast notification type — determines accent color and icon. */
+type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface ToastProps {
-  message: string;
-  type?: ToastType;
-  isVisible: boolean;
-  onClose: () => void;
+  message: string
+  type?: ToastType
+  isVisible: boolean
+  onClose: () => void
   /** Auto-dismiss duration in ms. Defaults to 4000. Set 0 to disable. */
-  duration?: number;
+  duration?: number
 }
 
-const typeClasses: Record<ToastType, string> = {
-  success: 'bg-green-50 border-green-400 text-green-800 dark:bg-green-900/40 dark:border-green-500 dark:text-green-200',
-  error: 'bg-red-50 border-red-400 text-red-800 dark:bg-red-900/40 dark:border-red-500 dark:text-red-200',
-  warning: 'bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-900/40 dark:border-yellow-500 dark:text-yellow-200',
-  info: 'bg-blue-50 border-blue-400 text-blue-800 dark:bg-blue-900/40 dark:border-blue-500 dark:text-blue-200',
-};
+const accentBorder: Record<ToastType, string> = {
+  success: 'border-brand-green',
+  error: 'border-brand-red',
+  warning: 'border-brand-amber',
+  info: 'border-brand-cyan',
+}
+
+const iconColor: Record<ToastType, string> = {
+  success: 'text-brand-green',
+  error: 'text-brand-red',
+  warning: 'text-brand-amber',
+  info: 'text-brand-cyan',
+}
 
 const typeIcons: Record<ToastType, string> = {
   success: 'M5 13l4 4L19 7',
   error: 'M6 18L18 6M6 6l12 12',
   warning: 'M12 9v2m0 4h.01M12 3l9.66 16.5H2.34L12 3z',
   info: 'M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z',
-};
+}
 
 /**
  * Floating toast notification with auto-dismiss.
- * Renders at top-right of the viewport.
+ * Renders at top-right of the viewport, with a colored left accent border
+ * and the gradient surface defined by the .stat-gradient utility.
  */
 export function Toast({
   message,
@@ -39,29 +47,30 @@ export function Toast({
 }: ToastProps) {
   useEffect(() => {
     if (isVisible && duration > 0) {
-      const timer = setTimeout(onClose, duration);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(onClose, duration)
+      return () => clearTimeout(timer)
     }
-  }, [isVisible, duration, onClose]);
+  }, [isVisible, duration, onClose])
 
-  if (!isVisible) return null;
+  if (!isVisible) return null
 
   return (
     <div
-      className={`
-        fixed top-4 right-4 z-[100] flex items-center gap-3
-        px-4 py-3 border-l-4 rounded-md shadow-lg
-        animate-slide-in
-        ${typeClasses[type]}
-      `.trim()}
       role="alert"
+      className={[
+        'fixed top-4 right-4 z-[100] flex items-center gap-3',
+        'px-4 py-3 border-l-4 rounded-lg shadow-lg',
+        'stat-gradient text-fg-1 animate-slide-in',
+        accentBorder[type],
+      ].join(' ')}
     >
       <svg
-        className="h-5 w-5 flex-shrink-0"
+        className={`h-5 w-5 flex-shrink-0 ${iconColor[type]}`}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
         strokeWidth={2}
+        aria-hidden="true"
       >
         <path strokeLinecap="round" strokeLinejoin="round" d={typeIcons[type]} />
       </svg>
@@ -69,14 +78,15 @@ export function Toast({
       <p className="text-sm font-medium flex-1">{message}</p>
 
       <button
+        type="button"
         onClick={onClose}
-        className="ml-2 text-current opacity-60 hover:opacity-100 transition-opacity"
+        className="ml-2 text-fg-3 hover:text-fg-1 transition-colors"
         aria-label="Dismiss notification"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
-  );
+  )
 }
