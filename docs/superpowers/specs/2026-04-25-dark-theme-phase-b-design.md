@@ -106,8 +106,7 @@ that:
 - Cleans up on unmount
 - Pauses while `document.hidden === true`
 
-The Operator Console overlay polls every 15 s. The Dashboard's Live
-Throughput sparkline polls every 5 s. Other widgets are static.
+§10 is the authoritative list of which widgets poll and at what cadence.
 
 ## 5. Design tokens
 
@@ -263,7 +262,7 @@ tokens to use the mockup's gradient surface + cyan-green left border + the
 | Component                  | Notes                                                                  |
 |----------------------------|------------------------------------------------------------------------|
 | `Sidebar`                  | persistent on `lg:`, drawer on smaller. Section labels (`OVERVIEW`, `OPERATIONS`, `ADMIN`), nav items with icon + label + optional count badge (`warn` variant for alerting counts). Active item gets cyan left border + tinted background. |
-| `Topbar`                   | brand (split style: `Horti` in `brand-cyan`, `Sort` in `brand-green`), divider, page-title slot fed from a small `usePageTitle()` context (or prop), Operator Console button (admin/engineer only) + `NotificationBell` + user chip + theme toggle |
+| `Topbar`                   | brand (split style: `Horti` in `brand-cyan`, `Sort` in `brand-green`), divider, page-title slot fed from a `pageTitle: string` prop drilled from each page, Operator Console button (admin/engineer only) + `NotificationBell` + user chip + theme toggle |
 | `NotificationBell`         | dropdown panel listing unread alerts (mock); red badge count; click-outside closes |
 | `OperatorConsoleOverlay`   | `position: fixed inset-0`, ticking clock, fleet KPI row (`StatCard`s), 6-col machine grid (`MachineTile` variant), Esc / Exit button. Polls `liveMetricsService` every 15 s via `useLivePolling`. |
 | `Modal` (restyled)         | extends existing `common/Modal` to use new tokens (backdrop blur, rounded-14, navy surface in dark). All form inputs receive new focus ring (`brand-cyan` + 2 px shadow). |
