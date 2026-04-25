@@ -1,3 +1,12 @@
-// Barrel for Phase B dark/light design-system primitives.
-// Components are added incrementally per chunk. Empty barrel until chunk 1.
-export {}
+export { StatusDot } from './StatusDot'
+export { IconTile } from './IconTile'
+export { TrendPill } from './TrendPill'
+export { ProgressBar } from './ProgressBar'
+export { Sparkline } from './Sparkline'
+export { StatCard } from './StatCard'
+export { SectionCard } from './SectionCard'
+export { MachineTile } from './MachineTile'
+export { AlertRow, alertBadgeVariant } from './AlertRow'
+export { TimelineItem } from './TimelineItem'
+export { DonutChart } from './DonutChart'
+export { SeverityBar } from './SeverityBar'
