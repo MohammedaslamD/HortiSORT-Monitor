@@ -1,6 +1,6 @@
 # Dark Theme Phase B — Mockup-Fidelity Redesign
 
-> Status: draft for review
+> Status: in implementation (chunk 0 complete)
 > Branch: `feature/dark-theme-phase-b` (off `feature/dark-theme-phase-a`)
 > Source mockup: `.superpowers/brainstorm/1957-1776927382/dark-ui-v2.html`
 > Predecessor: `docs/superpowers/specs/2026-04-23-dark-theme-phase-a-design.md`
