@@ -398,3 +398,67 @@ export interface ProductionSessionFilters {
   status?: ProductionStatus
   limit?: number
 }
+
+// =============================================================================
+// Phase B: Live metrics, alerts, activity (mock-data layer)
+// =============================================================================
+
+/** Per-machine live metrics for the Command Center fleet section. */
+export interface MachineLiveMetrics {
+  machine_id: number;
+  tons_per_hour: number | null;
+  uptime_percent: number;     // 0-100
+  progress_percent: number;   // 0-100 vs daily target
+  current_fruit: string | null;
+}
+
+/** Aggregated fleet snapshot for the Command Center stat row. */
+export interface FleetSummary {
+  total_machines: number;
+  running: number;
+  idle: number;
+  down: number;
+  offline: number;
+  in_production: number;
+  today_throughput_tons: number;
+  trend_running_vs_yesterday: number; // signed delta
+  trend_throughput_pct: number;       // signed % vs avg
+  open_tickets: { total: number; p1: number; p2: number; p3: number; p4: number };
+}
+
+/** A single point on the Live Throughput sparkline. */
+export interface ThroughputPoint {
+  time: string;   // ISO
+  actual: number; // t/hr
+  target: number; // t/hr
+}
+
+export type AlertSeverity = "critical" | "warn" | "info" | "ok";
+export type AlertBadgeLabel = "P1" | "P2" | "P3" | "P4" | "INFO" | "OK";
+
+export interface Alert {
+  id: number;
+  machine_id: number;
+  machine_label: string;
+  severity: AlertSeverity;
+  badge_label: AlertBadgeLabel;
+  message: string;
+  created_at: string;
+}
+
+export type ActivityIconTone =
+  | "red"
+  | "green"
+  | "blue"
+  | "purple"
+  | "cyan"
+  | "yellow";
+
+export interface ActivityEvent {
+  id: number;
+  type: "ticket" | "production" | "visit" | "machine" | "user";
+  icon_tone: ActivityIconTone;
+  title: string;
+  meta: string;
+  created_at: string;
+}
