@@ -229,34 +229,41 @@ file and is fully covered before any page consumes it.
 |-----------------|------------------------------------------------------|
 | `StatusDot`     | `tone: 'green'\|'red'\|'amber'\|'blue'\|'gray'`, `pulse?: boolean` |
 | `StatBadge`     | `variant: 'running'\|'idle'\|'down'\|'offline'\|'live'\|'critical'\|'high'\|'medium'\|'low'\|'open'\|'inprog'\|'resolved'\|'completed'\|'admin'\|'engineer'\|'customer'\|'maint'\|'notrun'\|'routine'\|'emergency'\|'install'`, `children: ReactNode` |
-| `IconTile`      | `tone: same as StatusDot`, `children: ReactNode (icon)` |
+| `IconTile`      | `tone: 'green'\|'red'\|'amber'\|'blue'\|'cyan'\|'purple'`, `children: ReactNode (icon)` |
 | `TrendPill`     | `direction: 'up'\|'down'`, `value: string`           |
 | `Sparkline`     | `points: ThroughputPoint[]`, `height?: number`       |
 | `ProgressBar`   | `percent: number`, `tone: 'green'\|'red'\|'amber'`, `height?: number` |
+| `InfoBanner`    | `tone?: 'info'\|'warn'`, `title?: string`, `children: ReactNode`. Used in Daily Logs page and inside Update Status modal. Renders left-accent-bordered banner with subtle gradient. |
+| `Button` (extended) | Existing `common/Button` gains variants `'primary' \| 'ghost' \| 'danger' \| 'yellow' \| 'green'`, plus a `size: 'sm' \| 'md'` prop. The mockup's table-row mini-buttons (e.g. `padding:4px 8px;font-size:10px`) map to `size='sm'`. The component is extended, not replaced, so existing call sites continue to work; passing the new variants triggers the new visual styles. |
 
 `StatBadge` replaces the existing `Badge` for these specific variants;
 existing `Badge` stays for legacy markup that hasn't migrated yet.
+
+`Toast` (existing `common/Toast`) is restyled in chunk 0 alongside theme
+tokens to use the mockup's gradient surface + cyan-green left border + the
+`slide-in` animation defined in §5.4. No API change.
 
 ### 6.2 Molecules
 
 | Component        | Composition                                                    |
 |------------------|----------------------------------------------------------------|
-| `StatCard`       | gradient surface, top accent bar, icon tile, label, big value, optional trend pill, optional sub-line. Replaces `dashboard/StatsCards` content. |
-| `SectionCard`    | uppercase title + optional `<sc-link>` slot, gradient surface, padded body |
-| `MachineTile`    | status-bordered tile with name+badge header, big metric, unit line, progress bar |
+| `StatCard`       | gradient surface, top accent bar, icon tile, label, big value, optional trend pill, optional sub-line. Replaces `dashboard/StatsCards` content. Props: `accent: 'green'\|'blue'\|'yellow'\|'red'\|'purple'\|'cyan'`, `label: string`, `value: ReactNode`, `valueColor?: string` (CSS color override), `icon: ReactNode`, `trend?: { direction, value }`, `sub?: ReactNode`, `dot?: 'green'\|'red'\|'amber'` (renders pulsing `StatusDot` next to label). |
+| `SectionCard`    | uppercase title + optional `<sc-link>` slot, gradient surface, padded body. Props: `title: string`, `link?: { label: string; onClick: () => void }`, `meta?: ReactNode` (replaces link slot for non-actionable metadata like "LAST 30 MIN"). |
+| `MachineTile`    | status-bordered tile with name+badge header, big metric, unit line, progress bar. Props: `tone: 'running'\|'idle'\|'down'\|'offline'`, `name: string`, `badge: ReactNode`, `value: ReactNode`, `valueColor?: string`, `unit: string`, `progressPercent?: number`, `progressTone?: 'green'\|'red'\|'amber'`, `onClick?: () => void`. |
 | `AlertRow`       | severity-coloured left-border, two-line text (machine + meta + message), nested `StatBadge` |
 | `TimelineItem`   | icon tile + title/meta lines, separator below                  |
 | `VisitCard`      | header (title + badge), body (findings/actions), 2-col stats footer |
 | `LogRow`         | grid (date / machine / status / fruit-tons / notes / by) — used in Daily Logs page |
 | `DonutChart`     | SVG donut with center metric + right-aligned legend list. Reuses Recharts? No — hand-rolled SVG matches the mockup's exact look (a Recharts donut won't reproduce the centred text + side legend cleanly enough). |
 | `SeverityBar`    | stacked horizontal bar (P1/P2/P3/P4) + count footer            |
+| `DataTable`      | dense dark table primitive shared by Machines, Tickets, Production, Daily Logs (header row), and Users pages. Props: `columns: { key: string; label: string; align?: 'left'\|'right'\|'center'; width?: string }[]`, `rows: { id: string\|number; cells: ReactNode[] }[]`, `onRowClick?: (id) => void`. Header cells use `text-fg-6 uppercase tracking text-[10px]`; body rows use `bg-bg-surface3` on hover and `border-line/40` between rows; first column gets `text-fg-1 font-semibold`. Cells accept arbitrary `ReactNode` so `ProgressBar`, `StatBadge`, mini `Button`s compose freely. |
 
 ### 6.3 Organisms
 
 | Component                  | Notes                                                                  |
 |----------------------------|------------------------------------------------------------------------|
 | `Sidebar`                  | persistent on `lg:`, drawer on smaller. Section labels (`OVERVIEW`, `OPERATIONS`, `ADMIN`), nav items with icon + label + optional count badge (`warn` variant for alerting counts). Active item gets cyan left border + tinted background. |
-| `Topbar`                   | brand + page-title slot + Operator Console button (admin/engineer only) + `NotificationBell` + user chip + theme toggle |
+| `Topbar`                   | brand (split style: `Horti` in `brand-cyan`, `Sort` in `brand-green`), divider, page-title slot fed from a small `usePageTitle()` context (or prop), Operator Console button (admin/engineer only) + `NotificationBell` + user chip + theme toggle |
 | `NotificationBell`         | dropdown panel listing unread alerts (mock); red badge count; click-outside closes |
 | `OperatorConsoleOverlay`   | `position: fixed inset-0`, ticking clock, fleet KPI row (`StatCard`s), 6-col machine grid (`MachineTile` variant), Esc / Exit button. Polls `liveMetricsService` every 15 s via `useLivePolling`. |
 | `Modal` (restyled)         | extends existing `common/Modal` to use new tokens (backdrop blur, rounded-14, navy surface in dark). All form inputs receive new focus ring (`brand-cyan` + 2 px shadow). |
@@ -289,14 +296,14 @@ those wire to the new mock services.
 | # | Page                       | Replaces             | New widgets used                               |
 |---|----------------------------|----------------------|------------------------------------------------|
 | 0 | Topbar + Sidebar shell     | `Navbar`+`BottomNav` | `Sidebar`, `Topbar`, `NotificationBell`        |
-| 1 | `DashboardPage` ("Command Center") | `DashboardPage` | `StatCard×5`, `MachineTile×8` (fleet section), `Sparkline`, `DonutChart`, `SeverityBar`, `TimelineItem×N`, `AlertRow×N` |
+| 1 | `DashboardPage` ("Command Center") | `DashboardPage` | `StatCard×5`, `MachineTile×8` (fleet section), `Sparkline` plus the Live-Throughput footer block (PEAK / AVG / NOW + Actual/Target legend, rendered alongside `Sparkline` inside its `SectionCard`), `DonutChart`, `SeverityBar`, `TimelineItem×N`, `AlertRow×N` |
 | 2 | `MachinesPage`             | `MachinesPage`       | `StatCard×4`, `SectionCard`, dense table primitive (header row of `text-fg-6 uppercase tracking`, body rows with `bg-surface3` row hover), inline `ProgressBar` for uptime |
 | 3 | `TicketsPage`              | `TicketsPage`        | `StatCard×4`, table primitive, `StatBadge` per row    |
 | 4 | `ProductionPage`           | `ProductionPage`     | `StatCard×4`, table primitive, `b-live` badge animated |
 | 5 | `DailyLogsPage`            | `DailyLogsPage`      | `info-banner`, `StatCard×4`, `LogRow`           |
 | 6 | `SiteVisitsPage`           | `SiteVisitsPage`     | `StatCard×4`, `VisitCard`                      |
 | 7 | `AdminPage` (Users tab)    | `AdminPage`          | table primitive, `b-admin/b-engineer/b-customer` badges, restyled action buttons |
-| 8 | All modal forms restyled   | existing modals      | `Modal` primitive, new form-input tokens, info-banner inside Update Status modal |
+| 8 | All modal forms restyled (incl. restyled `Toast`) | existing modals + `Toast` | `Modal` primitive, new form-input tokens, `InfoBanner` inside Update Status modal, restyled `Toast` (gradient bg + slide-in animation per §5.4) |
 | 9 | `OperatorConsoleOverlay`   | new                  | `OperatorConsoleOverlay`                       |
 | 10| `NotificationBell` dropdown | new                 | `NotificationBell`                             |
 
@@ -336,14 +343,29 @@ export interface ThroughputPoint {
 }
 
 export type AlertSeverity = 'critical' | 'warn' | 'info' | 'ok'
+export type AlertBadgeLabel = 'P1' | 'P2' | 'P3' | 'P4' | 'INFO' | 'OK'
+
 export interface Alert {
   id: number
   machine_id: number
   machine_label: string  // denormalised for display
   severity: AlertSeverity
+  badge_label: AlertBadgeLabel  // explicit label so 'critical' alerts can show 'P1', 'info' alerts can show 'INFO', etc.
   message: string
   created_at: string     // ISO
 }
+
+/**
+ * `severity` controls AlertRow's left-border color (`a-crit`, `a-warn`, `a-info`, `a-ok`).
+ * `badge_label` controls the nested `StatBadge` text + variant. Mapping:
+ *   - 'P1' -> StatBadge variant 'critical'
+ *   - 'P2' -> 'high'
+ *   - 'P3' -> 'medium'
+ *   - 'P4' -> 'low'
+ *   - 'INFO' -> 'inprog' (blue)
+ *   - 'OK'   -> 'completed' (green)
+ * The mapping is implemented in a pure helper `alertBadgeVariant(label)` co-located with `AlertRow`.
+ */
 
 export type ActivityIconTone = 'red' | 'green' | 'blue' | 'purple' | 'cyan' | 'yellow'
 export interface ActivityEvent {
@@ -419,7 +441,8 @@ Page-level smoke tests in `pages/__tests__/dark-mode.test.tsx` are
 extended to cover every page in both themes.
 
 Final coverage target: same or better than Phase A's 169 tests. Concrete
-target: ~230-260 tests.
+minimum: **200 passing tests** at the close of Phase B; expected range
+~230-260.
 
 ## 12. Accessibility
 
