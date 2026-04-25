@@ -1,5 +1,6 @@
 import { render, screen } from '../../../test/utils'
-import { AlertRow, alertBadgeVariant } from '../AlertRow'
+import { AlertRow } from '../AlertRow'
+import { alertBadgeVariant } from '../alertBadgeVariant'
 import type { Alert } from '../../../types'
 
 const baseAlert: Alert = {

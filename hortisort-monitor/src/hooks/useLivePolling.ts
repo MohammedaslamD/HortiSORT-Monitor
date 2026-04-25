@@ -22,7 +22,7 @@ export function useLivePolling<T>(
 ): PollingState<T> {
   const [state, setState] = useState<PollingState<T>>({ data: initial, loading: true, error: null })
   const fetcherRef = useRef(fetcher)
-  fetcherRef.current = fetcher
+  useEffect(() => { fetcherRef.current = fetcher })
 
   useEffect(() => {
     let cancelled = false

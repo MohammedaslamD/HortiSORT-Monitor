@@ -1,4 +1,5 @@
-import type { Alert, AlertBadgeLabel } from '../../types'
+import type { Alert } from '../../types'
+import { ALERT_BADGE_TONE } from './alertBadgeVariant'
 
 interface AlertRowProps {
   alert: Alert
@@ -11,20 +12,6 @@ const SEVERITY_BORDER = {
   info:     'border-l-brand-cyan',
   ok:       'border-l-brand-green',
 } as const
-
-const BADGE_TONE: Record<AlertBadgeLabel, string> = {
-  P1:   'bg-brand-red/20 text-brand-red',
-  P2:   'bg-brand-amber/20 text-brand-amber',
-  P3:   'bg-brand-cyan/20 text-brand-cyan',
-  P4:   'bg-fg-5/20 text-fg-3',
-  INFO: 'bg-brand-cyan/20 text-brand-cyan',
-  OK:   'bg-brand-green/20 text-brand-green',
-}
-
-/** Pure helper: maps a badge label to the visual tone classes used by AlertRow. */
-export function alertBadgeVariant(label: AlertBadgeLabel): { label: AlertBadgeLabel; classes: string } {
-  return { label, classes: BADGE_TONE[label] }
-}
 
 /** Live Alerts feed entry with severity-tinted left border. */
 export function AlertRow({ alert, timeAgo }: AlertRowProps) {
@@ -40,7 +27,7 @@ export function AlertRow({ alert, timeAgo }: AlertRowProps) {
         <span className="text-[10px] text-fg-4">{timeAgo}</span>
       </div>
       <div className="flex items-center gap-2 text-xs text-fg-2">
-        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${BADGE_TONE[alert.badge_label]}`}>
+        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${ALERT_BADGE_TONE[alert.badge_label]}`}>
           {alert.badge_label}
         </span>
         <span>{alert.message}</span>

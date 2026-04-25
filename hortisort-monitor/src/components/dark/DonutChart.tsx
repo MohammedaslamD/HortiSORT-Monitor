@@ -14,22 +14,26 @@ const C = 100 // r=15.915 -> circumference ~ 100
 /** Hand-rolled SVG donut + legend, matching dark-ui-v2.html "Fleet Breakdown". */
 export function DonutChart({ segments, centerLabel }: DonutChartProps) {
   const total = segments.reduce((s, x) => s + x.value, 0)
-  let offset = 25
+  const arcs = segments.reduce<{ pct: number; offset: number }[]>((acc, seg) => {
+    const pct = total === 0 ? 0 : (seg.value / total) * C
+    const prev = acc[acc.length - 1]
+    const offset = prev ? prev.offset - prev.pct : 25
+    acc.push({ pct, offset })
+    return acc
+  }, [])
   return (
     <div className="flex items-center gap-5">
       <svg viewBox="0 0 42 42" className="w-32 h-32 flex-shrink-0">
         <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgb(var(--line))" strokeWidth="5" />
         {segments.map((seg, i) => {
-          const pct = total === 0 ? 0 : (seg.value / total) * C
+          const { pct, offset } = arcs[i]
           const dasharray = `${pct} ${C - pct}`
-          const dashoffset = offset
-          offset = offset - pct
           return (
             <circle
               key={i}
               cx="21" cy="21" r="15.915" fill="transparent"
               stroke={seg.color} strokeWidth="5"
-              strokeDasharray={dasharray} strokeDashoffset={dashoffset}
+              strokeDasharray={dasharray} strokeDashoffset={offset}
               transform="rotate(-90 21 21)"
             />
           )
