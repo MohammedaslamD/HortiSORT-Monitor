@@ -2434,7 +2434,7 @@ export function DashboardPage() {
                 value={m.tons_per_hour ?? '--'}
                 valueColor={m.tons_per_hour === null ? '#64748b' : undefined}
                 unit={m.tons_per_hour !== null && m.current_fruit ? `t/hr · ${m.current_fruit}` : (m.current_fruit ?? 'Offline')}
-                progressPercent={m.progress_percent}
+                progressPercent={tilesTone(m) === 'offline' ? undefined : m.progress_percent}
                 progressTone={tilesTone(m) === 'down' ? 'red' : tilesTone(m) === 'idle' ? 'amber' : 'green'}
                 onClick={() => navigate(`/machines/${m.machine_id}`)}
               />
@@ -2505,7 +2505,7 @@ export function DashboardPage() {
 ### Step 1.19: Update page-level dark-mode smoke test
 
 - [ ] **1.19.1 Modify `src/pages/__tests__/dark-mode.test.tsx`:**
-  - **Remove** the legacy service mocks for `machineService`, `ticketService`, `dailyLogService` — the new `DashboardPage` no longer imports them, so the mocks are dead weight and confuse future readers.
+  - **Remove** the legacy service mocks for `machineService`, `ticketService`, `dailyLogService` AND the now-dead `vi.mock('recharts', …)` block — the new `DashboardPage` no longer imports any of them.
   - **Add** mocks for the three new services:
 
 ```ts
@@ -2529,7 +2529,7 @@ vi.mock('../../services/activityService', () => ({ activityService: { getActivit
 
 - [ ] **1.20.1 Run** `npm run test:run`. Expected: GREEN, total ≥ 230. Update Phase B ratchet floor in this plan section if observed number is higher.
 - [ ] **1.20.2 Run** `npm run build`. Expected: GREEN.
-- [ ] **1.20.3 Run** `npm run lint`. Expected: zero new errors beyond the 8 pre-existing (chunk 0 left budget at 8).
+- [ ] **1.20.3 Run** `npm run lint`. Expected: zero new errors beyond the 8 pre-existing (chunk 0 actually drove the budget down from 9 to 8).
 - [ ] **1.20.4 Manual smoke** — login as `aslam@hortisort.com / password_123`, navigate to `/dashboard`:
   - 5 stat cards visible with accent bars and icon tiles
   - 8 machine tiles render with status border + value + unit + progress bar
