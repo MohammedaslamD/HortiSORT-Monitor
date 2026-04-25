@@ -1,286 +1,157 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { useLivePolling } from '../hooks/useLivePolling'
+import { liveMetricsService } from '../services/liveMetricsService'
+import { alertService } from '../services/alertService'
+import { activityService } from '../services/activityService'
+import {
+  StatCard, SectionCard, MachineTile, Sparkline, DonutChart, SeverityBar,
+  AlertRow, TimelineItem,
+} from '../components/dark'
+import type { FleetSummary, MachineLiveMetrics, ThroughputPoint, Alert, ActivityEvent } from '../types'
 
-import type { Machine, MachineStatus, MachineStats, DailyLog, Ticket } from '../types';
-import { useAuth } from '../context/AuthContext';
-import { getMachinesByRole } from '../services/machineService';
-import { getTickets } from '../services/ticketService';
-import { getDailyLogs } from '../services/dailyLogService';
-import { getAllTodaySessions } from '../services/productionSessionService';
-import { useProductionSocket } from '../hooks/useProductionSocket';
-import { StatsCards, MachineStatusChart, TicketSeverityChart, ThroughputChart } from '../components/dashboard'
-import { MachineCard } from '../components/machines/MachineCard';
-import { Input, Select } from '../components/common';
+function formatRelative(iso: string, now: number = Date.now()): string {
+  const diffMin = Math.floor((now - new Date(iso).getTime()) / 60_000)
+  if (diffMin < 1) return 'just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  const h = Math.floor(diffMin / 60)
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  return `${d}d ago`
+}
 
-/** Active ticket statuses used to compute per-machine open ticket counts. */
-const ACTIVE_TICKET_STATUSES = ['open', 'in_progress', 'reopened'] as const;
+const EMPTY_FLEET: FleetSummary = {
+  total_machines: 0, running: 0, idle: 0, down: 0, offline: 0,
+  in_production: 0, today_throughput_tons: 0,
+  trend_running_vs_yesterday: 0, trend_throughput_pct: 0,
+  open_tickets: { total: 0, p1: 0, p2: 0, p3: 0, p4: 0 },
+}
 
-/** Status filter options for the dropdown. */
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'running', label: 'Running' },
-  { value: 'idle', label: 'Idle' },
-  { value: 'down', label: 'Down' },
-  { value: 'offline', label: 'Offline' },
-];
-
-/**
- * Main dashboard page displaying machine stats, filters, and a grid of machine cards.
- *
- * - Fetches machines scoped to the current user's role.
- * - Fetches all tickets and daily logs to compute per-machine metrics.
- * - Supports client-side search and status filtering.
- * - Provides role-appropriate action buttons on each machine card.
- */
+/** Command Center: live fleet snapshot per dark-ui-v2.html. */
 export function DashboardPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
-  // ---------------------------------------------------------------------------
-  // Raw data state (fetched once on mount)
-  // ---------------------------------------------------------------------------
-  const [machines, setMachines] = useState<Machine[]>([]);
-  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
-  const [allDailyLogs, setAllDailyLogs] = useState<DailyLog[]>([]);
-  const [inProductionCount, setInProductionCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // One-shot fetches: fleet summary + machine metrics + activity
+  const [fleet, setFleet] = useState<FleetSummary>(EMPTY_FLEET)
+  const [metrics, setMetrics] = useState<MachineLiveMetrics[]>([])
+  const [activity, setActivity] = useState<ActivityEvent[]>([])
 
-  // ---------------------------------------------------------------------------
-  // Filter state
-  // ---------------------------------------------------------------------------
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<MachineStatus | ''>('');
-
-  // ---------------------------------------------------------------------------
-  // Fetch all data on mount
-  // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!user) return;
+    void liveMetricsService.getFleetSummary().then(setFleet)
+    void liveMetricsService.getMachineMetrics().then(setMetrics)
+    void activityService.getActivity().then(setActivity)
+  }, [])
 
-    let cancelled = false;
+  // Polled fetches: throughput (5 s), alerts (30 s)
+  const sparkline = useLivePolling<ThroughputPoint[]>(
+    () => liveMetricsService.getThroughputSeries(new Date()), 5_000, [],
+  )
+  const alerts = useLivePolling<Alert[]>(alertService.getAlerts, 30_000, [])
 
-    async function fetchData() {
-      setIsLoading(true);
-      setError(null);
+  const peak = useMemo(() => sparkline.data.reduce((m, p) => Math.max(m, p.actual), 0), [sparkline.data])
+  const avg = useMemo(() => {
+    if (sparkline.data.length === 0) return 0
+    return sparkline.data.reduce((s, p) => s + p.actual, 0) / sparkline.data.length
+  }, [sparkline.data])
+  const nowVal = sparkline.data[sparkline.data.length - 1]?.actual ?? 0
 
-      try {
-        const [fetchedMachines, fetchedTickets, fetchedLogs] = await Promise.all([
-          getMachinesByRole(),
-          getTickets(),
-          getDailyLogs(),
-        ]);
+  if (!user) return null
 
-        // Non-critical: fetch running production count (fails silently)
-        const today = new Date().toISOString().slice(0, 10);
-        const sessions = await getAllTodaySessions(today, { status: 'running' }).catch(() => []);
-        const runningMachineIds = new Set(sessions.map((s) => s.machine_id));
-
-        if (cancelled) return;
-
-        setMachines(fetchedMachines);
-        setAllTickets(fetchedTickets);
-        setAllDailyLogs(fetchedLogs);
-        setInProductionCount(runningMachineIds.size);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data.');
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
-
-    fetchData();
-    return () => { cancelled = true; };
-  }, [user]);
-
-  // ---------------------------------------------------------------------------
-  // Derived: client-side filtering
-  // ---------------------------------------------------------------------------
-  const filteredMachines = machines.filter((m) => {
-    // Status filter
-    if (statusFilter && m.status !== statusFilter) return false;
-
-    // Search filter (machine_code, name, city, state)
-    if (search) {
-      const term = search.toLowerCase();
-      const matchesSearch =
-        m.machine_code.toLowerCase().includes(term) ||
-        m.machine_name.toLowerCase().includes(term) ||
-        m.city.toLowerCase().includes(term) ||
-        m.state.toLowerCase().includes(term);
-      if (!matchesSearch) return false;
-    }
-
-    return true;
-  });
-
-  // Stats are computed from filtered results so cards + stats stay in sync
-  const stats: MachineStats = {
-    total: filteredMachines.length,
-    running: filteredMachines.filter((m) => m.status === 'running').length,
-    idle: filteredMachines.filter((m) => m.status === 'idle').length,
-    down: filteredMachines.filter((m) => m.status === 'down').length,
-    offline: filteredMachines.filter((m) => m.status === 'offline').length,
-  };
-
-  // Global open ticket count (across all user-visible machines, unfiltered)
-  const openTicketCount = allTickets.filter((t) =>
-    (ACTIVE_TICKET_STATUSES as readonly string[]).includes(t.status) &&
-    machines.some((m) => m.id === t.machine_id),
-  ).length;
-
-  // Live Socket.io updates — bump inProductionCount when a new 'running' session arrives
-  const { lastSession } = useProductionSocket({ allMachines: true });
-  useEffect(() => {
-    if (!lastSession) return;
-    if (lastSession.status === 'running') {
-      setInProductionCount((prev) => prev + 1);
-    }
-  }, [lastSession]);
-
-  // Full fleet stats for MachineStatusChart — always unfiltered, unaffected by search/status filter
-  const allMachinesStats: MachineStats = {
-    total:   machines.length,
-    running: machines.filter((m) => m.status === 'running').length,
-    idle:    machines.filter((m) => m.status === 'idle').length,
-    down:    machines.filter((m) => m.status === 'down').length,
-    offline: machines.filter((m) => m.status === 'offline').length,
+  const fleetTiles = metrics.slice(0, 8)
+  const tilesTone = (m: MachineLiveMetrics) => {
+    if (m.tons_per_hour === null && m.uptime_percent === 0) return 'offline' as const
+    if (m.tons_per_hour === null && m.progress_percent < 50) return 'down' as const
+    if (m.tons_per_hour === null) return 'idle' as const
+    return 'running' as const
   }
 
-  // Last 7 days of logs for ThroughputChart
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const last7DaysLogs = allDailyLogs.filter(
-    (log) => new Date(log.date) >= sevenDaysAgo,
-  )
-
-  // ---------------------------------------------------------------------------
-  // Per-machine helpers
-  // ---------------------------------------------------------------------------
-  const getOpenTicketCountForMachine = useCallback(
-    (machineId: number): number =>
-      allTickets.filter(
-        (t) =>
-          t.machine_id === machineId &&
-          (ACTIVE_TICKET_STATUSES as readonly string[]).includes(t.status),
-      ).length,
-    [allTickets],
-  );
-
-  const getTodayLogForMachine = useCallback(
-    (machineId: number): DailyLog | undefined => {
-      const today = new Date().toISOString().split('T')[0]
-      return allDailyLogs.find((log) => log.machine_id === machineId && log.date === today)
-    },
-    [allDailyLogs],
-  );
-
-  // ---------------------------------------------------------------------------
-  // Navigation handlers
-  // ---------------------------------------------------------------------------
-  const handleNavigate = useCallback(
-    (machineId: number) => navigate(`/machines/${machineId}`),
-    [navigate],
-  );
-
-  const handleUpdateStatus = useCallback(
-    (machineId: number) => navigate(`/machines/${machineId}/update-status`),
-    [navigate],
-  );
-
-  const handleRaiseTicket = useCallback(
-    (machineId: number) => navigate(`/tickets/new?machine=${machineId}`),
-    [navigate],
-  );
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-
-  if (!user) return null;
-
-  const userRole = user.role;
-
   return (
-    <div className="space-y-6">
-      {/* Page heading */}
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Dashboard</h2>
+    <div className="space-y-4">
+      {/* Stat row */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <StatCard accent="blue"  label="TOTAL MACHINES" icon={'\u2699'} value={fleet.total_machines} sub="Across 4 sites" />
+        <StatCard accent="green" label="RUNNING" dot="green" icon={'\u25B6'} value={fleet.running} valueColor="#4ade80"
+          trend={fleet.trend_running_vs_yesterday >= 0 ? { direction: 'up', value: `${fleet.trend_running_vs_yesterday}` } : { direction: 'down', value: `${Math.abs(fleet.trend_running_vs_yesterday)}` }}
+          sub="from yesterday" />
+        <StatCard accent="green" label="IN PRODUCTION" dot="green" icon={'\u2638'} value={fleet.in_production} valueColor="#4ade80" sub="Live TDMS sessions" />
+        <StatCard accent="red"   label="OPEN TICKETS" dot="red" icon={'\u2691'} value={fleet.open_tickets.total} valueColor="#ef4444"
+          sub={`${fleet.open_tickets.p1} P1 Critical \u00B7 ${fleet.open_tickets.total - fleet.open_tickets.p1} open`} />
+        <StatCard accent="cyan"  label="TODAY THROUGHPUT" icon={'\u2696'}
+          value={<>{fleet.today_throughput_tons}<span className="text-sm text-fg-4"> t</span></>}
+          valueColor="#22d3ee"
+          trend={{ direction: fleet.trend_throughput_pct >= 0 ? 'up' : 'down', value: `${Math.abs(fleet.trend_throughput_pct)}%` }}
+          sub="vs avg" />
+      </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
-      {/* Loading state */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
-        </div>
-      ) : (
-        <>
-          {/* Stats cards row */}
-          <StatsCards stats={stats} openTicketCount={openTicketCount} inProductionCount={inProductionCount} />
-
-          {/* Charts section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MachineStatusChart stats={allMachinesStats} />
-            {user.role !== 'customer' && (
-              <TicketSeverityChart tickets={allTickets} />
-            )}
-          </div>
-          <ThroughputChart logs={last7DaysLogs} />
-
-          {/* Filter / search bar */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Search machines, cities, states..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                type="search"
-              />
-            </div>
-            <div className="w-full sm:w-48">
-              <Select
-                options={STATUS_OPTIONS}
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as MachineStatus | '')
-                }
-              />
-            </div>
-          </div>
-
-          {/* Machine grid or empty state */}
-          {filteredMachines.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
-              <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No machines found.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredMachines.map((machine) => (
-                <MachineCard
-                  key={machine.id}
-                  machine={machine}
-                  todayLog={getTodayLogForMachine(machine.id)}
-                  openTicketCount={getOpenTicketCountForMachine(machine.id)}
-                  userRole={userRole}
-                  onNavigate={handleNavigate}
-                  onUpdateStatus={
-                    userRole !== 'customer' ? handleUpdateStatus : undefined
-                  }
-                  onRaiseTicket={
-                    userRole !== 'customer' ? handleRaiseTicket : undefined
-                  }
+      {/* Fleet + Throughput row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <SectionCard title="Machine Fleet" link={{ label: 'View all \u2192', onClick: () => navigate('/machines') }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {fleetTiles.map((m) => (
+                <MachineTile
+                  key={m.machine_id}
+                  tone={tilesTone(m)}
+                  name={`M-${String(m.machine_id).padStart(3, '0')}`}
+                  badge={<span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-bg-surface3 text-fg-3">{tilesTone(m).toUpperCase()}</span>}
+                  value={m.tons_per_hour ?? '--'}
+                  valueColor={m.tons_per_hour === null ? '#64748b' : undefined}
+                  unit={m.tons_per_hour !== null && m.current_fruit ? `t/hr \u00B7 ${m.current_fruit}` : (m.current_fruit ?? 'Offline')}
+                  progressPercent={tilesTone(m) === 'offline' ? undefined : m.progress_percent}
+                  progressTone={tilesTone(m) === 'down' ? 'red' : tilesTone(m) === 'idle' ? 'amber' : 'green'}
+                  onClick={() => navigate(`/machines/${m.machine_id}`)}
                 />
               ))}
             </div>
-          )}
-        </>
-      )}
+          </SectionCard>
+        </div>
+
+        <SectionCard title="Live Throughput" meta="LAST 30 MIN">
+          <Sparkline points={sparkline.data} />
+          <div className="flex gap-5 mt-2 pt-2 border-t border-line text-xs">
+            <div><div className="text-[10px] text-fg-4">PEAK</div><div className="font-extrabold text-brand-cyan">{peak.toFixed(1)} t/hr</div></div>
+            <div><div className="text-[10px] text-fg-4">AVG</div><div className="font-extrabold text-fg-3">{avg.toFixed(1)} t/hr</div></div>
+            <div><div className="text-[10px] text-fg-4">NOW</div><div className="font-extrabold text-brand-green">{nowVal.toFixed(1)} t/hr</div></div>
+          </div>
+        </SectionCard>
+      </div>
+
+      {/* Bottom row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <SectionCard title="Fleet Breakdown">
+          <DonutChart
+            centerLabel="machines"
+            segments={[
+              { label: 'Running', value: fleet.running, color: '#4ade80' },
+              { label: 'Idle',    value: fleet.idle,    color: '#fbbf24' },
+              { label: 'Down',    value: fleet.down,    color: '#ef4444' },
+              { label: 'Offline', value: fleet.offline, color: '#64748b' },
+            ]}
+          />
+          <div className="mt-3 pt-3 border-t border-line">
+            <div className="text-xs font-semibold tracking-wider text-fg-3 uppercase mb-2">Tickets by Severity</div>
+            <SeverityBar p1={fleet.open_tickets.p1} p2={fleet.open_tickets.p2} p3={fleet.open_tickets.p3} p4={fleet.open_tickets.p4} />
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Recent Activity" link={{ label: 'View timeline \u2192', onClick: () => { /* future */ } }}>
+          <div>
+            {activity.slice(0, 5).map((e) => (
+              <TimelineItem key={e.id} event={e} timeAgo={formatRelative(e.created_at)} />
+            ))}
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Live Alerts" link={{ label: 'View all \u2192', onClick: () => navigate('/tickets') }}>
+          <div className="space-y-2">
+            {alerts.data.slice(0, 5).map((a) => (
+              <AlertRow key={a.id} alert={a} timeAgo={formatRelative(a.created_at)} />
+            ))}
+          </div>
+        </SectionCard>
+      </div>
     </div>
-  );
+  )
 }
