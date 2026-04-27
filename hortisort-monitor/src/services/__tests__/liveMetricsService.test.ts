@@ -30,4 +30,25 @@ describe('liveMetricsService', () => {
     expect(a[0].actual).toBe(b[0].actual)
     expect(a[15].actual).toBe(b[15].actual)
   })
+
+  describe('getMachineRows', () => {
+    it('resolves with the full mock row set', async () => {
+      const rows = await liveMetricsService.getMachineRows()
+      expect(rows).toHaveLength(12)
+    })
+
+    it('preserves the mockup order — first row is M-001', async () => {
+      const rows = await liveMetricsService.getMachineRows()
+      expect(rows[0].machine_label).toBe('M-001 Banana Sorter A')
+    })
+
+    it('reconciles tone counts with FleetSummary (6/2/2/2)', async () => {
+      const rows = await liveMetricsService.getMachineRows()
+      const counts = rows.reduce<Record<string, number>>((acc, r) => {
+        acc[r.status] = (acc[r.status] ?? 0) + 1
+        return acc
+      }, {})
+      expect(counts).toEqual({ running: 6, idle: 2, down: 2, offline: 2 })
+    })
+  })
 })
