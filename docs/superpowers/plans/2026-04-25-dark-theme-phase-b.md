@@ -3454,3 +3454,616 @@ git commit -m "docs(spec): mark phase B chunk 2 complete; note StatBadge variant
 ```
 
 **End of Chunk 2.**
+
+---
+
+## Chunk 3: Tickets page (dense dark table)
+
+> **Spec reference:** §7 row 3 — `TicketsPage` redesign uses
+> `StatCard×4`, the `DataTable` molecule from chunk 2, and `StatBadge`
+> per row for severity and status. Mockup: `dark-ui-v2.html` lines
+> 548-569 (page-tickets section).
+>
+> **Behaviour deltas vs Phase A `TicketsPage`:** the chunk-3 page **drops** the
+> existing search input and the Status / Severity / Category filter
+> selects. Mockup section has no filter UI; spec line 300 lists only
+> the four stat cards + table. The legacy `TicketCard` component is
+> left in `src/components/tickets/` as dead code (mirroring how
+> `MachineCard` was handled in chunk 2). The "Raise Ticket" link
+> is preserved (engineer/admin only).
+>
+> **StatBadge variants needed:** `critical`, `high`, `medium`, `low`
+> (severity) + `open`, `inprog`, `resolved` (status). All seven were
+> shipped in chunk 2's StatBadge atom — no new variants required.
+> Note: `closed` and `reopened` `TicketStatus` values map to existing
+> variants (`closed → resolved`, `reopened → open`) so the badge set
+> stays at 17/21 after chunk 3.
+>
+> **No new chunk-1 primitives required.** All atoms/molecules
+> (`StatCard`, `SectionCard`, `StatBadge`, `DataTable`, `Button` xs)
+> already exist.
+>
+> **Test floor**: chunk-2 floor = **307**. Chunk-3 adds:
+> ticketService new methods (3+3 tests = 6), severityToBadgeVariant
+> (4 tests), ticketStatusToBadgeVariant (5 tests), TicketsPage page
+> tests (5 tests), dark-mode smoke (+2 for both themes) = **22 added**.
+> **New chunk-3 floor: ≥ 329**.
+
+### Step 3.1: Add `TicketStats` and `TicketRow` types
+
+- [ ] **3.1.1** Append to `src/types/index.ts` (after `MachineRow`):
+
+```typescript
+// -----------------------------------------------------------------------------
+// Phase B: Tickets page aggregates and table-row projection
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four TicketsPage stat cards. */
+export interface TicketStats {
+  open: number;
+  in_progress: number;
+  resolved_today: number;
+  /** Average resolution time in hours, computed across resolved/closed tickets. */
+  avg_resolution_hours: number;
+}
+
+/** Denormalized ticket row for the TicketsPage dense table. */
+export interface TicketRow {
+  /** PK from tickets.id (drives row identity + click target). */
+  id: number;
+  /** e.g. "TKT-00001" */
+  ticket_number: string;
+  /** Resolved machine code (e.g. "M-003") for display in the Machine column. */
+  machine_code: string;
+  /** Ticket title, shown in the Issue column. */
+  title: string;
+  severity: TicketSeverity;
+  status: TicketStatus;
+  /** Resolved engineer name (e.g. "Amit Sharma") or "Unassigned" if 0/null. */
+  assigned_to_name: string;
+  /** ISO timestamp; rendered with formatRelative. */
+  created_at: string;
+}
+```
+
+- [ ] **3.1.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
+- [ ] **3.1.3** Commit `feat(types): add TicketStats + TicketRow for Phase B tickets table`.
+
+### Step 3.2: Mock `MOCK_TICKET_STATS`
+
+> Static aggregate matching mockup line 551-554 values. The TicketRow
+> data is derived from existing `MOCK_TICKETS` inside the service
+> (step 3.3) — no new mock array needed for rows.
+
+- [ ] **3.2.1** Append to `src/data/mockData.ts` (after `MOCK_TICKET_COMMENTS`):
+
+```typescript
+import type { TicketStats } from "../types"; // (only if not already imported above)
+
+/** Phase-B tickets page stat-card aggregate. Mockup: dark-ui-v2.html line 551-554. */
+export const MOCK_TICKET_STATS: TicketStats = {
+  open: 4,
+  in_progress: 2,
+  resolved_today: 3,
+  avg_resolution_hours: 4.2,
+};
+```
+
+> If `TicketStats` already imports cleanly via the existing import
+> block at the top of `mockData.ts`, just add the symbol to that
+> existing import line — do not introduce a duplicate import.
+
+- [ ] **3.2.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
+- [ ] **3.2.3** Commit `feat(data): add MOCK_TICKET_STATS for tickets page header`.
+
+### Step 3.3: Extend `ticketService` with `getTicketStats` + `getTicketRows`
+
+> The current `ticketService.ts` is HTTP-shaped (calls `apiClient`).
+> Phase B services in `liveMetricsService` are static-mock-shaped
+> (return `Promise.resolve(MOCK_*)`). For consistency with chunk 2,
+> the two new methods are **static-mock-shaped** and added as a
+> separate exported `liveTicketsService` object in a NEW file
+> `src/services/liveTicketsService.ts`. This avoids mixing HTTP and
+> static-mock patterns inside a single file and keeps the existing
+> apiClient-based methods untouched.
+
+- [ ] **3.3.1 RED** Create `src/services/__tests__/liveTicketsService.test.ts`:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { liveTicketsService } from '../liveTicketsService'
+
+describe('liveTicketsService', () => {
+  describe('getTicketStats', () => {
+    it('returns the static MOCK_TICKET_STATS object', async () => {
+      const stats = await liveTicketsService.getTicketStats()
+      expect(stats.open).toBe(4)
+      expect(stats.in_progress).toBe(2)
+      expect(stats.resolved_today).toBe(3)
+      expect(stats.avg_resolution_hours).toBe(4.2)
+    })
+
+    it('returns a Promise<TicketStats>', async () => {
+      const result = liveTicketsService.getTicketStats()
+      expect(result).toBeInstanceOf(Promise)
+      await expect(result).resolves.toEqual(expect.objectContaining({
+        open: expect.any(Number),
+      }))
+    })
+  })
+
+  describe('getTicketRows', () => {
+    it('returns one row per ticket in MOCK_TICKETS', async () => {
+      const rows = await liveTicketsService.getTicketRows()
+      expect(rows.length).toBe(10) // MOCK_TICKETS length
+    })
+
+    it('resolves machine_code from MOCK_MACHINES', async () => {
+      const rows = await liveTicketsService.getTicketRows()
+      // TKT-00001 has machine_id 3 → MOCK_MACHINES[2].machine_code = "M-003"
+      const tk1 = rows.find((r) => r.ticket_number === 'TKT-00001')
+      expect(tk1?.machine_code).toBe('M-003')
+    })
+
+    it('resolves assigned_to_name from MOCK_USERS or "Unassigned" when 0', async () => {
+      const rows = await liveTicketsService.getTicketRows()
+      const tk1 = rows.find((r) => r.ticket_number === 'TKT-00001')
+      // MOCK_TICKETS row 1 has assigned_to: 5 → user id 5 in MOCK_USERS
+      expect(tk1?.assigned_to_name).toBeDefined()
+      expect(tk1?.assigned_to_name).not.toBe('Unassigned')
+    })
+  })
+})
+```
+
+- [ ] **3.3.2** Run `npx vitest run src/services/__tests__/liveTicketsService.test.ts`. Expected: RED.
+
+- [ ] **3.3.3 GREEN** Create `src/services/liveTicketsService.ts`:
+
+```typescript
+import type { TicketRow, TicketStats } from '../types'
+import { MOCK_TICKET_STATS, MOCK_TICKETS, MOCK_MACHINES, MOCK_USERS } from '../data/mockData'
+
+/**
+ * Phase-B service for the TicketsPage. Returns static mock data today;
+ * function bodies are the only thing that changes when a backend lands.
+ */
+export const liveTicketsService = {
+  async getTicketStats(): Promise<TicketStats> {
+    return MOCK_TICKET_STATS
+  },
+
+  async getTicketRows(): Promise<TicketRow[]> {
+    const machineById = new Map(MOCK_MACHINES.map((m) => [m.id, m.machine_code]))
+    const userById = new Map(MOCK_USERS.map((u) => [u.id, u.full_name]))
+    return MOCK_TICKETS.map((t) => ({
+      id: t.id,
+      ticket_number: t.ticket_number,
+      machine_code: machineById.get(t.machine_id) ?? '—',
+      title: t.title,
+      severity: t.severity,
+      status: t.status,
+      assigned_to_name: t.assigned_to ? (userById.get(t.assigned_to) ?? 'Unassigned') : 'Unassigned',
+      created_at: t.created_at,
+    }))
+  },
+}
+```
+
+> **Pre-flight check (chunk-2 lesson):** before writing this file,
+> open `src/data/mockData.ts` and confirm the export names
+> `MOCK_MACHINES` and `MOCK_USERS` exist with the field names used
+> here (`machine_code`, `full_name`). If a different field name is
+> used (e.g. `name` instead of `full_name`), update the `userById`
+> map accordingly. Field names are confirmed via `grep -n
+> "machine_code\|full_name" src/data/mockData.ts` before starting.
+
+- [ ] **3.3.4** Run `npx vitest run src/services/__tests__/liveTicketsService.test.ts`. Expected: GREEN.
+- [ ] **3.3.5** Commit `feat(service): add liveTicketsService with getTicketStats + getTicketRows`.
+
+### Step 3.4: Helper — `severityToBadgeVariant` (own file)
+
+- [ ] **3.4.1 RED** Create `src/components/dark/__tests__/severityToBadgeVariant.test.ts`:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { severityToBadgeVariant } from '../severityToBadgeVariant'
+
+describe('severityToBadgeVariant', () => {
+  it.each([
+    ['P1_critical', 'critical'],
+    ['P2_high', 'high'],
+    ['P3_medium', 'medium'],
+    ['P4_low', 'low'],
+  ] as const)('%s -> %s', (severity, expected) => {
+    expect(severityToBadgeVariant(severity)).toBe(expected)
+  })
+})
+```
+
+- [ ] **3.4.2** Run; expect RED.
+- [ ] **3.4.3 GREEN** Create `src/components/dark/severityToBadgeVariant.ts`:
+
+```typescript
+import type { TicketSeverity } from '../../types'
+import type { StatBadgeVariant } from './StatBadge'
+
+const map: Record<TicketSeverity, StatBadgeVariant> = {
+  P1_critical: 'critical',
+  P2_high: 'high',
+  P3_medium: 'medium',
+  P4_low: 'low',
+}
+
+export function severityToBadgeVariant(severity: TicketSeverity): StatBadgeVariant {
+  return map[severity]
+}
+```
+
+- [ ] **3.4.4** Run; expect GREEN.
+- [ ] **3.4.5** Commit `feat(dark): severityToBadgeVariant helper`.
+
+### Step 3.5: Helper — `ticketStatusToBadgeVariant` (own file)
+
+> **Mapping rationale:** the StatBadge atom shipped in chunk 2 has
+> `open / inprog / resolved` variants. `closed` and `reopened` are
+> valid `TicketStatus` values not represented by their own
+> StatBadge variants — they map to `resolved` and `open`
+> respectively (closed = terminal success-like state ⇒ green;
+> reopened = needs attention again ⇒ red). This keeps StatBadge at
+> 17 variants and avoids touching it in chunk 3.
+
+- [ ] **3.5.1 RED** Create `src/components/dark/__tests__/ticketStatusToBadgeVariant.test.ts`:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { ticketStatusToBadgeVariant } from '../ticketStatusToBadgeVariant'
+
+describe('ticketStatusToBadgeVariant', () => {
+  it.each([
+    ['open',         'open'],
+    ['in_progress',  'inprog'],
+    ['resolved',     'resolved'],
+    ['closed',       'resolved'],
+    ['reopened',     'open'],
+  ] as const)('%s -> %s', (status, expected) => {
+    expect(ticketStatusToBadgeVariant(status)).toBe(expected)
+  })
+})
+```
+
+- [ ] **3.5.2** Run; expect RED.
+- [ ] **3.5.3 GREEN** Create `src/components/dark/ticketStatusToBadgeVariant.ts`:
+
+```typescript
+import type { TicketStatus } from '../../types'
+import type { StatBadgeVariant } from './StatBadge'
+
+const map: Record<TicketStatus, StatBadgeVariant> = {
+  open:        'open',
+  in_progress: 'inprog',
+  resolved:    'resolved',
+  closed:      'resolved',
+  reopened:    'open',
+}
+
+export function ticketStatusToBadgeVariant(status: TicketStatus): StatBadgeVariant {
+  return map[status]
+}
+```
+
+- [ ] **3.5.4** Run; expect GREEN.
+- [ ] **3.5.5** Commit `feat(dark): ticketStatusToBadgeVariant helper`.
+
+### Step 3.6: Barrel exports
+
+- [ ] **3.6.1** Append to `src/components/dark/index.ts`:
+
+```typescript
+export { severityToBadgeVariant } from './severityToBadgeVariant'
+export { ticketStatusToBadgeVariant } from './ticketStatusToBadgeVariant'
+```
+
+- [ ] **3.6.2** Run `npm run build`. Expected: GREEN.
+- [ ] **3.6.3** Commit `chore(dark): export severity + ticket status badge mappers`.
+
+### Step 3.7: Rewrite `TicketsPage` (RED → GREEN)
+
+> The existing `TicketsPage.tsx` has **no test file** today (verified
+> via `ls src/pages/__tests__/TicketsPage.test.tsx` — does not exist).
+> A brand-new test file is created alongside the rewrite.
+
+#### Severity + status display labels
+
+The mockup renders severity pills as `"P1 Critical"`, `"P2 High"`,
+`"P3 Medium"`, `"P4 Low"` and status pills as `"Open"`, `"In Progress"`,
+`"Resolved"`, `"Closed"`, `"Reopened"`. These labels live as inline
+const maps inside `TicketsPage.tsx` (no separate file — they are not
+reused elsewhere yet).
+
+- [ ] **3.7.1 RED** Create `src/pages/__tests__/TicketsPage.test.tsx`:
+
+```tsx
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '../../test/utils'
+import userEvent from '@testing-library/user-event'
+import { TicketsPage } from '../TicketsPage'
+
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate, Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a> }
+})
+
+const mockEngineer = { id: 5, name: 'Amit Sharma', email: 'amit@hortisort.com', role: 'engineer' as const, is_active: true }
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: () => ({ user: mockEngineer }),
+}))
+
+const ticketStats = {
+  open: 4, in_progress: 2, resolved_today: 3, avg_resolution_hours: 4.2,
+}
+
+const ticketRows = [
+  { id: 1, ticket_number: 'TKT-00001', machine_code: 'M-003', title: 'Motor overload', severity: 'P1_critical' as const, status: 'open' as const,        assigned_to_name: 'Amit Sharma', created_at: new Date().toISOString() },
+  { id: 2, ticket_number: 'TKT-00002', machine_code: 'M-007', title: 'Sensor down',    severity: 'P2_high'     as const, status: 'in_progress' as const, assigned_to_name: 'Priya Nair',  created_at: new Date(Date.now() - 86_400_000).toISOString() },
+  { id: 3, ticket_number: 'TKT-00003', machine_code: 'M-002', title: 'High rejection', severity: 'P2_high'     as const, status: 'open' as const,        assigned_to_name: 'Unassigned',  created_at: new Date(Date.now() - 2 * 3_600_000).toISOString() },
+  { id: 4, ticket_number: 'TKT-00004', machine_code: 'M-005', title: 'Calibration',    severity: 'P3_medium'   as const, status: 'resolved' as const,    assigned_to_name: 'Amit Sharma', created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() },
+]
+
+vi.mock('../../services/liveTicketsService', () => ({
+  liveTicketsService: {
+    getTicketStats: vi.fn(),
+    getTicketRows: vi.fn(),
+  },
+}))
+
+import { liveTicketsService } from '../../services/liveTicketsService'
+
+describe('TicketsPage', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    vi.mocked(liveTicketsService.getTicketStats).mockResolvedValue(ticketStats)
+    vi.mocked(liveTicketsService.getTicketRows).mockResolvedValue(ticketRows)
+  })
+
+  it('renders title + subtitle', async () => {
+    render(<TicketsPage />)
+    expect(await screen.findByText('Tickets')).toBeInTheDocument()
+    expect(screen.getByText(/Maintenance and fault tracking/i)).toBeInTheDocument()
+  })
+
+  it('renders 4 stat cards from TicketStats', async () => {
+    render(<TicketsPage />)
+    await waitFor(() => {
+      expect(screen.getByText('Open')).toBeInTheDocument()
+    })
+    expect(screen.getByText('In Progress')).toBeInTheDocument()
+    expect(screen.getByText('Resolved Today')).toBeInTheDocument()
+    expect(screen.getByText('Avg Resolution')).toBeInTheDocument()
+    expect(screen.getByText('4')).toBeInTheDocument()
+    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('4.2')).toBeInTheDocument()
+  })
+
+  it('renders one row per ticket with severity + status pills', async () => {
+    render(<TicketsPage />)
+    expect(await screen.findByText('TKT-00001')).toBeInTheDocument()
+    expect(screen.getByText('TKT-00004')).toBeInTheDocument()
+    expect(screen.getByText('P1 Critical')).toBeInTheDocument()
+    // P2 High appears twice (rows 2 and 3) → use getAllByText
+    expect(screen.getAllByText('P2 High').length).toBe(2)
+    expect(screen.getByText('In Progress')).toBeInTheDocument()
+  })
+
+  it('Raise Ticket button visible for engineer/admin and links to /tickets/new', async () => {
+    render(<TicketsPage />)
+    const link = await screen.findByRole('link', { name: /raise ticket/i })
+    expect(link).toHaveAttribute('href', '/tickets/new')
+  })
+
+  it('renders empty state when service resolves to []', async () => {
+    vi.mocked(liveTicketsService.getTicketRows).mockResolvedValueOnce([])
+    render(<TicketsPage />)
+    expect(await screen.findByText(/no tickets/i)).toBeInTheDocument()
+  })
+})
+```
+
+- [ ] **3.7.2** Run; expect RED.
+
+- [ ] **3.7.3 GREEN** Replace `src/pages/TicketsPage.tsx` with:
+
+```tsx
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+
+import type { TicketStats, TicketRow, TicketSeverity, TicketStatus } from '../types'
+import { useAuth } from '../context/AuthContext'
+import { liveTicketsService } from '../services/liveTicketsService'
+import { Button } from '../components/common'
+import {
+  StatCard,
+  SectionCard,
+  StatBadge,
+  DataTable,
+  severityToBadgeVariant,
+  ticketStatusToBadgeVariant,
+} from '../components/dark'
+import { formatRelative } from '../utils/formatRelative'
+
+const SEVERITY_LABEL: Record<TicketSeverity, string> = {
+  P1_critical: 'P1 Critical',
+  P2_high:     'P2 High',
+  P3_medium:   'P3 Medium',
+  P4_low:      'P4 Low',
+}
+
+const STATUS_LABEL: Record<TicketStatus, string> = {
+  open:        'Open',
+  in_progress: 'In Progress',
+  resolved:    'Resolved',
+  closed:      'Closed',
+  reopened:    'Reopened',
+}
+
+const COLUMNS = [
+  { key: 'num',      label: '#' },
+  { key: 'machine',  label: 'Machine' },
+  { key: 'issue',    label: 'Issue' },
+  { key: 'severity', label: 'Severity' },
+  { key: 'status',   label: 'Status' },
+  { key: 'assigned', label: 'Assigned' },
+  { key: 'created',  label: 'Created' },
+  { key: 'actions',  label: 'Actions' },
+]
+
+/** Phase-B Tickets page — dense dark table per dark-ui-v2.html lines 548-569. */
+export function TicketsPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [stats, setStats] = useState<TicketStats | null>(null)
+  const [rows, setRows] = useState<TicketRow[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      liveTicketsService.getTicketStats(),
+      liveTicketsService.getTicketRows(),
+    ]).then(([s, r]) => {
+      if (cancelled) return
+      setStats(s)
+      setRows(r)
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  if (!user) return null
+  const canRaiseTicket = user.role === 'engineer' || user.role === 'admin'
+
+  const tableRows = (rows ?? []).map((r) => ({
+    id: r.id,
+    cells: [
+      r.ticket_number,
+      r.machine_code,
+      r.title,
+      <StatBadge key="sev" variant={severityToBadgeVariant(r.severity)}>
+        {SEVERITY_LABEL[r.severity]}
+      </StatBadge>,
+      <StatBadge key="st" variant={ticketStatusToBadgeVariant(r.status)}>
+        {STATUS_LABEL[r.status]}
+      </StatBadge>,
+      r.assigned_to_name,
+      formatRelative(r.created_at),
+      <Button key="a" size="xs" variant="ghost" onClick={() => navigate(`/tickets/${r.id}`)}>
+        {r.status === 'resolved' || r.status === 'closed' ? 'View' : 'Update'}
+      </Button>,
+    ],
+  }))
+
+  return (
+    <div className="space-y-4">
+      <header className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-fg-1">Tickets</h1>
+          <p className="text-sm text-fg-4">Maintenance and fault tracking</p>
+        </div>
+        {canRaiseTicket && (
+          <Link to="/tickets/new">
+            <Button variant="primary">+ Raise Ticket</Button>
+          </Link>
+        )}
+      </header>
+
+      {stats && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard accent="red"    label="Open"           value={stats.open}            valueColor="#f87171" icon={<>{'\u2691'}</>} />
+          <StatCard accent="blue"   label="In Progress"    value={stats.in_progress}     valueColor="#60a5fa" icon={<>{'\u2699'}</>} />
+          <StatCard accent="green"  label="Resolved Today" value={stats.resolved_today}  valueColor="#4ade80" icon={<>{'\u2714'}</>} />
+          <StatCard accent="purple" label="Avg Resolution" value={<>{stats.avg_resolution_hours}<span className="text-sm"> h</span></>} valueColor="#a78bfa" icon={<>{'\u23F1'}</>} />
+        </div>
+      )}
+
+      <SectionCard title="All Tickets">
+        {rows === null ? (
+          <p className="text-sm text-fg-6 py-8 text-center">Loading...</p>
+        ) : rows.length === 0 ? (
+          <p className="text-sm text-fg-6 py-8 text-center">No tickets found.</p>
+        ) : (
+          <DataTable columns={COLUMNS} rows={tableRows} />
+        )}
+      </SectionCard>
+    </div>
+  )
+}
+```
+
+> **JSX glyph note:** unicode escapes used for icons:
+> `\u2691` ⚑ (open flag), `\u2699` ⚙ (gear), `\u2714` ✔ (check),
+> `\u23F1` ⏱ (stopwatch). If happy-dom round-trips a glyph
+> differently, fall back to `<span>{'\u2691'}</span>` form (chunk-2 lesson).
+
+- [ ] **3.7.4** Run `npx vitest run src/pages/__tests__/TicketsPage.test.tsx`. Expected: GREEN.
+- [ ] **3.7.5** Commit `feat(tickets): rewrite TicketsPage as Phase B dense dark table`.
+
+### Step 3.8: Update dark-mode smoke test
+
+- [ ] **3.8.1** Edit `src/pages/__tests__/dark-mode.test.tsx`:
+  - **Append** `import { TicketsPage } from '../TicketsPage'` near the top.
+  - **Append** a fresh `vi.mock` block for `liveTicketsService`:
+
+    ```typescript
+    vi.mock('../../services/liveTicketsService', () => ({
+      liveTicketsService: {
+        getTicketStats: vi.fn().mockResolvedValue({
+          open: 0, in_progress: 0, resolved_today: 0, avg_resolution_hours: 0,
+        }),
+        getTicketRows: vi.fn().mockResolvedValue([]),
+      },
+    }))
+    ```
+
+  - **Append** to the `pages` array:
+
+    ```typescript
+    { name: 'TicketsPage', Component: TicketsPage, probe: /Maintenance and fault tracking/i },
+    ```
+
+- [ ] **3.8.2** Run `npx vitest run src/pages/__tests__/dark-mode.test.tsx`. Expected: GREEN.
+- [ ] **3.8.3** Commit `test(dark-mode): cover TicketsPage Phase B markup`.
+
+### Step 3.9: Final per-chunk gate
+
+- [ ] **3.9.1** Run `npm run test:run`. Expected: GREEN.
+  - **Chunk-3 floor: ≥ 329 tests.** (Chunk-2 floor 307 + 22 new.)
+  - Record actual count in plan after run.
+- [ ] **3.9.2** Run `npm run build`. Expected: GREEN.
+- [ ] **3.9.3** Run `npm run lint`. Expected: ≤ 8 errors (chunk-2 baseline; do
+      not introduce new errors).
+- [ ] **3.9.4 Manual smoke** — login as `aslam@hortisort.com / password_123`,
+      navigate to `/tickets`:
+  - Header `Tickets` + subtitle `Maintenance and fault tracking`
+  - 4 stat cards with values from `MOCK_TICKET_STATS` (`4 / 2 / 3 / 4.2 h`)
+    and accent bars red/blue/green/purple, value colors `#f87171 / #60a5fa /
+    #4ade80 / #a78bfa`
+  - "+ Raise Ticket" button visible (logged in as admin/engineer); links
+    to `/tickets/new`
+  - Table renders 10 rows from MOCK_TICKETS; severity pills (P1 Critical, P2
+    High, P3 Medium, P4 Low) tones red/orange/yellow/blue; status pills (Open,
+    In Progress, Resolved, Closed, Reopened) tones red/yellow/green/green/red
+  - Closed/Resolved rows show "View" action button; others show "Update"
+  - Click any row's action button → navigates to `/tickets/<id>`
+  - Hover on a row tints background to `bg-bg-surface3`
+  - Theme toggle: light mode renders without console errors
+  - Mobile width 375 px: stat cards 2-up; table horizontally scrolls
+  - Browser console: zero errors
+- [ ] **3.9.5** Update spec `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md`:
+  - Line 3: `Status: in implementation (chunk 3 complete)`
+  - Commit:
+
+```bash
+git add docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md
+git commit -m "docs(spec): mark phase B chunk 3 complete"
+```
+
+**End of Chunk 3.**
