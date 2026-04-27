@@ -9,17 +9,8 @@ import {
   StatCard, SectionCard, MachineTile, Sparkline, DonutChart, SeverityBar,
   AlertRow, TimelineItem,
 } from '../components/dark'
+import { formatRelative } from '../utils/formatRelative'
 import type { FleetSummary, MachineLiveMetrics, ThroughputPoint, Alert, ActivityEvent } from '../types'
-
-function formatRelative(iso: string, now: number = Date.now()): string {
-  const diffMin = Math.floor((now - new Date(iso).getTime()) / 60_000)
-  if (diffMin < 1) return 'just now'
-  if (diffMin < 60) return `${diffMin}m ago`
-  const h = Math.floor(diffMin / 60)
-  if (h < 24) return `${h}h ago`
-  const d = Math.floor(h / 24)
-  return `${d}d ago`
-}
 
 const EMPTY_FLEET: FleetSummary = {
   total_machines: 0, running: 0, idle: 0, down: 0, offline: 0,
