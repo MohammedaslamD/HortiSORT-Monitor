@@ -489,3 +489,36 @@ export interface MachineRow {
   last_active: string;
   open_tickets_count: number;
 }
+
+// -----------------------------------------------------------------------------
+// Phase B: Tickets page aggregates and table-row projection
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four TicketsPage stat cards. */
+export interface TicketStats {
+  open: number;
+  in_progress: number;
+  resolved_today: number;
+  /** Average resolution time in hours, computed across resolved/closed tickets. */
+  avg_resolution_hours: number;
+}
+
+/** Denormalized ticket row for the TicketsPage dense table. */
+export interface TicketRow {
+  /** PK from tickets.id (drives row identity + click target). */
+  id: number;
+  /** e.g. "TKT-00001" */
+  ticket_number: string;
+  /** Resolved machine code (e.g. "HS-2024-0003") for display in the Machine column. */
+  machine_code: string;
+  /** Ticket title, shown in the Issue column. */
+  title: string;
+  severity: TicketSeverity;
+  status: TicketStatus;
+  /** Resolved engineer name (e.g. "Amit Sharma") or "Unassigned" when the
+   *  user lookup fails. `Ticket.assigned_to` is a non-nullable `number`
+   *  today, but the fallback keeps the projection defensive. */
+  assigned_to_name: string;
+  /** ISO timestamp; rendered with formatRelative. */
+  created_at: string;
+}
