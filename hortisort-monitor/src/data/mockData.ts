@@ -4,6 +4,7 @@ import type {
   DailyLog,
   Ticket,
   TicketComment,
+  TicketStats,
   SiteVisit,
   MachineHistory,
   ActivityLog,
@@ -148,3 +149,15 @@ export const MOCK_ACTIVITY_LOG: ActivityLog[] = [
   { id: 9, user_id: 4, action: "ticket_reopened", entity_type: "ticket", entity_id: 10, details: "Priya Nair reopened TKT-00010: Network connectivity still intermittent", created_at: "2026-03-12T09:00:00Z" },
   { id: 10, user_id: 3, action: "site_visit_logged", entity_type: "machine", entity_id: 9, details: "Amit Sharma logged ticket visit for HS-2025-0009 — pneumatic actuator issue", created_at: "2026-03-13T16:00:00Z" },
 ]
+
+// =============================================================================
+// Phase B: Tickets Page Stats
+// =============================================================================
+
+/** Phase-B tickets page stat-card aggregate. Mockup: dark-ui-v2.html line 551-554. */
+export const MOCK_TICKET_STATS: TicketStats = {
+  open: 4,
+  in_progress: 2,
+  resolved_today: 3,
+  avg_resolution_hours: 4.2,
+};
