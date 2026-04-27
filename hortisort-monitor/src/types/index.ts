@@ -462,3 +462,30 @@ export interface ActivityEvent {
   meta: string;
   created_at: string;
 }
+
+/** Status tone for a machine row in the Machines table. */
+export type MachineStatusTone = "running" | "idle" | "down" | "offline";
+
+/**
+ * Flat row describing one machine for the Phase-B Machines table.
+ * Joins fields from `Machine`, `MachineLiveMetrics`, and per-row
+ * aggregates (`open_tickets_count`, `last_active`).
+ *
+ * `fruit` is always populated from the machine's product assignment,
+ * even when the machine is offline/idle (it represents what the
+ * machine sorts, not what is currently flowing).
+ *
+ * `tons_per_hour` and `uptime_percent` are nullable: null indicates
+ * "no live signal", rendered as the literal `--` in the table.
+ */
+export interface MachineRow {
+  machine_id: number;
+  machine_label: string;
+  site: string;
+  fruit: string;
+  status: MachineStatusTone;
+  tons_per_hour: number | null;
+  uptime_percent: number | null;
+  last_active: string;
+  open_tickets_count: number;
+}
