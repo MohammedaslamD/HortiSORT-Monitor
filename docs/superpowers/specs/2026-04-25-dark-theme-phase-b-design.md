@@ -233,7 +233,7 @@ file and is fully covered before any page consumes it.
 | `Sparkline`     | `points: ThroughputPoint[]`, `height?: number`       |
 | `ProgressBar`   | `percent: number`, `tone: 'green'\|'red'\|'amber'`, `height?: number` |
 | `InfoBanner`    | `tone?: 'info'\|'warn'`, `title?: string`, `children: ReactNode`. Used in Daily Logs page and inside Update Status modal. Renders left-accent-bordered banner with subtle gradient. |
-| `Button` (extended) | Existing `common/Button` gains variants `'primary' \| 'ghost' \| 'danger' \| 'yellow' \| 'green'`, plus a `size: 'sm' \| 'md'` prop. The mockup's table-row mini-buttons (e.g. `padding:4px 8px;font-size:10px`) map to `size='sm'`. The component is extended, not replaced, so existing call sites continue to work; passing the new variants triggers the new visual styles. |
+| `Button` (extended) | Existing `common/Button` gains variants `'primary' \| 'ghost' \| 'danger' \| 'yellow' \| 'green'`, plus a `size: 'xs' \| 'sm' \| 'md'` prop (`xs` is the table-row mini size at `px-2 py-1 text-[10px]`, mapping to the mockup's `padding:4px 8px;font-size:10px`). The component is extended, not replaced, so existing call sites continue to work; passing the new variants triggers the new visual styles. |
 
 `StatBadge` replaces the existing `Badge` for these specific variants;
 existing `Badge` stays for legacy markup that hasn't migrated yet.
