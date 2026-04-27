@@ -3513,13 +3513,15 @@ export interface TicketRow {
   id: number;
   /** e.g. "TKT-00001" */
   ticket_number: string;
-  /** Resolved machine code (e.g. "M-003") for display in the Machine column. */
+  /** Resolved machine code (e.g. "HS-2024-0003") for display in the Machine column. */
   machine_code: string;
   /** Ticket title, shown in the Issue column. */
   title: string;
   severity: TicketSeverity;
   status: TicketStatus;
-  /** Resolved engineer name (e.g. "Amit Sharma") or "Unassigned" if 0/null. */
+  /** Resolved engineer name (e.g. "Amit Sharma") or "Unassigned" when the
+   *  user lookup fails. `Ticket.assigned_to` is a non-nullable `number`
+   *  today, but the fallback keeps the projection defensive. */
   assigned_to_name: string;
   /** ISO timestamp; rendered with formatRelative. */
   created_at: string;
@@ -3600,17 +3602,17 @@ describe('liveTicketsService', () => {
 
     it('resolves machine_code from MOCK_MACHINES', async () => {
       const rows = await liveTicketsService.getTicketRows()
-      // TKT-00001 has machine_id 3 → MOCK_MACHINES[2].machine_code = "M-003"
+      // TKT-00001 has machine_id 3 → MOCK_MACHINES id=3 has
+      // machine_code = "HS-2024-0003" (verified in src/data/mockData.ts:32).
       const tk1 = rows.find((r) => r.ticket_number === 'TKT-00001')
-      expect(tk1?.machine_code).toBe('M-003')
+      expect(tk1?.machine_code).toBe('HS-2024-0003')
     })
 
-    it('resolves assigned_to_name from MOCK_USERS or "Unassigned" when 0', async () => {
+    it('resolves assigned_to_name from MOCK_USERS or "Unassigned" when missing', async () => {
       const rows = await liveTicketsService.getTicketRows()
       const tk1 = rows.find((r) => r.ticket_number === 'TKT-00001')
-      // MOCK_TICKETS row 1 has assigned_to: 5 → user id 5 in MOCK_USERS
-      expect(tk1?.assigned_to_name).toBeDefined()
-      expect(tk1?.assigned_to_name).not.toBe('Unassigned')
+      // MOCK_TICKETS row 1 has assigned_to: 5 → MOCK_USERS id=5 = "Aslam Sheikh"
+      expect(tk1?.assigned_to_name).toBe('Aslam Sheikh')
     })
   })
 })
@@ -3635,7 +3637,7 @@ export const liveTicketsService = {
 
   async getTicketRows(): Promise<TicketRow[]> {
     const machineById = new Map(MOCK_MACHINES.map((m) => [m.id, m.machine_code]))
-    const userById = new Map(MOCK_USERS.map((u) => [u.id, u.full_name]))
+    const userById = new Map(MOCK_USERS.map((u) => [u.id, u.name]))
     return MOCK_TICKETS.map((t) => ({
       id: t.id,
       ticket_number: t.ticket_number,
@@ -3643,20 +3645,19 @@ export const liveTicketsService = {
       title: t.title,
       severity: t.severity,
       status: t.status,
-      assigned_to_name: t.assigned_to ? (userById.get(t.assigned_to) ?? 'Unassigned') : 'Unassigned',
+      assigned_to_name: userById.get(t.assigned_to) ?? 'Unassigned',
       created_at: t.created_at,
     }))
   },
 }
 ```
 
-> **Pre-flight check (chunk-2 lesson):** before writing this file,
-> open `src/data/mockData.ts` and confirm the export names
-> `MOCK_MACHINES` and `MOCK_USERS` exist with the field names used
-> here (`machine_code`, `full_name`). If a different field name is
-> used (e.g. `name` instead of `full_name`), update the `userById`
-> map accordingly. Field names are confirmed via `grep -n
-> "machine_code\|full_name" src/data/mockData.ts` before starting.
+> **Pre-flight check (chunk-2 lesson):** field names verified in
+> `src/data/mockData.ts` and `src/types/index.ts` before writing this
+> file: `Machine.machine_code` (string, e.g. "HS-2024-0003"),
+> `User.name` (NOT `full_name`), `Ticket.assigned_to` (non-nullable
+> `number`). Re-grep with `grep -n "machine_code\|^  name:" src/data/mockData.ts`
+> before starting if anything looks stale.
 
 - [ ] **3.3.4** Run `npx vitest run src/services/__tests__/liveTicketsService.test.ts`. Expected: GREEN.
 - [ ] **3.3.5** Commit `feat(service): add liveTicketsService with getTicketStats + getTicketRows`.
@@ -3764,7 +3765,8 @@ export { severityToBadgeVariant } from './severityToBadgeVariant'
 export { ticketStatusToBadgeVariant } from './ticketStatusToBadgeVariant'
 ```
 
-- [ ] **3.6.2** Run `npm run build`. Expected: GREEN.
+- [ ] **3.6.2** Run `npx tsc -b --noEmit`. Expected: GREEN (faster than a full
+      Vite build for a barrel-only export change).
 - [ ] **3.6.3** Commit `chore(dark): export severity + ticket status badge mappers`.
 
 ### Step 3.7: Rewrite `TicketsPage` (RED → GREEN)
@@ -3785,16 +3787,22 @@ reused elsewhere yet).
 
 ```tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '../../test/utils'
-import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
+import { render, screen, waitFor, within } from '../../test/utils'
 import { TicketsPage } from '../TicketsPage'
 
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
-  return { ...actual, useNavigate: () => mockNavigate, Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a> }
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+  }
 })
 
+// AuthUser shape mirrors the real `AuthUser` derived from User in src/types/index.ts:129
+// (key fields: id, name, email, role, is_active).
 const mockEngineer = { id: 5, name: 'Amit Sharma', email: 'amit@hortisort.com', role: 'engineer' as const, is_active: true }
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({ user: mockEngineer }),
@@ -3805,10 +3813,10 @@ const ticketStats = {
 }
 
 const ticketRows = [
-  { id: 1, ticket_number: 'TKT-00001', machine_code: 'M-003', title: 'Motor overload', severity: 'P1_critical' as const, status: 'open' as const,        assigned_to_name: 'Amit Sharma', created_at: new Date().toISOString() },
-  { id: 2, ticket_number: 'TKT-00002', machine_code: 'M-007', title: 'Sensor down',    severity: 'P2_high'     as const, status: 'in_progress' as const, assigned_to_name: 'Priya Nair',  created_at: new Date(Date.now() - 86_400_000).toISOString() },
-  { id: 3, ticket_number: 'TKT-00003', machine_code: 'M-002', title: 'High rejection', severity: 'P2_high'     as const, status: 'open' as const,        assigned_to_name: 'Unassigned',  created_at: new Date(Date.now() - 2 * 3_600_000).toISOString() },
-  { id: 4, ticket_number: 'TKT-00004', machine_code: 'M-005', title: 'Calibration',    severity: 'P3_medium'   as const, status: 'resolved' as const,    assigned_to_name: 'Amit Sharma', created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() },
+  { id: 1, ticket_number: 'TKT-00001', machine_code: 'HS-2024-0003', title: 'Motor overload', severity: 'P1_critical' as const, status: 'open' as const,        assigned_to_name: 'Amit Sharma', created_at: new Date().toISOString() },
+  { id: 2, ticket_number: 'TKT-00002', machine_code: 'HS-2025-0007', title: 'Sensor down',    severity: 'P2_high'     as const, status: 'in_progress' as const, assigned_to_name: 'Priya Nair',  created_at: new Date(Date.now() - 86_400_000).toISOString() },
+  { id: 3, ticket_number: 'TKT-00003', machine_code: 'HS-2024-0002', title: 'High rejection', severity: 'P2_high'     as const, status: 'open' as const,        assigned_to_name: 'Unassigned',  created_at: new Date(Date.now() - 2 * 3_600_000).toISOString() },
+  { id: 4, ticket_number: 'TKT-00004', machine_code: 'HS-2024-0005', title: 'Calibration',    severity: 'P3_medium'   as const, status: 'resolved' as const,    assigned_to_name: 'Amit Sharma', created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() },
 ]
 
 vi.mock('../../services/liveTicketsService', () => ({
@@ -3835,15 +3843,21 @@ describe('TicketsPage', () => {
 
   it('renders 4 stat cards from TicketStats', async () => {
     render(<TicketsPage />)
+    // "Open" appears as a stat-card label and as Open-status pills (rows 1+3).
+    // "In Progress" appears as a stat-card label and as one Open-status pill (row 2).
+    // Use length-floor assertions to tolerate the multiplicity.
     await waitFor(() => {
-      expect(screen.getByText('Open')).toBeInTheDocument()
+      expect(screen.getAllByText('Open').length).toBeGreaterThanOrEqual(1)
     })
-    expect(screen.getByText('In Progress')).toBeInTheDocument()
+    expect(screen.getAllByText('In Progress').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Resolved Today')).toBeInTheDocument()
     expect(screen.getByText('Avg Resolution')).toBeInTheDocument()
+    // Numeric values: 'Open' card shows '4'; 'Resolved Today' shows '3'.
     expect(screen.getByText('4')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText('4.2')).toBeInTheDocument()
+    // Avg Resolution renders "4.2" and a sized " h" suffix in two children;
+    // use textContent matcher across the parent element.
+    expect(screen.getByText((_, node) => node?.textContent === '4.2 h')).toBeInTheDocument()
   })
 
   it('renders one row per ticket with severity + status pills', async () => {
@@ -3853,7 +3867,11 @@ describe('TicketsPage', () => {
     expect(screen.getByText('P1 Critical')).toBeInTheDocument()
     // P2 High appears twice (rows 2 and 3) → use getAllByText
     expect(screen.getAllByText('P2 High').length).toBe(2)
-    expect(screen.getByText('In Progress')).toBeInTheDocument()
+    // "In Progress" status pill in row 2 — already covered by length assertion above
+    // Verify the row-2 pill specifically by scoping to its row text:
+    const row2 = screen.getByText('TKT-00002').closest('tr')
+    expect(row2).not.toBeNull()
+    expect(within(row2!).getByText('In Progress')).toBeInTheDocument()
   })
 
   it('Raise Ticket button visible for engineer/admin and links to /tickets/new', async () => {
@@ -3871,6 +3889,14 @@ describe('TicketsPage', () => {
 ```
 
 - [ ] **3.7.2** Run; expect RED.
+
+> **Deferred — error handling:** the `useEffect` below fires both
+> service calls but does not catch rejections. If either rejects,
+> `rows` stays `null` and the page shows "Loading..." indefinitely.
+> This matches `MachinesPage` (chunk 2) and is acceptable while the
+> data layer is purely static mocks. A unified `error` state +
+> retry banner is deferred to whichever later chunk first wires
+> these pages to the real backend (Phase C scope).
 
 - [ ] **3.7.3 GREEN** Replace `src/pages/TicketsPage.tsx` with:
 
