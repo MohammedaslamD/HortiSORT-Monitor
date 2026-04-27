@@ -2555,95 +2555,100 @@ git commit -m "docs(spec): mark phase B chunk 1 complete"
 
 ### Scope
 
-Replace `src/pages/MachinesPage.tsx` (currently a card-grid with search + 3
-filters + `MachineCard` reused from Phase A) with the Phase-B
-"Machines" page from `dark-ui-v2.html` lines 498-521:
+Replace `src/pages/MachinesPage.tsx` (a Phase-A card-grid with search + 3
+filters + `MachineCard`) with the Phase-B "Machines" page from
+`dark-ui-v2.html` lines 498-521:
 
-- `PageLayout` header: title `"Machines"`, subtitle `"All 12 machines across 4 sites"`.
+- Page header: a plain `<h1>Machines</h1>` plus subtitle line —
+  `DashboardPage` does not wrap itself in `PageLayout` (the layout shell
+  is applied at App.tsx level), and we follow the same pattern.
 - 4-card stat row: **Running**, **Idle**, **Down**, **Offline** with the
-  exact numeric values from `MOCK_FLEET_SUMMARY` (6 / 2 / 2 / 2 — these
-  must reconcile with the dashboard's FleetSummary, do **not** invent new
-  counts).
-- One `SectionCard` containing a dense `DataTable` with columns
-  `Machine | Site | Fruit | Status | Throughput | Uptime Today | Last Active | Open Tickets | Actions`.
-- 12 rows total (the mockup shows 7; we extend to 12 to match the fleet
-  total). The first 7 rows are the verbatim mockup rows; rows 8-12 are
-  hand-authored to keep the tone tally at 6/2/2/2.
+  exact numeric values from `MOCK_FLEET_SUMMARY` (6 / 2 / 2 / 2 — must
+  reconcile with the dashboard's FleetSummary).
+- A `SectionCard` (title `"Fleet"`) wrapping a dense `DataTable` with
+  columns `Machine | Site | Fruit | Status | Throughput | Uptime Today | Last Active | Open Tickets | Actions`.
+- 12 rows total (mockup shows 7; we extend to 12 to match fleet total).
 - `Status` cell renders a `StatBadge` (variants: `running`, `idle`,
   `down`, `offline`).
-- `Uptime Today` cell renders a 70-px inline `ProgressBar` (reused from
-  Chunk 1) plus a small `XX%` label, both tinted by the row's status tone.
-  When status is `idle` or `offline` and there is no live uptime, the cell
-  renders the literal `--`.
+- `Uptime Today` cell renders a 70-px `ProgressBar` wrapped in a
+  fixed-width container plus a small `XX%` label, both tinted by the
+  row's status. When status is `idle` or `offline` (no live uptime), the
+  cell renders the literal `--`.
 - `Throughput` cell shows `tons_per_hour.toFixed(1) + ' t/hr'` or `--`.
-- `Last Active` cell uses the same `formatRelative()` helper as the
-  Dashboard `AlertRow` / `TimelineItem` so output is consistent
-  ("Now", "2h ago", "1d ago", "3d ago").
-- `Open Tickets` cell shows the integer; the column right-aligns.
+- `Last Active` cell uses the shared `formatRelative()` helper (extracted
+  in step 2.5 from `DashboardPage.tsx`).
+- `Open Tickets` cell shows the integer right-aligned.
 - `Actions` cell shows two ghost `Button`s ("Update", "Ticket") at the
-  new `xs` size (see Step 2.4). Click handlers preserve the existing
-  navigation behaviour from the Phase-A page (`navigate('/machines/:id/update-status')`,
-  `navigate('/tickets/new?machine=:id')`) — modals are out of scope for
-  this chunk; modal redesign lives in spec §7 row 8 (chunk 8).
-- The Phase-A search/filter row is **deleted** for Phase B. The mockup
-  shows no search input, and the dataset is small enough that filtering
-  is unnecessary at this stage. Re-introducing filters is tracked in
-  spec §16 (out-of-scope for Phase B).
-- `MachineCard` (legacy) and `getMachinesByRole` continue to exist
-  unchanged — strangler pattern. Removing them is a future cleanup chunk.
+  new `xs` size. Click handlers preserve the Phase-A navigation
+  (`navigate('/machines/:id/update-status')`,
+  `navigate('/tickets/new?machine=:id')`).
+- The Phase-A search/filter row is **deleted** for Phase B (mockup shows
+  none). Re-introducing filters is in spec §16 (out of scope).
+- Phase-A `MachineCard`, `getMachinesByRole`, `machineService` continue
+  to exist unchanged — strangler pattern. Removal is a future cleanup
+  chunk.
+
+### Pre-flight: actual chunk-1 component signatures
+
+(Verified in code on 2026-04-27.)
+
+| Component | Signature | Path |
+|-----------|-----------|------|
+| `StatCard` | `accent: 'green'\|'blue'\|'yellow'\|'red'\|'purple'\|'cyan'`, `label`, `value: ReactNode`, `valueColor?: string`, **required** `icon: ReactNode`, `trend?`, `sub?`, `dot?: 'green'\|'red'\|'amber'` | `src/components/dark/StatCard.tsx` |
+| `ProgressBar` | `percent: number`, `tone: 'green'\|'red'\|'amber'`, `height?: number`. Has `w-full` internally — width must be controlled by an outer wrapper. **No** `className` pass-through. | `src/components/dark/ProgressBar.tsx` |
+| `SectionCard` | **required** `title: string`, optional `link`, `meta`, `children` | `src/components/dark/SectionCard.tsx` |
+| `PageLayout` | App-level shell with required `pageTitle`, `userName`, `userRole`, `onLogout`. **Not** consumed inside individual pages. | `src/components/layout/PageLayout.tsx` |
+| `Button` (existing common) | `variant: 'primary'\|'secondary'\|'danger'\|'ghost'`, `size: 'sm'\|'md'\|'lg'` | `src/components/common/Button.tsx` |
+| `formatRelative` (inline in Dashboard) | `(iso: string, now: number = Date.now()): string` — buckets `<1m "just now"`, `<60m "Xm ago"`, `<24h "Xh ago"`, else `"Xd ago"`. Note the **number** ms-epoch arg, not `Date`. | `src/pages/DashboardPage.tsx` lines 14-22 |
 
 ### New / changed files
 
 | File | Change |
 |------|--------|
 | `src/types/index.ts` | **add** `MachineRow` interface and `MachineStatusTone` type alias |
-| `src/data/mockMachineRows.ts` | **new** — 12-row dataset |
+| `src/data/mockMachineRows.ts` | **new** — 12-row dataset, timestamps relative to `Date.now()` at module load |
 | `src/services/liveMetricsService.ts` | **add** `getMachineRows(): Promise<MachineRow[]>` |
-| `src/services/__tests__/liveMetricsService.test.ts` | **add** test for `getMachineRows` |
-| `src/components/common/Button.tsx` | **add** `xs` size — additive, no existing call site changes |
-| `src/components/common/__tests__/Button.test.tsx` | **add** test for the new `xs` size |
-| `src/components/dark/StatBadge.tsx` | **new** atom — 17 variants per spec §6.1 |
+| `src/services/__tests__/liveMetricsService.test.ts` | **add** tests for `getMachineRows` |
+| `src/components/common/Button.tsx` | **add** `xs` size — additive |
+| `src/components/common/__tests__/Button.test.tsx` | **add** test for `xs` |
+| `src/components/dark/StatBadge.tsx` | **new** atom — 17 variants |
 | `src/components/dark/__tests__/StatBadge.test.tsx` | **new** |
-| `src/components/dark/DataTable.tsx` | **new** molecule per spec §6.2 |
+| `src/components/dark/DataTable.tsx` | **new** molecule |
 | `src/components/dark/__tests__/DataTable.test.tsx` | **new** |
-| `src/components/dark/index.ts` | **add** `StatBadge`, `DataTable` exports |
-| `src/utils/formatRelative.ts` | **new** — extracted helper, also retro-fitted into `DashboardPage.tsx` to remove duplication (one extra import line; behaviour unchanged) |
+| `src/components/dark/statusToBadgeVariant.ts` | **new** lint-safe helper file |
+| `src/components/dark/__tests__/statusToBadgeVariant.test.ts` | **new** |
+| `src/components/dark/index.ts` | **add** `StatBadge`, `DataTable`, `statusToBadgeVariant` exports |
+| `src/utils/formatRelative.ts` | **new** — extracted from DashboardPage; **preserves the existing "just now" string** |
 | `src/utils/__tests__/formatRelative.test.ts` | **new** |
-| `src/pages/MachinesPage.tsx` | **rewrite** (213 → ~140 lines) |
-| `src/pages/__tests__/MachinesPage.test.tsx` | **new** — replaces nothing (no prior file) |
-| `src/pages/__tests__/dark-mode.test.tsx` | **modify** — append MachinesPage entry |
+| `src/pages/DashboardPage.tsx` | **modify** — drop inline `formatRelative`, import shared one |
+| `src/pages/MachinesPage.tsx` | **rewrite** |
+| `src/pages/__tests__/MachinesPage.test.tsx` | **new** |
+| `src/pages/__tests__/dark-mode.test.tsx` | **modify** — append MachinesPage entry to `pages[]` and add `getMachineRows` to the existing `liveMetricsService` mock |
+| `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` | **modify** — line 236 (Button row) to mention `xs` size; add note in §6.1 StatBadge row that 17/21 variants ship in chunk 2; line 3 status |
 
 ### Style reminders specific to this chunk
 
 - **No semicolons in new files**, but `Button.tsx` and `types/index.ts`
-  are pre-existing with semicolons — match the file's existing style for
-  any line you add to those files.
-- Pure helper exported from a component file? **Don't.** Past lint failure
-  in Chunk 1 (`alertBadgeVariant`). For Chunk 2:
-  - The `tone -> classes` map for `StatBadge` lives **inside** `StatBadge.tsx`
-    only, not exported.
-  - The `statusToBadgeVariant(status)` helper lives in its **own file**
-    `src/components/dark/statusToBadgeVariant.ts` (so it can be imported
-    by both `MachinesPage.tsx` and any future ticket/production page).
-  - `formatRelative` lives in `src/utils/formatRelative.ts`.
-- No `let x; x = …` mutation patterns in component bodies (Chunk 1
-  DonutChart bug). DataTable iteration uses `.map()` returning JSX; no
-  imperative accumulators.
-- No ref writes during render. Not expected to be needed in this chunk.
-- JSX glyphs: the icons in stat-card headers use Unicode chars
-  (`▶ ⏸ ⚠ ⚪`). Render them inside `{}`-wrapped string expressions:
-  `{'\u25B6'}`, `{'\u23F8'}`, `{'\u26A0'}`, `{'\u26AA'}`. Do **not**
-  paste literal glyphs in JSX — past sessions saw raw glyphs round-trip
-  through Vitest mismatched against snapshot bytes.
-- Test probes that may have multiple matches: prefer
-  `getAllByText`/`findAllByText` over the singular form. Examples in
-  this chunk: `"Running"` appears in stat-card label AND multiple
-  status badges; `"Now"` appears in multiple `Last Active` cells.
+  are pre-existing with semicolons — match the file's style for any
+  added line.
+- Helpers exported from a component file fail `react-refresh/only-export-components`
+  (chunk-1 lesson). Therefore:
+  - `statusToBadgeVariant` lives in its own file
+  - The `toneClasses` map for `StatBadge` is module-private (not exported)
+  - `formatRelative` lives in `src/utils/`, not in `dark/`
+- No `let x; x = …` mutation patterns in component bodies. DataTable uses
+  `.map(…)` only.
+- No ref writes during render (none expected).
+- Render Unicode glyphs as `{'\u25B6'}` etc., not literal characters.
+- Test probes likely to multi-match: `"Running"`, `"Idle"`, `"Down"`,
+  `"Offline"` (all appear in stat-card label AND status badge cells);
+  use `getAllByText` / `findAllByText`.
 
 ### Step 2.1: Add `MachineRow` type
 
 - [ ] **2.1.1** Open `src/types/index.ts`. Append (after the existing
-      `MachineLiveMetrics` block, preserving file-local semicolon style):
+      `MachineLiveMetrics` block — line ~441; preserve file-local
+      semicolon style):
 
 ```ts
 /** Status tone for a machine row in the Machines table. */
@@ -2654,86 +2659,79 @@ export type MachineStatusTone = 'running' | 'idle' | 'down' | 'offline';
  * Joins fields from `Machine`, `MachineLiveMetrics`, and per-row
  * aggregates (`open_tickets_count`, `last_active`).
  *
- * Authored as a denormalised view because the table is render-only;
- * a real backend will return this shape from a single endpoint.
+ * `fruit` is always populated from the machine's product assignment,
+ * even when the machine is offline/idle (it represents what the
+ * machine sorts, not what is currently flowing).
+ *
+ * `tons_per_hour` and `uptime_percent` are nullable: null indicates
+ * "no live signal", rendered as the literal `--` in the table.
  */
 export interface MachineRow {
   machine_id: number;
-  machine_label: string;       // e.g. "M-001 Banana Sorter A"
-  site: string;                // e.g. "Site 1"
-  fruit: string;               // e.g. "Banana", or "--" when status is offline/idle without product
+  machine_label: string;
+  site: string;
+  fruit: string;
   status: MachineStatusTone;
   tons_per_hour: number | null;
-  uptime_percent: number | null;  // null when status is idle/offline (mockup shows "--")
-  last_active: string;            // ISO timestamp; rendered via formatRelative
+  uptime_percent: number | null;
+  last_active: string;             // ISO timestamp
   open_tickets_count: number;
 }
 ```
 
-- [ ] **2.1.2** Run `npx tsc -b --noEmit`. Expected: GREEN (purely
-      additive types).
+- [ ] **2.1.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
 - [ ] **2.1.3** Commit `feat(types): add MachineRow + MachineStatusTone for Phase B machines table`.
 
-### Step 2.2: Add mock data — `mockMachineRows.ts`
+### Step 2.2: Mock data — `mockMachineRows.ts`
+
+> **Decision (reviewer issue 8):** the mock computes `last_active`
+> against `Date.now()` at module load. This means a developer running
+> `npm run dev` next month still sees "Now" for the live rows in manual
+> smoke. Tests inject explicit ISO strings via the page-level mock so
+> they remain hermetic.
 
 - [ ] **2.2.1** Create `src/data/mockMachineRows.ts`:
 
 ```ts
 import type { MachineRow } from '../types'
 
-/**
- * 12 machine rows for the Phase-B Machines table.
- * Tone tally must reconcile with MOCK_FLEET_SUMMARY: 6 running / 2 idle / 2 down / 2 offline.
- * Rows 1-7 are verbatim from dark-ui-v2.html lines 510-516.
- * Rows 8-12 are extensions; tones chosen to keep the running total at 6/2/2/2.
- *
- * `last_active` is computed at module-load time so the relative-time
- * helper produces stable strings during tests (the test sets a fixed
- * Date via vi.setSystemTime). For "Now" rows we use NOW (2026-04-25T10:00:00Z
- * matches Chunk 1 fixtures).
- */
-const NOW = new Date('2026-04-25T10:00:00.000Z').getTime()
+const NOW = Date.now()
 const minutesAgo = (m: number): string => new Date(NOW - m * 60_000).toISOString()
 const hoursAgo = (h: number): string => new Date(NOW - h * 3_600_000).toISOString()
 const daysAgo = (d: number): string => new Date(NOW - d * 86_400_000).toISOString()
 
+/**
+ * 12 machine rows for the Phase-B Machines table.
+ * Tone tally must reconcile with MOCK_FLEET_SUMMARY: 6 running / 2 idle / 2 down / 2 offline.
+ * Rows 1-7 are verbatim from dark-ui-v2.html lines 510-516; rows 8-12
+ * extend to fleet total while preserving the 6/2/2/2 tally.
+ */
 export const MOCK_MACHINE_ROWS: MachineRow[] = [
-  // Mockup row 1 — running
-  { machine_id: 1, machine_label: 'M-001 Banana Sorter A', site: 'Site 1', fruit: 'Banana', status: 'running', tons_per_hour: 2.4, uptime_percent: 90, last_active: minutesAgo(0), open_tickets_count: 0 },
-  // Mockup row 2 — running
-  { machine_id: 2, machine_label: 'M-002 Mango Sorter A', site: 'Site 1', fruit: 'Mango', status: 'running', tons_per_hour: 1.9, uptime_percent: 75, last_active: minutesAgo(0), open_tickets_count: 1 },
-  // Mockup row 3 — down
-  { machine_id: 3, machine_label: 'M-003 Pomegranate A', site: 'Site 1', fruit: 'Pomegranate', status: 'down', tons_per_hour: 0, uptime_percent: 30, last_active: hoursAgo(2), open_tickets_count: 2 },
-  // Mockup row 4 — idle
-  { machine_id: 4, machine_label: 'M-004 Grapes Sorter A', site: 'Site 2', fruit: 'Grapes', status: 'idle', tons_per_hour: null, uptime_percent: null, last_active: daysAgo(1), open_tickets_count: 0 },
-  // Mockup row 5 — running
-  { machine_id: 5, machine_label: 'M-005 Grapes Sorter B', site: 'Site 2', fruit: 'Grapes', status: 'running', tons_per_hour: 3.1, uptime_percent: 85, last_active: minutesAgo(0), open_tickets_count: 0 },
-  // Mockup row 6 — running
-  { machine_id: 6, machine_label: 'M-006 Pomegranate B', site: 'Site 2', fruit: 'Pomegranate', status: 'running', tons_per_hour: 2.7, uptime_percent: 70, last_active: minutesAgo(0), open_tickets_count: 1 },
-  // Mockup row 7 — offline
-  { machine_id: 7, machine_label: 'M-007 Mango Sorter B', site: 'Site 3', fruit: 'Mango', status: 'offline', tons_per_hour: null, uptime_percent: null, last_active: daysAgo(3), open_tickets_count: 1 },
-  // Extensions to reach 12 — tones: running, running, idle, down, offline
-  { machine_id: 8, machine_label: 'M-008 Apple Sorter A', site: 'Site 3', fruit: 'Apple', status: 'running', tons_per_hour: 1.5, uptime_percent: 60, last_active: minutesAgo(0), open_tickets_count: 0 },
-  { machine_id: 9, machine_label: 'M-009 Banana Sorter B', site: 'Site 3', fruit: 'Banana', status: 'running', tons_per_hour: 2.2, uptime_percent: 78, last_active: minutesAgo(2), open_tickets_count: 0 },
-  { machine_id: 10, machine_label: 'M-010 Apple Sorter B', site: 'Site 4', fruit: 'Apple', status: 'idle', tons_per_hour: null, uptime_percent: null, last_active: hoursAgo(5), open_tickets_count: 0 },
-  { machine_id: 11, machine_label: 'M-011 Mango Sorter C', site: 'Site 4', fruit: 'Mango', status: 'down', tons_per_hour: 0, uptime_percent: 25, last_active: hoursAgo(8), open_tickets_count: 1 },
-  { machine_id: 12, machine_label: 'M-012 Apple Sorter C', site: 'Site 4', fruit: 'Apple', status: 'offline', tons_per_hour: null, uptime_percent: null, last_active: daysAgo(5), open_tickets_count: 0 },
+  { machine_id: 1,  machine_label: 'M-001 Banana Sorter A',  site: 'Site 1', fruit: 'Banana',      status: 'running', tons_per_hour: 2.4,  uptime_percent: 90,   last_active: minutesAgo(0),  open_tickets_count: 0 },
+  { machine_id: 2,  machine_label: 'M-002 Mango Sorter A',   site: 'Site 1', fruit: 'Mango',       status: 'running', tons_per_hour: 1.9,  uptime_percent: 75,   last_active: minutesAgo(0),  open_tickets_count: 1 },
+  { machine_id: 3,  machine_label: 'M-003 Pomegranate A',    site: 'Site 1', fruit: 'Pomegranate', status: 'down',    tons_per_hour: 0,    uptime_percent: 30,   last_active: hoursAgo(2),    open_tickets_count: 2 },
+  { machine_id: 4,  machine_label: 'M-004 Grapes Sorter A',  site: 'Site 2', fruit: 'Grapes',      status: 'idle',    tons_per_hour: null, uptime_percent: null, last_active: daysAgo(1),     open_tickets_count: 0 },
+  { machine_id: 5,  machine_label: 'M-005 Grapes Sorter B',  site: 'Site 2', fruit: 'Grapes',      status: 'running', tons_per_hour: 3.1,  uptime_percent: 85,   last_active: minutesAgo(0),  open_tickets_count: 0 },
+  { machine_id: 6,  machine_label: 'M-006 Pomegranate B',    site: 'Site 2', fruit: 'Pomegranate', status: 'running', tons_per_hour: 2.7,  uptime_percent: 70,   last_active: minutesAgo(0),  open_tickets_count: 1 },
+  { machine_id: 7,  machine_label: 'M-007 Mango Sorter B',   site: 'Site 3', fruit: 'Mango',       status: 'offline', tons_per_hour: null, uptime_percent: null, last_active: daysAgo(3),     open_tickets_count: 1 },
+  { machine_id: 8,  machine_label: 'M-008 Apple Sorter A',   site: 'Site 3', fruit: 'Apple',       status: 'running', tons_per_hour: 1.5,  uptime_percent: 60,   last_active: minutesAgo(0),  open_tickets_count: 0 },
+  { machine_id: 9,  machine_label: 'M-009 Banana Sorter B',  site: 'Site 3', fruit: 'Banana',      status: 'running', tons_per_hour: 2.2,  uptime_percent: 78,   last_active: minutesAgo(2),  open_tickets_count: 0 },
+  { machine_id: 10, machine_label: 'M-010 Apple Sorter B',   site: 'Site 4', fruit: 'Apple',       status: 'idle',    tons_per_hour: null, uptime_percent: null, last_active: hoursAgo(5),    open_tickets_count: 0 },
+  { machine_id: 11, machine_label: 'M-011 Mango Sorter C',   site: 'Site 4', fruit: 'Mango',       status: 'down',    tons_per_hour: 0,    uptime_percent: 25,   last_active: hoursAgo(8),    open_tickets_count: 1 },
+  { machine_id: 12, machine_label: 'M-012 Apple Sorter C',   site: 'Site 4', fruit: 'Apple',       status: 'offline', tons_per_hour: null, uptime_percent: null, last_active: daysAgo(5),     open_tickets_count: 0 },
 ]
 ```
+
+> **Reconciliation check (verify before committing):** count tones —
+> 6 running, 2 idle, 2 down, 2 offline = 12. Equals
+> `MOCK_FLEET_SUMMARY.{running,idle,down,offline}`.
 
 - [ ] **2.2.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
 - [ ] **2.2.3** Commit `feat(data): add MOCK_MACHINE_ROWS for machines table`.
 
-> **Reconciliation check (do this before committing):** count tones in
-> `MOCK_MACHINE_ROWS` — 6 running, 2 idle, 2 down, 2 offline = 12. Must
-> equal `MOCK_FLEET_SUMMARY.{running,idle,down,offline}`. If counts ever
-> drift, the dashboard StatCards would mismatch the machines table and
-> the chunk fails review.
-
 ### Step 2.3: Service — `getMachineRows()` (RED → GREEN)
 
-- [ ] **2.3.1 RED** Open `src/services/__tests__/liveMetricsService.test.ts`.
-      Append a new `describe('getMachineRows')` block with three tests:
+- [ ] **2.3.1 RED** Append to `src/services/__tests__/liveMetricsService.test.ts`:
 
 ```ts
 describe('getMachineRows', () => {
@@ -2758,12 +2756,11 @@ describe('getMachineRows', () => {
 })
 ```
 
-- [ ] **2.3.2** Run `npx vitest run src/services/__tests__/liveMetricsService.test.ts`.
-      Expected: RED (`getMachineRows is not a function`).
+- [ ] **2.3.2** Run `npx vitest run src/services/__tests__/liveMetricsService.test.ts`. Expected: RED.
 - [ ] **2.3.3 GREEN** Edit `src/services/liveMetricsService.ts`:
-  - Add import: `import { MOCK_MACHINE_ROWS } from '../data/mockMachineRows'`
-  - Add type import: extend the existing type-only import to include `MachineRow`
-  - Inside the `liveMetricsService` object, add:
+  - Add `import { MOCK_MACHINE_ROWS } from '../data/mockMachineRows'`
+  - Extend the type-only import to include `MachineRow`
+  - Add to the `liveMetricsService` object:
 
 ```ts
 async getMachineRows(): Promise<MachineRow[]> {
@@ -2771,11 +2768,17 @@ async getMachineRows(): Promise<MachineRow[]> {
 },
 ```
 
-- [ ] **2.3.4** Run `npx vitest run src/services/__tests__/liveMetricsService.test.ts`.
-      Expected: GREEN.
+- [ ] **2.3.4** Run `npx vitest run src/services/__tests__/liveMetricsService.test.ts`. Expected: GREEN.
 - [ ] **2.3.5** Commit `feat(service): add liveMetricsService.getMachineRows`.
 
-### Step 2.4: Extend `Button` with `xs` size (additive)
+### Step 2.4: Extend `Button` with `xs` size + spec update
+
+> **Spec deviation note (reviewer issue 7):** spec §6.1 line 236 says
+> `size: 'sm' \| 'md'`, with mini buttons (`padding:4px 8px;font-size:10px`)
+> mapping to `sm`. We deviate to `xs` because redefining `sm` would
+> change every existing call site (forms, login, modals) silently.
+> Adding `xs` is purely additive. We **also update the spec** in step
+> 2.4.6 so the design system stays the source of truth.
 
 - [ ] **2.4.1 RED** Append to `src/components/common/__tests__/Button.test.tsx`:
 
@@ -2789,23 +2792,25 @@ it('renders xs size with px-2 py-1 text-[10px]', () => {
 })
 ```
 
-- [ ] **2.4.2** Run `npx vitest run src/components/common/__tests__/Button.test.tsx`.
-      Expected: RED (TS error: `'xs'` not assignable to `ButtonSize`).
+- [ ] **2.4.2** Run `npx vitest run src/components/common/__tests__/Button.test.tsx`. Expected: RED.
 - [ ] **2.4.3 GREEN** Edit `src/components/common/Button.tsx`:
-  - Change `type ButtonSize = 'sm' | 'md' | 'lg';` → `type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';`
+  - `type ButtonSize = 'sm' | 'md' | 'lg';` → `type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';`
   - Add to `sizeClasses`: `xs: 'px-2 py-1 text-[10px]',`
-- [ ] **2.4.4** Run `npx vitest run src/components/common/__tests__/Button.test.tsx`.
-      Expected: GREEN.
-- [ ] **2.4.5** Run `npm run build`. Expected: GREEN (no existing call
-      site uses the new size, so type system stays compatible).
-- [ ] **2.4.6** Commit `feat(button): add xs size for table-row mini buttons`.
+- [ ] **2.4.4** Run `npx vitest run src/components/common/__tests__/Button.test.tsx`. Expected: GREEN.
+- [ ] **2.4.5** Run `npm run build`. Expected: GREEN.
+- [ ] **2.4.6** Edit spec line 236 — replace `size: 'sm' \| 'md'` with
+      `size: 'xs' \| 'sm' \| 'md'` and add a parenthetical:
+      `(xs is the table-row mini size at \`px-2 py-1 text-[10px]\`)`.
+- [ ] **2.4.7** Commit `feat(button): add xs size for table-row mini buttons`. (Spec edit included in same commit since it's the design-system addendum.)
 
-### Step 2.5: Utility — `formatRelative` (extract + share)
+### Step 2.5: Utility — `formatRelative` (extract; **preserve "just now"**)
 
-> Rationale: Chunk 1 inlined a `formatRelative` helper inside
-> `DashboardPage.tsx`. Chunk 2's MachinesPage `Last Active` column needs
-> the same logic. Extracting now avoids duplication and gives the helper
-> a unit test.
+> **Decision (reviewer issue 5):** the extracted helper keeps the exact
+> behaviour of the chunk-1 inline version — string `"just now"` for
+> sub-minute, signature `(iso, now: number = Date.now())`. Mockup
+> shows "Now"; we accept the cosmetic divergence to avoid touching
+> chunk-1 tests / activity feed strings. Mockup-fidelity rename is a
+> Phase-C polish item.
 
 - [ ] **2.5.1 RED** Create `src/utils/__tests__/formatRelative.test.ts`:
 
@@ -2814,67 +2819,70 @@ import { describe, it, expect } from 'vitest'
 import { formatRelative } from '../formatRelative'
 
 describe('formatRelative', () => {
-  const NOW = new Date('2026-04-25T10:00:00.000Z')
+  const NOW_MS = new Date('2026-04-25T10:00:00.000Z').getTime()
 
-  it('returns "Now" for timestamps within the last 60 s', () => {
-    const t = new Date(NOW.getTime() - 30_000).toISOString()
-    expect(formatRelative(t, NOW)).toBe('Now')
+  it('returns "just now" for sub-minute timestamps', () => {
+    const t = new Date(NOW_MS - 30_000).toISOString()
+    expect(formatRelative(t, NOW_MS)).toBe('just now')
   })
 
   it('returns "Xm ago" for minutes', () => {
-    const t = new Date(NOW.getTime() - 15 * 60_000).toISOString()
-    expect(formatRelative(t, NOW)).toBe('15m ago')
+    const t = new Date(NOW_MS - 15 * 60_000).toISOString()
+    expect(formatRelative(t, NOW_MS)).toBe('15m ago')
   })
 
   it('returns "Xh ago" for hours', () => {
-    const t = new Date(NOW.getTime() - 3 * 3_600_000).toISOString()
-    expect(formatRelative(t, NOW)).toBe('3h ago')
+    const t = new Date(NOW_MS - 3 * 3_600_000).toISOString()
+    expect(formatRelative(t, NOW_MS)).toBe('3h ago')
   })
 
   it('returns "Xd ago" for days', () => {
-    const t = new Date(NOW.getTime() - 2 * 86_400_000).toISOString()
-    expect(formatRelative(t, NOW)).toBe('2d ago')
+    const t = new Date(NOW_MS - 2 * 86_400_000).toISOString()
+    expect(formatRelative(t, NOW_MS)).toBe('2d ago')
   })
 })
 ```
 
-- [ ] **2.5.2** Run `npx vitest run src/utils/__tests__/formatRelative.test.ts`. Expected: RED.
-- [ ] **2.5.3 GREEN** Create `src/utils/formatRelative.ts`:
+- [ ] **2.5.2** Run; expect RED.
+- [ ] **2.5.3 GREEN** Create `src/utils/formatRelative.ts` — copy the
+      inline implementation verbatim from `DashboardPage.tsx:14-22`:
 
 ```ts
 /**
  * Format an ISO timestamp as a short relative-time string.
- * Buckets: <60s "Now"; <60m "Xm ago"; <24h "Xh ago"; else "Xd ago".
+ * Buckets: <1m "just now"; <60m "Xm ago"; <24h "Xh ago"; else "Xd ago".
  *
  * @param iso  ISO timestamp string
- * @param now  reference time (defaults to current Date) — pass for testability
+ * @param now  reference time in ms-epoch (defaults to Date.now())
  */
-export function formatRelative(iso: string, now: Date = new Date()): string {
-  const diffMs = now.getTime() - new Date(iso).getTime()
-  const sec = Math.floor(diffMs / 1000)
-  if (sec < 60) return 'Now'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min}m ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr}h ago`
-  const days = Math.floor(hr / 24)
-  return `${days}d ago`
+export function formatRelative(iso: string, now: number = Date.now()): string {
+  const diffMin = Math.floor((now - new Date(iso).getTime()) / 60_000)
+  if (diffMin < 1) return 'just now'
+  if (diffMin < 60) return `${diffMin}m ago`
+  const h = Math.floor(diffMin / 60)
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  return `${d}d ago`
 }
 ```
 
-- [ ] **2.5.4** Run `npx vitest run src/utils/__tests__/formatRelative.test.ts`. Expected: GREEN.
-- [ ] **2.5.5** Refactor: in `src/pages/DashboardPage.tsx`, delete the
-      inline `formatRelative` declaration and import the shared one:
-      `import { formatRelative } from '../utils/formatRelative'`. Run
-      `npx vitest run src/pages/__tests__/DashboardPage.test.tsx` —
-      expect GREEN (behaviour unchanged).
-- [ ] **2.5.6** Commit `refactor(utils): extract formatRelative for shared use`.
+- [ ] **2.5.4** Run; expect GREEN.
+- [ ] **2.5.5 Refactor**: in `src/pages/DashboardPage.tsx`, delete the
+      inline `formatRelative` function and add
+      `import { formatRelative } from '../utils/formatRelative'`.
+- [ ] **2.5.6** Run `npx vitest run src/pages/__tests__/DashboardPage.test.tsx`. Expected: GREEN (string output identical).
+- [ ] **2.5.7** Commit `refactor(utils): extract formatRelative for shared use`.
 
 ### Step 2.6: Atom — `StatBadge` (RED → GREEN)
 
+> Spec §6.1 enumerates 21 variants; chunk 2 ships **17** with confirmed
+> mockup mappings. The remaining 4 (`maint`, `routine`, `emergency`,
+> `install`) are added in whichever later chunk first uses them. Spec
+> note added in step 2.12.5.
+
 - [ ] **2.6.1 RED** Create `src/components/dark/__tests__/StatBadge.test.tsx`:
 
-```ts
+```tsx
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '../../../test/utils'
 import { StatBadge } from '../StatBadge'
@@ -2910,22 +2918,14 @@ describe('StatBadge', () => {
     expect(el.className).toContain(text)
   })
 
-  it('uppercase + small px when variant="live"', () => {
+  it('uppercase modifier applied for variant="live"', () => {
     render(<StatBadge variant="live">LIVE</StatBadge>)
-    const el = screen.getByText('LIVE')
-    expect(el.className).toContain('uppercase')
+    expect(screen.getByText('LIVE').className).toContain('uppercase')
   })
 })
 ```
 
-> Note: spec §6.1 row enumerates 21 variants (`maint`, `routine`,
-> `emergency`, `install` etc.); we ship the **17** that have a confirmed
-> mockup mapping today. `maint`, `routine`, `emergency`, `install` are
-> deferred to whichever later chunk first uses them (likely chunk 6
-> Visits / chunk 5 Daily Logs). The component accepts unknown variants
-> via TS error, so future chunks add cases without breaking changes.
-
-- [ ] **2.6.2** Run `npx vitest run src/components/dark/__tests__/StatBadge.test.tsx`. Expected: RED.
+- [ ] **2.6.2** Run; expect RED.
 - [ ] **2.6.3 GREEN** Create `src/components/dark/StatBadge.tsx`:
 
 ```tsx
@@ -2965,7 +2965,7 @@ const toneClasses: Record<StatBadgeVariant, string> = {
 
 /**
  * Pill-shaped status badge used across tables, alert rows, and lists.
- * 17 variants today; extend `StatBadgeVariant` as future chunks need them.
+ * 17/21 spec variants today; extend as future chunks need.
  */
 export function StatBadge({ variant, children }: StatBadgeProps) {
   return (
@@ -2976,10 +2976,10 @@ export function StatBadge({ variant, children }: StatBadgeProps) {
 }
 ```
 
-- [ ] **2.6.4** Run `npx vitest run src/components/dark/__tests__/StatBadge.test.tsx`. Expected: GREEN.
+- [ ] **2.6.4** Run; expect GREEN.
 - [ ] **2.6.5** Commit `feat(dark): StatBadge atom with 17 variants`.
 
-### Step 2.7: Helper — `statusToBadgeVariant` (own file, lint-safe)
+### Step 2.7: Helper — `statusToBadgeVariant` (own file)
 
 - [ ] **2.7.1 RED** Create `src/components/dark/__tests__/statusToBadgeVariant.test.ts`:
 
@@ -3006,10 +3006,7 @@ describe('statusToBadgeVariant', () => {
 import type { MachineStatusTone } from '../../types'
 import type { StatBadgeVariant } from './StatBadge'
 
-/**
- * 1:1 mapping today; kept as a function so future status values
- * (e.g. 'maintenance') can be remapped without touching call sites.
- */
+/** 1:1 mapping today; abstracted so future status values can be remapped. */
 export function statusToBadgeVariant(status: MachineStatusTone): StatBadgeVariant {
   return status
 }
@@ -3034,7 +3031,7 @@ const columns = [
 ]
 
 describe('DataTable', () => {
-  it('renders header cells with uppercase + tracking utility classes', () => {
+  it('renders header cells uppercase + tracking + 10px text', () => {
     render(<DataTable columns={columns} rows={[]} />)
     const nameHeader = screen.getByText('Name')
     expect(nameHeader.className).toContain('uppercase')
@@ -3056,15 +3053,13 @@ describe('DataTable', () => {
   it('first body cell of each row gets fg-1 + font-semibold', () => {
     const rows = [{ id: 1, cells: ['Alpha', '5'] }]
     render(<DataTable columns={columns} rows={rows} />)
-    const firstCell = screen.getByText('Alpha')
-    expect(firstCell.className).toMatch(/font-semibold/)
+    expect(screen.getByText('Alpha').className).toMatch(/font-semibold/)
   })
 
   it('right-aligns when column.align="right"', () => {
     const rows = [{ id: 1, cells: ['Alpha', '5'] }]
     render(<DataTable columns={columns} rows={rows} />)
-    const qtyCell = screen.getByText('5')
-    expect(qtyCell.className).toContain('text-right')
+    expect(screen.getByText('5').className).toContain('text-right')
   })
 
   it('invokes onRowClick with row id', async () => {
@@ -3076,7 +3071,7 @@ describe('DataTable', () => {
     expect(onRowClick).toHaveBeenCalledWith(42)
   })
 
-  it('renders ReactNode cells (e.g. nested components)', () => {
+  it('renders ReactNode cells', () => {
     const rows = [{ id: 1, cells: [<span key="x" data-testid="custom">custom</span>, '5'] }]
     render(<DataTable columns={columns} rows={rows} />)
     expect(screen.getByTestId('custom')).toBeInTheDocument()
@@ -3084,7 +3079,7 @@ describe('DataTable', () => {
 })
 ```
 
-- [ ] **2.8.2** Run; expect RED (file doesn't exist).
+- [ ] **2.8.2** Run; expect RED.
 - [ ] **2.8.3 GREEN** Create `src/components/dark/DataTable.tsx`:
 
 ```tsx
@@ -3114,11 +3109,7 @@ const alignClass = (align: ColumnDef['align']): string => {
   return 'text-left'
 }
 
-/**
- * Dense dark table primitive used by Machines, Tickets, Production,
- * Daily Logs, Users pages. Header uses uppercase 10-px labels;
- * body rows tint on hover; first body cell of each row is emphasized.
- */
+/** Dense dark table primitive. Header uppercase 10px; first-col emphasized. */
 export function DataTable({ columns, rows, onRowClick }: DataTableProps) {
   return (
     <table className="w-full text-sm">
@@ -3163,7 +3154,7 @@ export function DataTable({ columns, rows, onRowClick }: DataTableProps) {
 
 ### Step 2.9: Add to barrel
 
-- [ ] **2.9.1** Edit `src/components/dark/index.ts` — append:
+- [ ] **2.9.1** Append to `src/components/dark/index.ts`:
 
 ```ts
 export { StatBadge } from './StatBadge'
@@ -3191,46 +3182,56 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
+const fleetSummary = {
+  total_machines: 12, running: 6, idle: 2, down: 2, offline: 2,
+  in_production: 3, today_throughput_tons: 18.4,
+  trend_running_vs_yesterday: 1, trend_throughput_pct: 12,
+  open_tickets: { total: 6, p1: 2, p2: 2, p3: 1, p4: 1 },
+}
+
+const baseRows = [
+  { machine_id: 1, machine_label: 'M-001 Banana Sorter A', site: 'Site 1', fruit: 'Banana',      status: 'running' as const, tons_per_hour: 2.4,  uptime_percent: 90,   last_active: new Date().toISOString(),                              open_tickets_count: 0 },
+  { machine_id: 3, machine_label: 'M-003 Pomegranate A',   site: 'Site 1', fruit: 'Pomegranate', status: 'down'    as const, tons_per_hour: 0,    uptime_percent: 30,   last_active: new Date(Date.now() - 2 * 3_600_000).toISOString(),     open_tickets_count: 2 },
+  { machine_id: 4, machine_label: 'M-004 Grapes Sorter A', site: 'Site 2', fruit: 'Grapes',      status: 'idle'    as const, tons_per_hour: null, uptime_percent: null, last_active: new Date(Date.now() - 86_400_000).toISOString(),         open_tickets_count: 0 },
+  { machine_id: 7, machine_label: 'M-007 Mango Sorter B',  site: 'Site 3', fruit: 'Mango',       status: 'offline' as const, tons_per_hour: null, uptime_percent: null, last_active: new Date(Date.now() - 3 * 86_400_000).toISOString(),     open_tickets_count: 1 },
+]
+
 vi.mock('../../services/liveMetricsService', () => ({
   liveMetricsService: {
-    getFleetSummary: vi.fn().mockResolvedValue({
-      total_machines: 12, running: 6, idle: 2, down: 2, offline: 2,
-      in_production: 3, today_throughput_tons: 18.4,
-      trend_running_vs_yesterday: 1, trend_throughput_pct: 12,
-      open_tickets: { total: 6, p1: 2, p2: 2, p3: 1, p4: 1 },
-    }),
-    getMachineRows: vi.fn().mockResolvedValue([
-      { machine_id: 1, machine_label: 'M-001 Banana Sorter A', site: 'Site 1', fruit: 'Banana', status: 'running', tons_per_hour: 2.4, uptime_percent: 90, last_active: new Date().toISOString(), open_tickets_count: 0 },
-      { machine_id: 3, machine_label: 'M-003 Pomegranate A', site: 'Site 1', fruit: 'Pomegranate', status: 'down', tons_per_hour: 0, uptime_percent: 30, last_active: new Date(Date.now() - 2 * 3_600_000).toISOString(), open_tickets_count: 2 },
-      { machine_id: 4, machine_label: 'M-004 Grapes Sorter A', site: 'Site 2', fruit: 'Grapes', status: 'idle', tons_per_hour: null, uptime_percent: null, last_active: new Date(Date.now() - 86_400_000).toISOString(), open_tickets_count: 0 },
-      { machine_id: 7, machine_label: 'M-007 Mango Sorter B', site: 'Site 3', fruit: 'Mango', status: 'offline', tons_per_hour: null, uptime_percent: null, last_active: new Date(Date.now() - 3 * 86_400_000).toISOString(), open_tickets_count: 1 },
-    ]),
+    getFleetSummary: vi.fn(),
+    getMachineRows: vi.fn(),
   },
 }))
 
-describe('MachinesPage', () => {
-  beforeEach(() => { mockNavigate.mockClear() })
+import { liveMetricsService } from '../../services/liveMetricsService'
 
-  it('renders the page header with title + subtitle', async () => {
+describe('MachinesPage', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    vi.mocked(liveMetricsService.getFleetSummary).mockResolvedValue(fleetSummary)
+    vi.mocked(liveMetricsService.getMachineRows).mockResolvedValue(baseRows)
+  })
+
+  it('renders title + subtitle', async () => {
     render(<MachinesPage />)
     expect(await screen.findByText('Machines')).toBeInTheDocument()
     expect(screen.getByText(/All 12 machines across 4 sites/i)).toBeInTheDocument()
   })
 
-  it('renders 4 stat cards with FleetSummary counts (6/2/2/2)', async () => {
+  it('renders 4 stat cards reflecting FleetSummary (6/2/2/2)', async () => {
     render(<MachinesPage />)
     await waitFor(() => {
-      expect(screen.getAllByText('Running').length).toBeGreaterThanOrEqual(1)
+      // "Running" appears in StatCard label AND in row badge — multi-match
+      expect(screen.getAllByText('Running').length).toBeGreaterThanOrEqual(2)
     })
-    expect(screen.getAllByText('Running').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Idle').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Down').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Offline').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Idle').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('Down').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('Offline').length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('6')).toBeInTheDocument()
     expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(3)
   })
 
-  it('renders a row per machine with status badge and throughput', async () => {
+  it('renders one DataTable row per machine with throughput and "--" for null', async () => {
     render(<MachinesPage />)
     expect(await screen.findByText('M-001 Banana Sorter A')).toBeInTheDocument()
     expect(screen.getByText('M-003 Pomegranate A')).toBeInTheDocument()
@@ -3238,7 +3239,7 @@ describe('MachinesPage', () => {
     expect(screen.getAllByText('--').length).toBeGreaterThanOrEqual(2)
   })
 
-  it('renders Update + Ticket mini-buttons per row, navigates on click', async () => {
+  it('renders Update + Ticket buttons per row and navigates on click', async () => {
     const user = userEvent.setup()
     render(<MachinesPage />)
     const updateButtons = await screen.findAllByRole('button', { name: 'Update' })
@@ -3251,7 +3252,6 @@ describe('MachinesPage', () => {
   })
 
   it('renders empty state when service resolves to []', async () => {
-    const { liveMetricsService } = await import('../../services/liveMetricsService')
     vi.mocked(liveMetricsService.getMachineRows).mockResolvedValueOnce([])
     render(<MachinesPage />)
     expect(await screen.findByText(/no machines/i)).toBeInTheDocument()
@@ -3260,6 +3260,7 @@ describe('MachinesPage', () => {
 ```
 
 - [ ] **2.10.2** Run; expect RED.
+
 - [ ] **2.10.3 GREEN** Replace `src/pages/MachinesPage.tsx` with:
 
 ```tsx
@@ -3270,7 +3271,6 @@ import type { FleetSummary, MachineRow } from '../types'
 import { liveMetricsService } from '../services/liveMetricsService'
 import { Button } from '../components/common'
 import {
-  PageLayout,
   StatCard,
   SectionCard,
   StatBadge,
@@ -3306,6 +3306,14 @@ const TONE_COLOR: Record<MachineRow['status'], string> = {
   offline: 'text-slate-400',
 }
 
+const PROGRESS_TONE: Record<'running' | 'down', 'green' | 'red'> = {
+  running: 'green',
+  down: 'red',
+}
+
+const capitalize = (s: string): string => s[0].toUpperCase() + s.slice(1)
+
+/** Phase-B Machines page — dense dark table per dark-ui-v2.html lines 498-521. */
 export function MachinesPage() {
   const navigate = useNavigate()
   const [summary, setSummary] = useState<FleetSummary | null>(null)
@@ -3331,12 +3339,14 @@ export function MachinesPage() {
       r.site,
       r.fruit,
       <StatBadge key="s" variant={statusToBadgeVariant(r.status)}>
-        {r.status[0].toUpperCase() + r.status.slice(1)}
+        {capitalize(r.status)}
       </StatBadge>,
       r.tons_per_hour === null ? '--' : `${r.tons_per_hour.toFixed(1)} t/hr`,
-      r.uptime_percent === null ? '--' : (
+      r.uptime_percent === null || (r.status !== 'running' && r.status !== 'down') ? '--' : (
         <div key="u" className="flex items-center gap-1.5">
-          <ProgressBar value={r.uptime_percent} tone={r.status === 'down' ? 'red' : 'green'} className="w-[70px]" />
+          <div className="w-[70px]">
+            <ProgressBar percent={r.uptime_percent} tone={PROGRESS_TONE[r.status]} />
+          </div>
           <span className={`text-[10px] ${TONE_COLOR[r.status]}`}>{r.uptime_percent}%</span>
         </div>
       ),
@@ -3350,17 +3360,22 @@ export function MachinesPage() {
   }))
 
   return (
-    <PageLayout title="Machines" subtitle="All 12 machines across 4 sites">
+    <div className="space-y-4">
+      <header>
+        <h1 className="text-xl font-semibold text-fg-1">Machines</h1>
+        <p className="text-sm text-fg-4">All 12 machines across 4 sites</p>
+      </header>
+
       {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Running" value={summary.running} tone="green"  icon={STAT_ICON.running} dotIndicator />
-          <StatCard label="Idle"    value={summary.idle}    tone="yellow" icon={STAT_ICON.idle} />
-          <StatCard label="Down"    value={summary.down}    tone="red"    icon={STAT_ICON.down} dotIndicator />
-          <StatCard label="Offline" value={summary.offline} tone="blue"   icon={STAT_ICON.offline} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard accent="green"  label="Running" value={summary.running} valueColor="#4ade80" icon={<>{STAT_ICON.running}</>} dot="green" />
+          <StatCard accent="yellow" label="Idle"    value={summary.idle}    valueColor="#fbbf24" icon={<>{STAT_ICON.idle}</>} />
+          <StatCard accent="red"    label="Down"    value={summary.down}    valueColor="#ef4444" icon={<>{STAT_ICON.down}</>} dot="red" />
+          <StatCard accent="blue"   label="Offline" value={summary.offline} valueColor="#64748b" icon={<>{STAT_ICON.offline}</>} />
         </div>
       )}
 
-      <SectionCard>
+      <SectionCard title="Fleet">
         {rows === null ? (
           <p className="text-sm text-fg-6 py-8 text-center">Loading...</p>
         ) : rows.length === 0 ? (
@@ -3369,72 +3384,73 @@ export function MachinesPage() {
           <DataTable columns={COLUMNS} rows={tableRows} />
         )}
       </SectionCard>
-    </PageLayout>
+    </div>
   )
 }
 ```
 
-> **Open question for execution:** the existing `StatCard` API (built in
-> Chunk 1) needs to support `dotIndicator?: boolean`. Verify in the
-> `StatCard.tsx` source: if it does, this code works as-is; if it
-> doesn't, add the prop in a small lead-in step before 2.10.3 (one new
-> test in `StatCard.test.tsx` for the dot, then prop add). Either way
-> the chunk-2 commit log gains at most one extra commit
-> `feat(dark): StatCard supports dotIndicator prop`.
-
-> **Also verify** the `ProgressBar` API supports `tone='red'` /
-> `'green'` and a `className` pass-through for the `w-[70px]` sizing.
-> Same fallback: a small extending commit if needed.
+> **JSX glyph note (chunk-1 lesson):** the icons render via
+> `<>{STAT_ICON.running}</>` (a Fragment containing the
+> `'\u25B6'`-decoded string). Verify in the Vitest run that
+> `findByText('▶')` resolves; if happy-dom round-trips the byte
+> differently, fall back to `<span>{STAT_ICON.running}</span>`.
 
 - [ ] **2.10.4** Run `npx vitest run src/pages/__tests__/MachinesPage.test.tsx`. Expected: GREEN.
-- [ ] **2.10.5** Run `npx vitest run src/pages/__tests__/DashboardPage.test.tsx`. Expected: GREEN (no regression — Dashboard untouched apart from the formatRelative refactor in step 2.5.5).
+- [ ] **2.10.5** Run `npx vitest run src/pages/__tests__/DashboardPage.test.tsx`. Expected: GREEN (Dashboard untouched apart from formatRelative refactor in step 2.5).
 - [ ] **2.10.6** Commit `feat(machines): rewrite MachinesPage as Phase B dense dark table`.
 
 ### Step 2.11: Update dark-mode smoke test
 
 - [ ] **2.11.1** Edit `src/pages/__tests__/dark-mode.test.tsx`:
-  - In the `pages[]` array, replace the existing MachinesPage entry's
-    probe (it currently looks for `/machines/i` against the legacy
-    page) with `{ Component: MachinesPage, probe: /All 12 machines across 4 sites/i }`.
-  - Ensure the `liveMetricsService` mock includes
-    `getMachineRows: vi.fn().mockResolvedValue([])` in addition to the
-    chunk-1 mocks.
+  - **Append** `import { MachinesPage } from '../MachinesPage'` near the top.
+  - In the existing `liveMetricsService` mock factory, **add** the line
+    `getMachineRows: vi.fn().mockResolvedValue([]),` next to the existing
+    `getMachineMetrics`/`getThroughputSeries` keys.
+  - **Append** to the `pages` array:
+    `{ name: 'MachinesPage', Component: MachinesPage, probe: /All 12 machines across 4 sites/i },`
 - [ ] **2.11.2** Run `npx vitest run src/pages/__tests__/dark-mode.test.tsx`. Expected: GREEN.
 - [ ] **2.11.3** Commit `test(dark-mode): cover MachinesPage Phase B markup`.
 
 ### Step 2.12: Final per-chunk gate
 
 - [ ] **2.12.1** Run `npm run test:run`. Expected: GREEN.
-  - **Test budget**: chunk-1 floor = 263. New tests added in chunk 2:
-    StatBadge ~19, DataTable ~6, statusToBadgeVariant ~4, formatRelative ~4,
-    MachinesPage ~5, Button xs ~1, liveMetricsService ~3 = ~42 added.
-    Tests removed: 0 (legacy MachinesPage had no test file).
-    **New chunk-2 floor: ≥ 305.**
+  - **Test budget**: chunk-1 floor = **263**. New tests added in chunk 2:
+    StatBadge ~19 (1 + 17 it.each + 1 live-uppercase), DataTable 6,
+    statusToBadgeVariant 4, formatRelative 4, MachinesPage 5,
+    Button xs 1, liveMetricsService 3, dark-mode +2 (MachinesPage in
+    both themes) = **44 added**.
+    **New chunk-2 floor: ≥ 307**.
+    Record actual count in plan after run.
 - [ ] **2.12.2** Run `npm run build`. Expected: GREEN.
 - [ ] **2.12.3** Run `npm run lint`. Expected: ≤ 8 errors (current
       baseline; do not introduce new errors).
 - [ ] **2.12.4 Manual smoke** — login as `aslam@hortisort.com / password_123`,
       navigate to `/machines`:
-  - Page header: `Machines` + subtitle `All 12 machines across 4 sites`
-  - 4 stat cards with values 6 / 2 / 2 / 2 — colored green/yellow/red/blue
-  - Running and Down headers show a pulsing accent dot
-  - Table renders 12 rows; status badges render with correct tones
-  - "Now" rows show in green-ish text; "Xd ago" rows in muted fg-6
-  - Inline ProgressBar segments render at the per-row uptime percent
-  - Click "Update" on row 1 → navigates to `/machines/1/update-status`
-  - Click "Ticket" on row 1 → navigates to `/tickets/new?machine=1`
-  - Hover on a row tints background to `bg-surface3`
-  - Theme toggle: light mode renders without Tailwind class errors in
-    DevTools console
-  - Mobile width 375 px: stat cards collapse 2-up; table becomes
-    horizontally scrollable (acceptable for Phase B; full responsive
-    table redesign is Phase C)
+  - Header `Machines` + subtitle `All 12 machines across 4 sites`
+  - 4 stat cards with values **6 / 2 / 2 / 2**, accent bars
+    green/yellow/red/blue, value colors `#4ade80 / #fbbf24 / #ef4444 / #64748b`
+  - Running and Down headers show their dot indicator (chunk-1
+    `StatusDot` via `dot` prop)
+  - Table renders 12 rows; status pills correct tones
+  - Live rows show `formatRelative` output `just now` (sub-minute), older
+    rows `Xh ago` / `Xd ago`
+  - Inline ProgressBar segments render at the per-row uptime percent in
+    a 70-px container
+  - Click `Update` on row 1 → navigates to `/machines/1/update-status`
+  - Click `Ticket` on row 1 → navigates to `/tickets/new?machine=1`
+  - Hover on a row tints background to `bg-bg-surface3`
+  - Theme toggle: light mode renders without console errors
+  - Mobile width 375 px: stat cards 2-up; table horizontally scrolls
   - Browser console: zero errors
-- [ ] **2.12.5** Update spec status to `Status: in implementation (chunk 2 complete)` in `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` line 3. Commit:
+- [ ] **2.12.5** Update spec `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md`:
+  - Line 3: `Status: in implementation (chunk 2 complete)`
+  - Line 230 (StatBadge row): append parenthetical
+    `(chunk 2 ships 17/21 variants; maint, routine, emergency, install added when first consumed)`
+  - Commit:
 
 ```bash
 git add docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md
-git commit -m "docs(spec): mark phase B chunk 2 complete"
+git commit -m "docs(spec): mark phase B chunk 2 complete; note StatBadge variant coverage"
 ```
 
 **End of Chunk 2.**
