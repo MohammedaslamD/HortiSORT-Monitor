@@ -1,213 +1,127 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 
-import type { Ticket, Machine, TicketStatus, TicketSeverity, TicketCategory } from '../types'
+import type { TicketRow, TicketStats, TicketSeverity, TicketStatus } from '../types'
 import { useAuth } from '../context/AuthContext'
-import { getTickets } from '../services/ticketService'
-import { getMachinesByRole } from '../services/machineService'
-import { getUserName } from '../utils/userLookup'
-import { TicketCard } from '../components/tickets'
-import { Input, Select, Button } from '../components/common'
+import { liveTicketsService } from '../services/liveTicketsService'
+import { Button } from '../components/common'
+import {
+  StatCard,
+  SectionCard,
+  StatBadge,
+  DataTable,
+  severityToBadgeVariant,
+  ticketStatusToBadgeVariant,
+} from '../components/dark'
+import { formatRelative } from '../utils/formatRelative'
 
-// -----------------------------------------------------------------------------
-// Filter options
-// -----------------------------------------------------------------------------
+const SEVERITY_LABEL: Record<TicketSeverity, string> = {
+  P1_critical: 'P1 Critical',
+  P2_high:     'P2 High',
+  P3_medium:   'P3 Medium',
+  P4_low:      'P4 Low',
+}
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'open', label: 'Open' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'resolved', label: 'Resolved' },
-  { value: 'closed', label: 'Closed' },
-  { value: 'reopened', label: 'Reopened' },
+const STATUS_LABEL: Record<TicketStatus, string> = {
+  open:        'Open',
+  in_progress: 'In Progress',
+  resolved:    'Resolved',
+  closed:      'Closed',
+  reopened:    'Reopened',
+}
+
+const COLUMNS = [
+  { key: 'ticket',   label: 'Ticket' },
+  { key: 'machine',  label: 'Machine' },
+  { key: 'issue',    label: 'Issue' },
+  { key: 'severity', label: 'Severity' },
+  { key: 'status',   label: 'Status' },
+  { key: 'assigned', label: 'Assigned To' },
+  { key: 'created',  label: 'Created' },
+  { key: 'actions',  label: 'Actions' },
 ]
 
-const SEVERITY_OPTIONS = [
-  { value: '', label: 'All Severities' },
-  { value: 'P1_critical', label: 'P1 Critical' },
-  { value: 'P2_high', label: 'P2 High' },
-  { value: 'P3_medium', label: 'P3 Medium' },
-  { value: 'P4_low', label: 'P4 Low' },
-]
-
-const CATEGORY_OPTIONS = [
-  { value: '', label: 'All Categories' },
-  { value: 'hardware', label: 'Hardware' },
-  { value: 'software', label: 'Software' },
-  { value: 'sensor', label: 'Sensor' },
-  { value: 'electrical', label: 'Electrical' },
-  { value: 'other', label: 'Other' },
-]
-
-/**
- * Tickets list page with role-scoped data, search, and status/severity/category filters.
- *
- * - admin: sees all tickets
- * - engineer: sees tickets assigned to or raised by them
- * - customer: sees tickets for their machines (by customer_id or raised_by)
- *
- * Role-scoping is handled entirely server-side via JWT.
- */
+/** Phase-B Tickets page — dense dark table per dark-ui-v2.html lines 548-569. */
 export function TicketsPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [stats, setStats] = useState<TicketStats | null>(null)
+  const [rows, setRows] = useState<TicketRow[] | null>(null)
 
-  // Data state
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [machines, setMachines] = useState<Machine[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // Filter state
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | ''>('')
-  const [severityFilter, setSeverityFilter] = useState<TicketSeverity | ''>('')
-  const [categoryFilter, setCategoryFilter] = useState<TicketCategory | ''>('')
-
-  // Fetch data on mount, scoped by role
   useEffect(() => {
-    if (!user) return
-
     let cancelled = false
-
-    async function fetchData() {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const fetchedMachines = await getMachinesByRole()
-
-        /* Role-scoping is handled server-side via JWT — one call for all roles */
-        const fetchedTickets = await getTickets()
-
-        if (cancelled) return
-
-        setMachines(fetchedMachines)
-        setTickets(fetchedTickets)
-      } catch (err) {
-        if (cancelled) return
-        setError(err instanceof Error ? err.message : 'Failed to load tickets.')
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    fetchData()
-    return () => { cancelled = true }
-  }, [user])
-
-  // Machine name lookup map
-  const machineNameMap: Record<number, string> = {}
-  for (const m of machines) {
-    machineNameMap[m.id] = `${m.machine_code} — ${m.machine_name}`
-  }
-
-  // Client-side filtering
-  const filteredTickets = tickets
-    .filter((t) => {
-      if (statusFilter && t.status !== statusFilter) return false
-      if (severityFilter && t.severity !== severityFilter) return false
-      if (categoryFilter && t.category !== categoryFilter) return false
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase()
-        const matches =
-          t.title.toLowerCase().includes(term) ||
-          t.ticket_number.toLowerCase().includes(term)
-        if (!matches) return false
-      }
-      return true
+    Promise.all([
+      liveTicketsService.getTicketStats(),
+      liveTicketsService.getTicketRows(),
+    ]).then(([s, r]) => {
+      if (cancelled) return
+      setStats(s)
+      setRows(r)
     })
-    .sort((a, b) => b.created_at.localeCompare(a.created_at))
-
-  // Navigation
-  const handleTicketClick = useCallback(
-    (ticketId: number) => navigate(`/tickets/${ticketId}`),
-    [navigate],
-  )
+    return () => { cancelled = true }
+  }, [])
 
   if (!user) return null
 
   const canRaiseTicket = user.role === 'engineer' || user.role === 'admin'
 
+  const tableRows = (rows ?? []).map((r) => {
+    const isClosed = r.status === 'resolved' || r.status === 'closed'
+    return {
+      id: r.id,
+      cells: [
+        r.ticket_number,
+        r.machine_code,
+        r.title,
+        <StatBadge key="sev" variant={severityToBadgeVariant(r.severity)}>
+          {SEVERITY_LABEL[r.severity]}
+        </StatBadge>,
+        <StatBadge key="st" variant={ticketStatusToBadgeVariant(r.status)}>
+          {STATUS_LABEL[r.status]}
+        </StatBadge>,
+        r.assigned_to_name,
+        formatRelative(r.created_at),
+        <Button key="a" size="xs" variant="ghost" onClick={() => navigate(`/tickets/${r.id}`)}>
+          {isClosed ? 'View' : 'Update'}
+        </Button>,
+      ],
+    }
+  })
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Tickets</h2>
+    <div className="space-y-4">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-fg-1">Tickets</h1>
+          <p className="text-sm text-fg-4">Maintenance and fault tracking</p>
+        </div>
         {canRaiseTicket && (
           <Link to="/tickets/new">
-            <Button variant="primary">Raise Ticket</Button>
+            <Button variant="primary">+ Raise Ticket</Button>
           </Link>
         )}
-      </div>
+      </header>
 
-      {/* Error banner */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+      {stats && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard accent="red"    label="Open"           value={stats.open}            valueColor="#f87171" icon={<>{'\u2691'}</>} dot="red" />
+          <StatCard accent="blue"   label="In Progress"    value={stats.in_progress}     valueColor="#60a5fa" icon={<>{'\u2699'}</>} />
+          <StatCard accent="green"  label="Resolved Today" value={stats.resolved_today}  valueColor="#4ade80" icon={<>{'\u2714'}</>} />
+          <StatCard accent="purple" label="Avg Resolution" value={<>{stats.avg_resolution_hours}<span className="text-sm"> h</span></>} valueColor="#a78bfa" icon={<>{'\u23F1'}</>} />
         </div>
       )}
 
-      {/* Loading state */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
-        </div>
-      ) : (
-        <>
-          {/* Filters row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Search by title or ticket number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                type="search"
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                options={STATUS_OPTIONS}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as TicketStatus | '')}
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                options={SEVERITY_OPTIONS}
-                value={severityFilter}
-                onChange={(e) => setSeverityFilter(e.target.value as TicketSeverity | '')}
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                options={CATEGORY_OPTIONS}
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value as TicketCategory | '')}
-              />
-            </div>
+      <SectionCard title="All Tickets">
+        {rows === null ? (
+          <p className="text-sm text-fg-6 py-8 text-center">Loading...</p>
+        ) : rows.length === 0 ? (
+          <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No tickets found.</p>
           </div>
-
-          {/* Results or empty state */}
-          {filteredTickets.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
-              <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">No tickets found.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredTickets.map((ticket) => (
-                <TicketCard
-                  key={ticket.id}
-                  ticket={ticket}
-                  machineName={machineNameMap[ticket.machine_id] ?? 'Unknown Machine'}
-                  assignedToName={getUserName(ticket.assigned_to)}
-                  onClick={() => handleTicketClick(ticket.id)}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        ) : (
+          <DataTable columns={COLUMNS} rows={tableRows} />
+        )}
+      </SectionCard>
     </div>
   )
 }
