@@ -1,6 +1,6 @@
 # Dark Theme Phase B — Mockup-Fidelity Redesign
 
-> Status: in implementation (chunk 1 complete)
+> Status: in implementation (chunk 2 complete)
 > Branch: `feature/dark-theme-phase-b` (off `feature/dark-theme-phase-a`)
 > Source mockup: `.superpowers/brainstorm/1957-1776927382/dark-ui-v2.html`
 > Predecessor: `docs/superpowers/specs/2026-04-23-dark-theme-phase-a-design.md`
@@ -227,7 +227,7 @@ file and is fully covered before any page consumes it.
 | Component       | Props (summary)                                      |
 |-----------------|------------------------------------------------------|
 | `StatusDot`     | `tone: 'green'\|'red'\|'amber'\|'blue'\|'gray'`, `pulse?: boolean` |
-| `StatBadge`     | `variant: 'running'\|'idle'\|'down'\|'offline'\|'live'\|'critical'\|'high'\|'medium'\|'low'\|'open'\|'inprog'\|'resolved'\|'completed'\|'admin'\|'engineer'\|'customer'\|'maint'\|'notrun'\|'routine'\|'emergency'\|'install'`, `children: ReactNode` |
+| `StatBadge`     | `variant: 'running'\|'idle'\|'down'\|'offline'\|'live'\|'critical'\|'high'\|'medium'\|'low'\|'open'\|'inprog'\|'resolved'\|'completed'\|'admin'\|'engineer'\|'customer'\|'maint'\|'notrun'\|'routine'\|'emergency'\|'install'`, `children: ReactNode` (chunk 2 ships 17/21 variants; maint, routine, emergency, install added when first consumed) |
 | `IconTile`      | `tone: 'green'\|'red'\|'amber'\|'blue'\|'cyan'\|'purple'`, `children: ReactNode (icon)` |
 | `TrendPill`     | `direction: 'up'\|'down'`, `value: string`           |
 | `Sparkline`     | `points: ThroughputPoint[]`, `height?: number`       |
