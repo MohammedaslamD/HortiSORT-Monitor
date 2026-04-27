@@ -3,6 +3,7 @@ import { render } from '../../test/utils'
 import { LoginPage } from '../LoginPage'
 import { DashboardPage } from '../DashboardPage'
 import { MachinesPage } from '../MachinesPage'
+import { TicketsPage } from '../TicketsPage'
 
 // ---------------------------------------------------------------------------
 // Router + auth + service mocks (mirrors DashboardPage.test.tsx setup)
@@ -47,6 +48,12 @@ vi.mock('../../services/alertService', () => ({
 vi.mock('../../services/activityService', () => ({
   activityService: { getActivity: vi.fn().mockResolvedValue([]) },
 }))
+vi.mock('../../services/liveTicketsService', () => ({
+  liveTicketsService: {
+    getTicketStats: vi.fn().mockResolvedValue({ open: 0, in_progress: 0, resolved_today: 0, avg_resolution_hours: 0 }),
+    getTicketRows: vi.fn().mockResolvedValue([]),
+  },
+}))
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -76,6 +83,7 @@ const pages = [
   { name: 'LoginPage', Component: LoginPage, probe: /sign in/i },
   { name: 'DashboardPage', Component: DashboardPage, probe: /TOTAL MACHINES/i },
   { name: 'MachinesPage', Component: MachinesPage, probe: /All 12 machines across 4 sites/i },
+  { name: 'TicketsPage', Component: TicketsPage, probe: /Maintenance and fault tracking/i },
 ]
 
 describe.each(pages)('$name renders in both themes', ({ Component, probe }) => {
