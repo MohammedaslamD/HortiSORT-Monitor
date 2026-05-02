@@ -6,12 +6,13 @@ export default defineConfig({
   server: {
     host: true,
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:4000',
-        changeOrigin: true,
-      },
-    },
+    // proxy disabled — running on mock data for demo (no backend/DB available)
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://localhost:4000',
+    //     changeOrigin: true,
+    //   },
+    // },
   },
   test: {
     globals: true,
