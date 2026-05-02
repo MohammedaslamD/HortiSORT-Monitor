@@ -1,99 +1,58 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getDatalogReport } from '../services/datalogService'
-import type { DatalogReport, TdmsLot, TdmsError } from '../types'
+import { MOCK_DAILY_LOGS, MOCK_MACHINES } from '../data/mockData'
+import type { DatalogReport, TdmsError, DailyLogStatus } from '../types'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-/** Parse "05-03-2026 : 10:20" → "10:20" */
-function timeOnly(tdmsDate: string): string {
-  if (!tdmsDate) return '—'
-  const parts = tdmsDate.split(':')
-  if (parts.length >= 3) return `${parts[1].trim()}:${parts[2].trim()}`
-  if (parts.length === 2) return parts[1].trim()
-  return tdmsDate
-}
-
-/** Parse "X Hrs Y Min Z.ZZZ Sec" → "Xh Ym" or "~Ym" */
-function formatElapsed(elapsed: string | undefined): string {
-  if (!elapsed) return '—'
-  const hMatch = elapsed.match(/(\d+)\s*Hrs/)
-  const mMatch = elapsed.match(/(\d+)\s*Min/)
-  const h = hMatch ? parseInt(hMatch[1]) : 0
-  const m = mMatch ? parseInt(mMatch[1]) : 0
-  if (h > 0) return `${h}h ${m}m`
-  if (m > 0) return `~${m}m`
-  return '<1m'
-}
-
-/** Short lot ID for display: last 6 chars of lot number */
-function shortLot(lotNum: string): string {
-  return lotNum ? lotNum.slice(-6) : '—'
+function calcDuration(start: string, end: string): string {
+  if (!start || !end) return '—'
+  // start/end are "HH:MM" strings
+  const [sh, sm] = start.split(':').map(Number)
+  const [eh, em] = end.split(':').map(Number)
+  if (isNaN(sh) || isNaN(eh)) return '—'
+  const mins = (eh * 60 + em) - (sh * 60 + sm)
+  if (mins <= 0) return '—'
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
 type FilterType = 'all' | 'running' | 'completed' | 'errors'
 
-// ── sub-components ─────────────────────────────────────────────────────────────
+// ── Status badge ──────────────────────────────────────────────────────────────
 
-interface LotRow {
-  lot: TdmsLot
-  index: number
+const STATUS_STYLES: Record<DailyLogStatus, { bg: string; text: string; dot?: boolean }> = {
+  running:     { bg: 'bg-green-500/20 border border-green-500/30', text: 'text-green-400', dot: true },
+  not_running: { bg: 'bg-red-500/20 border border-red-500/30',   text: 'text-red-400' },
+  maintenance: { bg: 'bg-yellow-500/20 border border-yellow-500/30', text: 'text-yellow-400' },
+}
+const STATUS_LABELS: Record<DailyLogStatus, string> = {
+  running:     'Running',
+  not_running: 'Error',
+  maintenance: 'Maintenance',
 }
 
-function StatusBadge({ elapsed }: { elapsed: string | undefined }) {
-  // Treat lots with elapsed < 1 min as running (heuristic for demo)
-  const isRunning = !elapsed || elapsed.includes('0 Hrs 0 Min')
-  if (isRunning) {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
-        Running
-      </span>
-    )
-  }
+function StatusBadge({ status }: { status: DailyLogStatus }) {
+  const s = STATUS_STYLES[status]
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-white/10 text-fg-3">
-      Completed
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${s.bg} ${s.text}`}>
+      {s.dot && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {STATUS_LABELS[status]}
     </span>
   )
 }
 
-function LotTableRow({ lot, index }: LotRow) {
-  const inspected = lot.inspection?.['Vision Result Count']?.total ?? '—'
-  const start = timeOnly(lot.lot_start)
-  const stop = timeOnly(lot.lot_stop)
-  const elapsed = formatElapsed(lot.elapsed_time)
-  const isRunning = !lot.elapsed_time || lot.elapsed_time.includes('0 Hrs 0 Min')
+// ── Error log row ─────────────────────────────────────────────────────────────
 
-  return (
-    <tr className="border-t border-white/5 hover:bg-white/[0.03] transition-colors">
-      <td className="py-2.5 px-4 text-xs font-semibold text-fg-2">{lot.system_name}</td>
-      <td className="py-2.5 px-4 text-xs text-fg-4">{lot.system_id}</td>
-      <td className="py-2.5 px-4 text-xs font-mono text-fg-2">{index + 1}</td>
-      <td className="py-2.5 px-4 text-xs text-fg-4 font-mono">{shortLot(lot.lot_number)}</td>
-      <td className="py-2.5 px-4 text-xs text-fg-3">{start}</td>
-      <td className="py-2.5 px-4 text-xs text-fg-3">{isRunning ? '—' : stop}</td>
-      <td className="py-2.5 px-4 text-xs text-fg-3">{elapsed}</td>
-      <td className="py-2.5 px-4 text-xs text-right font-semibold text-fg-2">
-        {inspected !== '—' ? Number(inspected).toLocaleString() : '—'}
-      </td>
-      <td className="py-2.5 px-4 text-xs">
-        <StatusBadge elapsed={lot.elapsed_time} />
-      </td>
-    </tr>
-  )
-}
-
-interface ErrorLogRowProps { err: TdmsError; idx: number }
-function ErrorLogRow({ err, idx }: ErrorLogRowProps) {
+function ErrorLogRow({ err, idx }: { err: TdmsError; idx: number }) {
   const isWarn = err.group === 'SegmentAndRegroupUnit'
   return (
-    <tr className={`border-t border-white/5 ${idx % 2 === 0 ? '' : 'bg-white/[0.015]'}`}>
+    <tr className={`border-t border-white/5 ${idx % 2 !== 0 ? 'bg-white/[0.015]' : ''}`}>
       <td className="py-2 px-4 text-xs text-fg-4 whitespace-nowrap font-mono">{err.datetime}</td>
       <td className="py-2 px-4 text-xs">
         <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-          isWarn
-            ? 'bg-yellow-500/20 text-yellow-400'
-            : 'bg-red-500/20 text-red-400'
+          isWarn ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
         }`}>
           {err.group}
         </span>
@@ -104,69 +63,68 @@ function ErrorLogRow({ err, idx }: ErrorLogRowProps) {
   )
 }
 
-// ── main page ──────────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 /**
- * Production page — matches the mockup:
- * stat cards → filter pills → All Production Lots table → Error Log
- * All data sourced from TDMS datalog (public/datalog.json).
+ * Production page — table rows from MOCK_DAILY_LOGS joined with MOCK_MACHINES,
+ * matching the mockup design. Error log from TDMS datalog.json below.
  */
 export function ProductionPage() {
-  const [report, setReport] = useState<DatalogReport | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [datalog, setDatalog] = useState<DatalogReport | null>(null)
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
 
-  const load = useCallback(async () => {
+  const loadDatalog = useCallback(async () => {
     try {
-      setIsLoading(true)
       const data = await getDatalogReport()
-      setReport(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load production data')
-    } finally {
-      setIsLoading(false)
+      setDatalog(data)
+    } catch {
+      // silently fall back — errors section shows nothing
     }
   }, [])
 
   useEffect(() => {
-    void load()
-    const interval = setInterval(() => { void load() }, 30_000)
+    void loadDatalog()
+    const interval = setInterval(() => { void loadDatalog() }, 30_000)
     return () => clearInterval(interval)
-  }, [load])
+  }, [loadDatalog])
 
-  const lots = report?.lots ?? []
-  const errors = report?.errors ?? []
-  const summary = report?.summary
+  // ── Build table rows by joining logs → machines ──
+  const machineMap = new Map(MOCK_MACHINES.map((m) => [m.id, m]))
 
-  // ── derived stat values ──
-  const runningCount = lots.filter(
-    (l) => !l.elapsed_time || l.elapsed_time.includes('0 Hrs 0 Min')
-  ).length
-  const totalInspected = lots.reduce((acc, l) => {
-    const v = l.inspection?.['Vision Result Count']?.total
-    return acc + (v ? parseInt(v) : 0)
-  }, 0)
+  const allRows = MOCK_DAILY_LOGS.map((log, idx) => {
+    const machine = machineMap.get(log.machine_id)
+    return {
+      id: idx + 1,
+      log,
+      machine,
+      machineCode: machine?.machine_code ?? `#${log.machine_id}`,
+      city: machine?.city ?? '—',
+      duration: calcDuration(log.shift_start, log.shift_end),
+    }
+  })
 
-  // ── filter logic ──
-  const isRunningLot = (l: TdmsLot) =>
-    !l.elapsed_time || l.elapsed_time.includes('0 Hrs 0 Min')
-
-  const filteredLots = lots.filter((l) => {
-    if (filter === 'running' && !isRunningLot(l)) return false
-    if (filter === 'completed' && isRunningLot(l)) return false
-    if (filter === 'errors') return false // errors shown in error log, not lot table
+  // ── Filter ──
+  const filteredRows = allRows.filter((r) => {
+    if (filter === 'running'   && r.log.status !== 'running')     return false
+    if (filter === 'completed' && r.log.status === 'running')     return false
+    if (filter === 'errors'    && r.log.status !== 'not_running') return false
     if (search) {
       const q = search.toLowerCase()
       return (
-        l.lot_number.toLowerCase().includes(q) ||
-        l.system_name.toLowerCase().includes(q) ||
-        l.system_id.toLowerCase().includes(q)
+        r.machineCode.toLowerCase().includes(q) ||
+        r.city.toLowerCase().includes(q) ||
+        (r.log.fruit_type?.toLowerCase().includes(q) ?? false)
       )
     }
     return true
   })
+
+  // ── Stat card derivations ──
+  const runningCount  = allRows.filter((r) => r.log.status === 'running').length
+  const totalQtyKg    = allRows.reduce((s, r) => s + r.log.tons_processed * 1000, 0)
+  const errors        = datalog?.errors ?? []
+  const totalLots     = allRows.length
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
@@ -192,35 +150,25 @@ export function ProductionPage() {
         </p>
       </header>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-md p-3 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* ── Stat cards (mockup style: 4 cards) ── */}
+      {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Machines Running */}
         <div className="bg-surface-2 border border-line rounded-xl p-4">
           <p className="text-[10px] font-semibold tracking-widest text-fg-5 uppercase">Machines Running</p>
-          <p className="mt-2 text-4xl font-extrabold text-fg-1">{isLoading ? '…' : runningCount}</p>
+          <p className="mt-2 text-4xl font-extrabold text-fg-1">{runningCount}</p>
         </div>
-        {/* Total Lots Today */}
         <div className="bg-surface-2 border border-line rounded-xl p-4">
           <p className="text-[10px] font-semibold tracking-widest text-fg-5 uppercase">Total Lots Today</p>
-          <p className="mt-2 text-4xl font-extrabold text-brand-blue">{isLoading ? '…' : lots.length}</p>
+          <p className="mt-2 text-4xl font-extrabold text-brand-blue">{totalLots}</p>
         </div>
-        {/* Total Qty Today */}
         <div className="bg-surface-2 border border-line rounded-xl p-4">
           <p className="text-[10px] font-semibold tracking-widest text-fg-5 uppercase">Total Qty Today</p>
           <p className="mt-2 text-3xl font-extrabold text-brand-cyan">
-            {isLoading ? '…' : `${totalInspected.toLocaleString()} fruits`}
+            {(totalQtyKg / 1000).toFixed(1)} t
           </p>
         </div>
-        {/* Errors Today */}
         <div className="bg-surface-2 border border-line rounded-xl p-4">
           <p className="text-[10px] font-semibold tracking-widest text-fg-5 uppercase">Errors Today</p>
-          <p className="mt-2 text-4xl font-extrabold text-red-400">{isLoading ? '…' : errors.length}</p>
+          <p className="mt-2 text-4xl font-extrabold text-red-400">{errors.length}</p>
         </div>
       </div>
 
@@ -244,32 +192,19 @@ export function ProductionPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search machine or lot..."
+          placeholder="Search machine or fruit..."
           className="ml-auto px-3 py-1 text-xs rounded-md bg-surface-3 border border-line text-fg-2 placeholder:text-fg-6 focus:outline-none focus:border-brand-blue/50 w-52"
         />
       </div>
 
-      {/* ── Production Lots table ── */}
+      {/* ── Production lots table ── */}
       <div className="bg-surface-2 border border-line rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-line flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse inline-block" />
-          <span className="text-sm font-semibold text-fg-1">
-            All Production Lots — Today
-          </span>
-          {summary && (
-            <span className="ml-auto text-xs text-fg-5">
-              {summary.machine_name} · {summary.machine_id}
-            </span>
-          )}
+          <span className="text-sm font-semibold text-fg-1">All Production Lots — Today</span>
         </div>
 
-        {isLoading ? (
-          <p className="text-sm text-fg-6 py-10 text-center">Loading production data…</p>
-        ) : filter === 'errors' ? (
-          <p className="text-sm text-fg-5 py-10 text-center">
-            See the Error Log section below.
-          </p>
-        ) : filteredLots.length === 0 ? (
+        {filteredRows.length === 0 ? (
           <p className="text-sm text-fg-6 py-10 text-center">No lots match the current filter.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -279,17 +214,42 @@ export function ProductionPage() {
                   <th className="py-2.5 px-4 font-medium">Machine</th>
                   <th className="py-2.5 px-4 font-medium">Location</th>
                   <th className="py-2.5 px-4 font-medium">Lot #</th>
-                  <th className="py-2.5 px-4 font-medium">Lot ID</th>
+                  <th className="py-2.5 px-4 font-medium">Fruit</th>
                   <th className="py-2.5 px-4 font-medium">Start Time</th>
                   <th className="py-2.5 px-4 font-medium">Stop Time</th>
                   <th className="py-2.5 px-4 font-medium">Duration</th>
-                  <th className="py-2.5 px-4 font-medium text-right">Qty (Fruits)</th>
+                  <th className="py-2.5 px-4 font-medium text-right">Qty (KG)</th>
                   <th className="py-2.5 px-4 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredLots.map((lot, i) => (
-                  <LotTableRow key={lot.lot_number} lot={lot} index={i} />
+                {filteredRows.map((r) => (
+                  <tr key={r.id} className="border-t border-white/5 hover:bg-white/[0.03] transition-colors">
+                    <td className="py-2.5 px-4 text-xs">
+                      <span className="font-semibold text-fg-1">{r.machineCode}</span>
+                      {r.machine && (
+                        <span className="ml-1.5 text-fg-5 text-[10px]">{r.city}</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-4 text-xs text-fg-3">{r.city}</td>
+                    <td className="py-2.5 px-4 text-xs font-mono text-fg-2">{r.id}</td>
+                    <td className="py-2.5 px-4 text-xs text-brand-cyan">{r.log.fruit_type ?? '—'}</td>
+                    <td className="py-2.5 px-4 text-xs text-fg-3">{r.log.shift_start}</td>
+                    <td className="py-2.5 px-4 text-xs text-fg-3">
+                      {r.log.status === 'running' ? '—' : r.log.shift_end}
+                    </td>
+                    <td className="py-2.5 px-4 text-xs text-fg-3">
+                      {r.log.status === 'running' ? `~${calcDuration(r.log.shift_start, new Date().toTimeString().slice(0, 5))}` : r.duration}
+                    </td>
+                    <td className="py-2.5 px-4 text-xs text-right font-semibold text-fg-2">
+                      {r.log.tons_processed > 0
+                        ? (r.log.tons_processed * 1000).toLocaleString()
+                        : '—'}
+                    </td>
+                    <td className="py-2.5 px-4 text-xs">
+                      <StatusBadge status={r.log.status} />
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -297,13 +257,18 @@ export function ProductionPage() {
         )}
       </div>
 
-      {/* ── Error Log ── */}
+      {/* ── Error Log (TDMS) ── */}
       <div className="bg-surface-2 border border-line rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-line flex items-center gap-2">
           <span className="text-sm font-semibold text-fg-1">Error Log</span>
           <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
             {errors.length}
           </span>
+          {datalog && (
+            <span className="ml-auto text-[10px] text-fg-5">
+              From TDMS · parsed {new Date(datalog.parsed_at).toLocaleTimeString()}
+            </span>
+          )}
         </div>
 
         {errors.length === 0 ? (
