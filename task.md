@@ -546,9 +546,20 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a complete** (Toast bottom-right); 8b/8c/8d pending |
+| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b complete**; 8c/8d pending |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+## 2026-05-02 — Phase B Chunk 8b (common primitives foundation + admin modals)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 8b.1: `Button` Phase B variants (primary blue gradient, ghost surface3, danger red-950) + 2 tests | done |
+| 2026-05-02 | Step 8b.2: `Input` Phase B styling (dark surface, uppercase fg-4 label, brand-cyan focus) + 3 tests | done |
+| 2026-05-02 | Step 8b.3: `Select` Phase B styling matching Input + 3 tests | done |
+| 2026-05-02 | Step 8b.4: `TextArea` Phase B styling matching Input + 3 tests | done |
+| 2026-05-02 | Step 8b.5: `Modal` Phase B dark shell with `subtitle` prop + 5 tests | done |
+| 2026-05-02 | Step 8b.6: 3 admin modals — error banner restyle, subtitles, machine-list polish | done |
 
 ## 2026-05-02 — Phase B Chunk 8a (Toast position)
 
@@ -563,7 +574,7 @@ Spec §7 row 8 ("modal forms + Toast") split 4-ways because surface area is unev
 | Sub | Scope | Status |
 |-----|-------|--------|
 | 8a  | Toast bottom-right position fix | **done** |
-| 8b  | 3 admin overlay modals (`CreateUserModal`, `EditUserModal`, `DeleteUserModal`) | pending |
+| 8b  | 3 admin overlay modals (`CreateUserModal`, `EditUserModal`, `DeleteUserModal`) | **done** (foundation pass + content polish) |
 | 8c  | 3 short form pages (`RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`) | pending |
 | 8d  | 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`) — add smoke tests | pending |
 
@@ -571,6 +582,17 @@ Spec §7 row 8 ("modal forms + Toast") split 4-ways because surface area is unev
 
 - Toast component already used Phase B tokens (`stat-gradient`, `border-brand-{green,red,amber,cyan}`, `animate-slide-in`) from earlier chunks; the only mockup-divergent detail was viewport position. Mockup line 205 specifies `bottom: 20px; right: 20px`; old impl used `top-4 right-4`.
 - Test floor 368 → 369. Build + lint baseline (8 errors) preserved.
+
+#### Chunk 8b implementation notes
+
+- Discovered during research that `common/Button`, `common/Input`, `common/Select`, `common/TextArea`, and `common/Modal` were all using light Tailwind classes with `dark:` variants. Because the app does not toggle Tailwind's `dark` class, only the light variants rendered — every existing usage of these primitives showed light controls on the Phase B dark page. Confirmed with user, then did a foundation pass restyling all five primitives to Phase B tokens.
+- Token mapping: `bg-bg-surface1` (form input bg), `bg-bg-surface2` (modal panel), `border-line-strong`, `text-fg-1/text-fg-4`, focus `border-brand-cyan` + `ring-brand-cyan/20`. Buttons: `primary` = blue gradient, `ghost` = `bg-bg-surface3`, `danger` = `bg-red-950 + border-brand-red`.
+- Form labels switched to `text-[11px] font-semibold uppercase tracking-wider text-fg-4` matching mockup `.form-label`.
+- `Modal` gained an optional `subtitle` prop matching mockup `.modal-sub`. Three admin modals updated to pass subtitles ("Create a team account" / "Update team account" / "This action cannot be undone").
+- Error banners changed from `bg-red-50 text-red-700` to `bg-red-950/40 border border-brand-red text-red-300`.
+- Tests added: Button (+2 = 3 total), Input (3, new file), Select (3, new file), TextArea (3, new file), Modal (5, new file). Test count: 369 → 385 (+16).
+- All 14 admin modal tests stayed green throughout — a refactor confirmed by behaviour-preserving primitives.
+- Build passes, lint baseline (8 errors) preserved. CSS bundle grew 42.15 kB → 43.31 kB.
 
 #### Chunk 7 implementation notes
 
