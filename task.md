@@ -546,9 +546,31 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 8 | All modal forms restyled + Toast (MachineDetail / RaiseTicket / LogVisit / UpdateStatus / TicketDetail / Admin Create/Edit/Delete User) | pending |
+| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a complete** (Toast bottom-right); 8b/8c/8d pending |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+## 2026-05-02 — Phase B Chunk 8a (Toast position)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 8a.1: Toast bottom-right positioning per mockup line 205 + 9th test asserting `bottom-4` / `right-4` / not `top-4` | done |
+
+#### Chunk 8 plan
+
+Spec §7 row 8 ("modal forms + Toast") split 4-ways because surface area is uneven and only 1/5 form pages have tests. Per user direction, the 5 form pages stay as routes (deep-linkable) and are restyled in place rather than converted to overlay modals.
+
+| Sub | Scope | Status |
+|-----|-------|--------|
+| 8a  | Toast bottom-right position fix | **done** |
+| 8b  | 3 admin overlay modals (`CreateUserModal`, `EditUserModal`, `DeleteUserModal`) | pending |
+| 8c  | 3 short form pages (`RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`) | pending |
+| 8d  | 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`) — add smoke tests | pending |
+
+#### Chunk 8a implementation notes
+
+- Toast component already used Phase B tokens (`stat-gradient`, `border-brand-{green,red,amber,cyan}`, `animate-slide-in`) from earlier chunks; the only mockup-divergent detail was viewport position. Mockup line 205 specifies `bottom: 20px; right: 20px`; old impl used `top-4 right-4`.
+- Test floor 368 → 369. Build + lint baseline (8 errors) preserved.
 
 #### Chunk 7 implementation notes
 
