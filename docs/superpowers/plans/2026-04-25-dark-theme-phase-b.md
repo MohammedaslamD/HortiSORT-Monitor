@@ -5190,3 +5190,62 @@ page first (RED), then mechanically swap classes to Phase B tokens.
 **End of Chunk 8d → end of Chunk 8.**
 After 8d, update spec status line and `task.md`, then proceed to
 Chunk 9 (`OperatorConsoleOverlay`) and Chunk 10 (`NotificationBell`).
+
+---
+
+## Chunk 9 — `OperatorConsoleOverlay`
+
+Brand-new fullscreen overlay component. Shows a live floor view with
+ticking clock, fleet-summary KPI row, and a 6-column machine grid that
+auto-refreshes every 15s.
+
+**Trigger**: button in `Topbar` (admin/engineer only). Click opens the
+overlay; Esc or "Exit Console" button closes it.
+
+**Data sources** (all already exist in `liveMetricsService`):
+- `getFleetSummary()` → `FleetSummary` (running/down/idle/today_throughput_tons)
+- `getMachineRows()` → `MachineRow[]` (machine_label, status, t/hr, fruit)
+
+### Steps
+
+- [ ] **9.1** Create `src/components/dark/OperatorConsoleOverlay.tsx`.
+      Props: `{ isOpen: boolean; onClose: () => void }`. When `!isOpen`,
+      returns `null`. When open, renders fullscreen `fixed inset-0
+      bg-bg z-[200] overflow-y-auto p-6`.
+- [ ] **9.2** Header: cyan title (`text-brand-cyan text-2xl font-bold`)
+      + subtitle ("Live floor view — Auto-refresh 15s") + green ticking
+      clock (`text-brand-green text-3xl font-mono tabular-nums`) +
+      "Exit Console" button (`bg-bg-surface3 text-fg-3` ghost-style).
+- [ ] **9.3** Use `useLivePolling(liveMetricsService.getFleetSummary,
+      15_000, initial)` for the KPI row. Render 4 `StatCard`s: RUNNING
+      (green), DOWN (red), IDLE (yellow), TODAY TONS (cyan/blue).
+- [ ] **9.4** Use `useLivePolling(liveMetricsService.getMachineRows,
+      15_000, [])` for the machine grid. Render a 6-col grid of compact
+      tiles: `M-NNN`, big tons-per-hour value (or DOWN/IDLE/OFF
+      label), unit ("t/hr" / "Motor fault" / "Standby"), fruit name in
+      colored text. Color border-left by status: running→cyan, idle→
+      yellow, down→red, offline→slate.
+- [ ] **9.5** Ticking clock: separate `useEffect` with `setInterval`
+      (1s) updating a `now: Date` state. Format as `HH:MM:SS`.
+- [ ] **9.6** Esc-to-close: `useEffect` adds `keydown` listener; calls
+      `onClose()` when `event.key === 'Escape'`.
+- [ ] **9.7** Tests in `__tests__/OperatorConsoleOverlay.test.tsx`:
+      - renders nothing when `isOpen=false`
+      - renders fleet KPIs when open with mocked service data
+      - renders machine grid tiles
+      - calls `onClose` on Esc
+      - calls `onClose` on Exit button click
+      - clock format is `HH:MM:SS` (use `vi.useFakeTimers`)
+- [ ] **9.8** Add to `components/dark/index.ts` barrel.
+- [ ] **9.9** Add trigger button in `Topbar.tsx`: only for
+      `user?.role === 'admin' || user?.role === 'engineer'`. Style:
+      `bg-gradient-to-br from-blue-900 to-blue-600 text-white px-3
+      py-1.5 rounded-md text-xs font-bold` matching `console-btn` in
+      mockup. Manage `isConsoleOpen` state in `Topbar`. Mount
+      `<OperatorConsoleOverlay>` next to it.
+- [ ] **9.10** Update `Topbar.test.tsx` to assert console button only
+      shows for admin/engineer + clicking opens overlay.
+- [ ] **9.11** GREEN full suite + lint + build.
+- [ ] **9.12** Commit (split into multiple commits if it reads more
+      naturally — e.g. component first, integration second).
+- [ ] **9.13** Update `task.md` and spec status.
