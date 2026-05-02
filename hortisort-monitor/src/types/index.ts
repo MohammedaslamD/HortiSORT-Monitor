@@ -435,6 +435,21 @@ export interface DailyLogStats {
   not_running_days: number
 }
 
+/** Aggregate counts shown in the four SiteVisitsPage stat cards.
+ *  Derived live from the role-scoped visit list. */
+export interface SiteVisitStats {
+  /** Visits whose `visit_date` falls within `now`'s calendar month. */
+  visits_this_month: number
+  /** Visits with `visit_purpose === 'ticket'` (treated as emergency). */
+  emergency_count: number
+  /** Visits with `visit_purpose === 'routine'`. */
+  routine_count: number
+  /** Visits with `next_visit_due` in the next 7 days from `now`
+   *  (inclusive of today, exclusive of day +7). Visits without a
+   *  `next_visit_due` are excluded. */
+  due_this_week: number
+}
+
 // =============================================================================
 // Phase B: Live metrics, alerts, activity (mock-data layer)
 // =============================================================================
