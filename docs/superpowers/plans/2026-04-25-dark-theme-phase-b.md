@@ -5096,6 +5096,97 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 
 **End of Chunk 8c.**
 
-> Sub-chunks 8b, 8c, and 8d will be planned in detail at the start
-> of each one (after 8a is committed) so the plan stays close to
-> implementation reality.
+---
+
+## Chunk 8d: 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`)
+
+Both pages are functional but visually inherit too many light tokens
+(white panels, gray-* texts, light tab strips, green-tinted resolution
+panel). Neither has a test file today. Approach: add a smoke test per
+page first (RED), then mechanically swap classes to Phase B tokens.
+
+### 8d.1 — `MachineDetailPage.tsx` (629 lines, 4 tabs)
+
+- [ ] **8d.1.1** Add `MachineDetailPage` to `dark-mode.test.tsx` smoke.
+      RED. The smoke renders `<Routes><Route path="/machines/:id"
+      element={<MachineDetailPage/>}/></Routes>` inside
+      `MemoryRouter initialEntries={['/machines/1']}` and asserts
+      `bg-bg`/`bg-bg-surface2` token classes appear after data loads.
+      Mock services to return synchronous data so the assertion fires
+      without a `waitFor` storm. Mock `useProductionSocket` to
+      `{ lastSession: null }`.
+- [ ] **8d.1.2** Header section:
+      - Wrap in `SectionCard` (or
+        `bg-bg-surface2 border border-line-strong rounded-xl p-5`).
+      - `text-fg-1` for `machine_name`, `text-fg-4` for code/SN,
+        `text-fg-3` for the body text.
+      - Swap status `Badge` → dark `StatBadge` (`running|idle|down|offline`).
+      - Info-grid labels → `text-fg-4`, values → `text-fg-1`.
+- [ ] **8d.1.3** Today's Production card: SectionCard wrapper, "Live"
+      indicator → `text-brand-green` with green pulse, status `Badge` →
+      `StatBadge` with `DAILY_LOG_STATUS_BADGE_VARIANT` (`running`,
+      `notrun`, `maintenance`).
+- [ ] **8d.1.4** Tab strip:
+      - Container border → `border-line-strong`.
+      - Active tab → `border-brand-cyan text-brand-cyan`.
+      - Inactive → `border-transparent text-fg-4
+        hover:text-fg-1 hover:border-line-strong`.
+- [ ] **8d.1.5** Production-history table: thead → `text-fg-4
+      border-line-strong`, tbody rows → `border-line/50
+      hover:bg-bg-surface3`, cell text → `text-fg-2`/`text-fg-3`.
+- [ ] **8d.1.6** Tickets list cards: `bg-bg-surface2 border-line-strong`,
+      severity/status `Badge` → `StatBadge` (severity P1/P2/P3/P4 →
+      `critical|high|medium|low`, status → 8c map).
+- [ ] **8d.1.7** Site Visits cards: same wrapper, visit-purpose `Badge`
+      → `StatBadge` (`routine|emergency|install|notrun`+ "training" →
+      we'll reuse `medium` for training since no dedicated variant).
+- [ ] **8d.1.8** Machine History timeline: dark vertical line
+      (`bg-line-strong`), dot border → `bg-bg`, card wrapper dark,
+      change-type pill → `StatBadge` (use `medium` for all four types
+      to keep simple, with subtle bg).
+- [ ] **8d.1.9** Loading + not-found blocks → 8c pattern (cyan spinner,
+      red-token icon, fg-1 heading, fg-3 body, brand-cyan link).
+- [ ] **8d.1.10** `EmptyState` sub-component → `border-line-strong
+      bg-bg-surface2 text-fg-4`.
+- [ ] **8d.1.11** Back button → `text-brand-cyan hover:text-brand-cyan/80`
+      (matches 8c).
+- [ ] **8d.1.12** GREEN. Full suite.
+- [ ] **8d.1.13** Final gate (build + lint).
+- [ ] **8d.1.14** Commit.
+
+### 8d.2 — `TicketDetailPage.tsx` (513 lines, 6 sections)
+
+- [ ] **8d.2.1** Add `TicketDetailPage` to `dark-mode.test.tsx` smoke.
+      RED. Mock `getTicketById`/`getMachineById`/`getTicketComments` to
+      return a small fixture; assert dark token classes appear.
+- [ ] **8d.2.2** Header section: SectionCard, `text-fg-1` title,
+      `text-fg-3` description, `text-fg-4` ticket number, severity +
+      status `Badge` → `StatBadge`.
+- [ ] **8d.2.3** Info grid: labels → `text-fg-4`, values → `text-fg-1`,
+      machine link → `text-brand-cyan`. Category `Badge` → `StatBadge`
+      (use `medium` neutral for all categories to stay token-correct;
+      or extend `StatBadge` if we need distinct colors — defer
+      extension unless mockup requires).
+- [ ] **8d.2.4** Resolution panel: replace `bg-green-50 border-green-200
+      text-green-*` with **dark green tokens**: `bg-green-950/40
+      border border-brand-green/30 text-fg-2`, label color
+      `text-brand-green`. Stars stay yellow tone; use `text-yellow-400`.
+- [ ] **8d.2.5** Comment thread:
+      - Wrapper SectionCard.
+      - Each comment → `bg-bg-surface3 border-line-strong rounded-md`,
+        author `text-fg-1`, time `text-fg-4`, body `text-fg-2`.
+      - Empty-state line → `text-fg-4`.
+      - Form `border-line-strong` divider.
+- [ ] **8d.2.6** Status update panel (engineer/admin): SectionCard,
+      heading → `text-fg-2`, divider → `border-line-strong`. The form
+      controls (`Select`/`TextArea`/`Input`) already pick up Phase B
+      from chunk 8b.
+- [ ] **8d.2.7** Loading + not-found → 8c pattern.
+- [ ] **8d.2.8** Back button → `text-brand-cyan`.
+- [ ] **8d.2.9** GREEN. Full suite.
+- [ ] **8d.2.10** Final gate.
+- [ ] **8d.2.11** Commit.
+
+**End of Chunk 8d → end of Chunk 8.**
+After 8d, update spec status line and `task.md`, then proceed to
+Chunk 9 (`OperatorConsoleOverlay`) and Chunk 10 (`NotificationBell`).
