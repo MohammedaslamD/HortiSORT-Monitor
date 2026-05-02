@@ -5010,6 +5010,92 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 
 **End of Chunk 8b.**
 
+### Chunk 8c: 3 short form pages restyled
+
+> Now that the common primitives (`Button`, `Input`, `Select`,
+> `TextArea`, `Modal`) are dark, the form pages render dark
+> controls automatically. The remaining work is restyling the
+> page-level wrappers, headers, loading states, custom radio
+> cards, and the inline status badge in `UpdateStatusPage`.
+>
+> Light surfaces still present in the 3 pages:
+>
+> | Surface                           | Pages                              | Replacement |
+> |-----------------------------------|------------------------------------|-------------|
+> | Page header `text-gray-900`       | all 3                              | `text-fg-1` |
+> | Form wrapper `bg-white border-gray-200 shadow-sm` | all 3 | `SectionCard` from `components/dark/` |
+> | Loading spinner `border-gray-300 border-t-primary-600` | all 3 | `border-line-strong border-t-brand-cyan` |
+> | Not-found block (red icon, gray text) | UpdateStatusPage              | dark variant w/ `text-brand-red` icon, `text-fg-3` body |
+> | Severity radio cards (`border-primary-500 bg-primary-50` selected, `border-gray-200 hover:bg-gray-50` unselected) | RaiseTicketPage | dark — `border-brand-cyan bg-brand-cyan/10` selected, `border-line-strong hover:bg-bg-surface3` unselected |
+> | Status radio cards (same shape)   | UpdateStatusPage                   | same dark mapping |
+> | Inline `Badge` for machine status | UpdateStatusPage                   | swap to dark `StatBadge` |
+> | "Linked Ticket" helper text       | LogVisitPage                       | `text-fg-4` |
+> | Legend `text-gray-700`            | RaiseTicket / UpdateStatus         | `text-[11px] uppercase tracking-wider text-fg-4` |
+> | Page-not-found "Back to Dashboard" link `text-primary-600` | UpdateStatusPage     | `text-brand-cyan hover:text-brand-green` |
+>
+> **Smoke coverage**: only `RaiseTicketPage` has a `*.test.tsx` today.
+> The dark-mode smoke (`pages/__tests__/dark-mode.test.tsx`) currently
+> tests 7 pages × 2 themes; we'll add `RaiseTicketPage`,
+> `LogVisitPage`, and `UpdateStatusPage` to it (3 new pages × 1 theme = +3
+> tests since these are dark-only post-Phase-B).
+>
+> **Test floor**: chunk-8b actual = **385**. Chunk 8c adds:
+> - +1 RaiseTicketPage test asserting Phase B header + form wrapper classes
+> - +2 new smoke tests (LogVisit / UpdateStatus dark render — RaiseTicketPage already has its own test, no new smoke needed there)
+> - Existing `RaiseTicketPage.test.tsx` may need its assertions updated if any check light-theme classes; preserve test count.
+>
+> Estimated +3 tests. **New chunk-8c floor: ≥ 388**.
+
+#### Step 8c.1: RaiseTicketPage Phase B styling
+
+- [ ] **8c.1.1** Inspect `RaiseTicketPage.test.tsx` for any
+      light-theme class assertions; update them to Phase B
+      equivalents *only if they assert specific class strings*
+      (most likely they assert behaviour, not classes).
+- [ ] **8c.1.2** Add a new test asserting the page header
+      uses `text-fg-1` and the form wrapper renders inside a
+      `stat-gradient` element. RED.
+- [ ] **8c.1.3** Edit `RaiseTicketPage.tsx`:
+      - Replace loading state classes with dark tokens.
+      - Replace `<h2>` and form wrapper `<form>` with `SectionCard`-wrapped form (header outside, form inside SectionCard).
+      - Replace severity radio cards with dark token mapping.
+      - Replace fieldset legend classes.
+- [ ] **8c.1.4** GREEN. Full suite.
+- [ ] **8c.1.5** Commit.
+
+#### Step 8c.2: LogVisitPage Phase B styling
+
+- [ ] **8c.2.1** Add LogVisitPage to dark-mode smoke
+      (`pages/__tests__/dark-mode.test.tsx`) with one render-doesn't-crash
+      assertion. RED (page renders, but contains light surfaces — smoke
+      passes today; add the smoke test concurrent with the restyle so
+      both go green together).
+- [ ] **8c.2.2** Edit `LogVisitPage.tsx`: same wrapper / header /
+      loading / helper-text replacements as 8c.1. No radio cards.
+- [ ] **8c.2.3** GREEN. Full suite.
+- [ ] **8c.2.4** Commit.
+
+#### Step 8c.3: UpdateStatusPage Phase B styling
+
+- [ ] **8c.3.1** Add UpdateStatusPage to dark-mode smoke. RED.
+- [ ] **8c.3.2** Edit `UpdateStatusPage.tsx`:
+      - Replace loading SVG classes (`text-primary-600` →
+        `text-brand-cyan`, paragraph color).
+      - Replace not-found block (red icon, gray text, primary-600 link).
+      - Replace machine-info header card with `SectionCard` or
+        a small `bg-bg-surface2 border border-line-strong rounded-xl`
+        block.
+      - Swap `Badge` from `getStatusBadgeColor` to dark `StatBadge`
+        with mapping (`running`→`running`, `down`→`down`,
+        `offline`→`offline`, `idle`→`idle`).
+      - Replace radio cards with dark token mapping.
+      - Replace form wrapper with `SectionCard`-wrapped form.
+- [ ] **8c.3.3** GREEN. Full suite.
+- [ ] **8c.3.4** Final gate (build, lint).
+- [ ] **8c.3.5** Commit.
+
+**End of Chunk 8c.**
+
 > Sub-chunks 8b, 8c, and 8d will be planned in detail at the start
 > of each one (after 8a is committed) so the plan stays close to
 > implementation reality.
