@@ -4894,6 +4894,122 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 
 **End of Chunk 8a.**
 
+### Chunk 8b: Foundation pass — restyle 5 common primitives + 3 admin modals
+
+> Discovered during 8b research: the legacy primitives in
+> `src/components/common/` (`Button`, `Input`, `Select`, `TextArea`,
+> `Modal`) all use light-mode Tailwind classes with `dark:`
+> variants. Because the app does not toggle Tailwind's `dark` class,
+> only the light variants render — meaning every existing usage of
+> these primitives shows light controls on the Phase B dark
+> background. Per user direction, this chunk does a **single
+> foundation pass** restyling all five primitives to Phase B tokens,
+> then restyles the three admin modal contents on top.
+>
+> **Token mapping** (mockup → existing Tailwind token):
+>
+> | Mockup CSS                          | Token used                     |
+> |-------------------------------------|--------------------------------|
+> | `.modal` `bg #0d1424`               | `bg-bg-surface2`               |
+> | `.modal` `border #1e2d4a`           | `border-line-strong`           |
+> | `.modal-backdrop` `rgba(0,0,0,.75)` | `bg-black/75 backdrop-blur-sm` |
+> | `.modal-title` `#f1f5f9`            | `text-fg-1`                    |
+> | `.modal-sub` `#64748b`              | `text-fg-4`                    |
+> | `.modal-close` `bg #1e2d4a`         | `bg-line-strong text-fg-4`     |
+> | `.form-input` `bg #0a1020`          | `bg-bg-surface1`               |
+> | `.form-input` `border #1e2d4a`      | `border-line-strong`           |
+> | `.form-input` `text #e2e8f0`        | `text-fg-1`                    |
+> | `.form-input:focus` `#38bdf8`       | `focus:border-brand-cyan focus:ring-brand-cyan/15` |
+> | `.form-label` uppercase `#64748b`   | `text-[11px] uppercase tracking-wider text-fg-4` |
+> | `.btn-primary` blue gradient        | `bg-gradient-to-br from-blue-600 to-blue-700 text-white` |
+> | `.btn-ghost` `bg #172033`           | `bg-bg-surface3 text-fg-3 border border-line-strong` |
+> | `.btn-danger` `bg #450a0a`          | `bg-red-950 text-red-300 border border-brand-red` |
+>
+> **Test floor**: chunk-8a actual = **369**. Each primitive restyle
+> is a refactor (visual tokens) — existing behaviour tests stay
+> green; we add ≥ 1 new "renders dark Phase B token" test per
+> primitive to lock visual contract. Estimated +5 tests.
+> **New chunk-8b floor: ≥ 374**.
+
+#### Step 8b.1: Button — dark Phase B variants
+
+- [ ] **8b.1.1** Add a test asserting `variant="primary"` button
+      includes `bg-gradient-to-br`, `from-blue-600`, `to-blue-700`,
+      `text-white`. Add a `variant="ghost"` test asserting
+      `bg-bg-surface3` and `text-fg-3`.
+- [ ] **8b.1.2** RED.
+- [ ] **8b.1.3** Rewrite `variantClasses` in
+      `src/components/common/Button.tsx` to Phase B tokens
+      (primary / secondary / danger / ghost). Keep the size map
+      unchanged (existing test 5 still asserts xs sizing).
+- [ ] **8b.1.4** GREEN. Run full suite.
+- [ ] **8b.1.5** Commit `feat(button): dark Phase B variants`.
+
+#### Step 8b.2: Input — dark Phase B styling
+
+- [ ] **8b.2.1** Create `Input.test.tsx` with one test asserting the
+      rendered `<input>` has `bg-bg-surface1`, `border-line-strong`,
+      `text-fg-1`. RED.
+- [ ] **8b.2.2** Rewrite className expression to Phase B tokens.
+      Label becomes `text-[11px] uppercase tracking-wider text-fg-4`.
+      Error border becomes `border-brand-red`. Helper text becomes
+      `text-fg-4`. Keep the `aria-invalid` + `aria-describedby`
+      wiring intact.
+- [ ] **8b.2.3** GREEN.
+- [ ] **8b.2.4** Commit.
+
+#### Step 8b.3: Select — dark Phase B styling
+
+- [ ] **8b.3.1** Create `Select.test.tsx` with token assertion. RED.
+- [ ] **8b.3.2** Same restyle pattern as `Input` — apply Phase B
+      tokens. Keep `<option>` background readable
+      (`bg-bg-surface1 text-fg-1`).
+- [ ] **8b.3.3** GREEN.
+- [ ] **8b.3.4** Commit.
+
+#### Step 8b.4: TextArea — dark Phase B styling
+
+- [ ] **8b.4.1** Create `TextArea.test.tsx` with token assertion. RED.
+- [ ] **8b.4.2** Same pattern as `Input`.
+- [ ] **8b.4.3** GREEN.
+- [ ] **8b.4.4** Commit.
+
+#### Step 8b.5: Modal — dark Phase B shell
+
+- [ ] **8b.5.1** Create `Modal.test.tsx` with two tests:
+      (a) panel has `bg-bg-surface2` + `border-line-strong` +
+      `rounded-2xl`; (b) backdrop has `bg-black/75` and
+      `backdrop-blur-sm`. RED.
+- [ ] **8b.5.2** Rewrite `Modal.tsx`: panel uses Phase B tokens;
+      header gains `modal-sub`-style subtitle support via optional
+      `subtitle` prop (used by mockup); close button restyled to
+      `bg-line-strong text-fg-4 hover:text-fg-1`.
+- [ ] **8b.5.3** GREEN.
+- [ ] **8b.5.4** Commit.
+
+#### Step 8b.6: Admin modal content polish
+
+> The three admin modals already compose `Modal/Input/Select/Button`
+> so they pick up dark styling for free after 8b.1–8b.5. The only
+> remaining light-themed surface is the `submitError` banner using
+> `bg-red-50 text-red-700`.
+
+- [ ] **8b.6.1** Update `CreateUserModal.tsx` and `EditUserModal.tsx`:
+      replace the error banner classes with
+      `bg-red-950/40 text-red-300 border border-brand-red`. Use
+      mockup's "subtitle" pattern by passing `subtitle="Create a team account"` /
+      `subtitle="Update team account"` to `Modal`.
+- [ ] **8b.6.2** Update `DeleteUserModal.tsx`: any inline light
+      surfaces → Phase B tokens; pass appropriate `subtitle`.
+- [ ] **8b.6.3** Run all admin modal tests + dark-mode smoke.
+      Existing tests should remain green; if any assert specific
+      light-theme classes (`bg-white`, `text-gray-*`), update them
+      to the new Phase B equivalents.
+- [ ] **8b.6.4** Final gate (full suite, build, lint).
+- [ ] **8b.6.5** Commit `feat(admin-modals): Phase B dark styling`.
+
+**End of Chunk 8b.**
+
 > Sub-chunks 8b, 8c, and 8d will be planned in detail at the start
 > of each one (after 8a is committed) so the plan stays close to
 > implementation reality.
