@@ -6,6 +6,7 @@ export type StatBadgeVariant =
   | 'open' | 'inprog' | 'resolved' | 'completed'
   | 'admin' | 'engineer' | 'customer'
   | 'notrun' | 'maintenance'
+  | 'emergency' | 'routine' | 'install'
 
 interface StatBadgeProps {
   variant: StatBadgeVariant
@@ -31,11 +32,14 @@ const toneClasses: Record<StatBadgeVariant, string> = {
   customer:  'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30',
   notrun:    'bg-slate-500/15 text-slate-400 border border-slate-500/30',
   maintenance: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+  emergency: 'bg-red-500/15 text-red-400 border border-red-500/30',
+  routine:   'bg-blue-500/15 text-blue-400 border border-blue-500/30',
+  install:   'bg-purple-500/15 text-purple-400 border border-purple-500/30',
 }
 
 /**
  * Pill-shaped status badge used across tables, alert rows, and lists.
- * 17/21 spec variants today; extend as future chunks need.
+ * 21/21 spec variants today; extend as future chunks need.
  */
 export function StatBadge({ variant, children }: StatBadgeProps) {
   return (
