@@ -13,35 +13,22 @@ import { useAuth } from '../context/AuthContext'
 import { getTicketById, getTicketComments, addTicketComment, updateTicketStatus } from '../services/ticketService'
 import { getMachineById } from '../services/machineService'
 import { getUserName } from '../utils/userLookup'
-import { formatRelativeTime, getSeverityBadgeColor } from '../utils/formatters'
-import { Badge, Button, TextArea, Select, Input, Toast } from '../components/common'
+import { formatRelativeTime } from '../utils/formatters'
+import { Button, TextArea, Select, Input, Toast } from '../components/common'
+import { StatBadge, severityToBadgeVariant, ticketStatusToBadgeVariant } from '../components/dark'
+import type { StatBadgeVariant } from '../components/dark'
 
 // -----------------------------------------------------------------------------
-// Badge-color helpers
+// Badge-variant helpers (Phase B dark tokens)
 // -----------------------------------------------------------------------------
 
-/** Map TicketStatus to Badge color. */
-function getTicketStatusColor(status: TicketStatus): 'red' | 'yellow' | 'green' | 'gray' {
-  const map: Record<TicketStatus, 'red' | 'yellow' | 'green' | 'gray'> = {
-    open: 'red',
-    in_progress: 'yellow',
-    resolved: 'green',
-    closed: 'gray',
-    reopened: 'red',
-  }
-  return map[status]
-}
-
-/** Map TicketCategory to Badge color. */
-function getCategoryColor(category: TicketCategory): 'blue' | 'purple' | 'yellow' | 'red' | 'gray' {
-  const map: Record<TicketCategory, 'blue' | 'purple' | 'yellow' | 'red' | 'gray'> = {
-    hardware: 'blue',
-    software: 'purple',
-    sensor: 'yellow',
-    electrical: 'red',
-    other: 'gray',
-  }
-  return map[category]
+/** Map TicketCategory to dark StatBadge variant. */
+const CATEGORY_VARIANT: Record<TicketCategory, StatBadgeVariant> = {
+  hardware: 'engineer',
+  software: 'admin',
+  sensor: 'medium',
+  electrical: 'critical',
+  other: 'notrun',
 }
 
 /** Format an ISO date string to a readable date. */
@@ -249,8 +236,8 @@ export function TicketDetailPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading ticket details...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-line-strong border-t-brand-cyan" />
+          <p className="mt-3 text-sm text-fg-4">Loading ticket details...</p>
         </div>
       </div>
     )
@@ -260,18 +247,18 @@ export function TicketDetailPage() {
   if (notFound || !ticket) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="rounded-full bg-red-100 p-4">
-          <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="rounded-full bg-red-500/15 border border-brand-red p-4">
+          <svg className="h-8 w-8 text-brand-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ticket not found</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+        <h2 className="text-lg font-semibold text-fg-1">Ticket not found</h2>
+        <p className="text-sm text-fg-3">
           The ticket you're looking for doesn't exist or you don't have access to it.
         </p>
         <Link
           to="/tickets"
-          className="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+          className="text-sm font-medium text-brand-cyan hover:text-brand-cyan/80 underline"
         >
           Back to Tickets
         </Link>
@@ -294,116 +281,116 @@ export function TicketDetailPage() {
       {/* Back link */}
       <button
         onClick={() => navigate(-1)}
-        className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300 flex items-center gap-1"
+        className="text-sm text-brand-cyan hover:text-brand-cyan/80 flex items-center gap-1"
       >
         &larr; Back
       </button>
 
       {/* Section 1: Header */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+      <div className="bg-bg-surface2 rounded-xl shadow-sm border border-line-strong p-5">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
-            <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mb-0.5">{ticket.ticket_number}</p>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{ticket.title}</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 mt-1">{ticket.description}</p>
+            <p className="text-xs font-mono text-fg-4 mb-0.5">{ticket.ticket_number}</p>
+            <h2 className="text-xl font-bold text-fg-1">{ticket.title}</h2>
+            <p className="text-sm text-fg-3 mt-1">{ticket.description}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge color={getSeverityBadgeColor(ticket.severity)} size="md">
+            <StatBadge variant={severityToBadgeVariant(ticket.severity)}>
               {SEVERITY_LABEL[ticket.severity]}
-            </Badge>
-            <Badge color={getTicketStatusColor(ticket.status)} size="md">
+            </StatBadge>
+            <StatBadge variant={ticketStatusToBadgeVariant(ticket.status)}>
               {STATUS_LABEL[ticket.status]}
-            </Badge>
+            </StatBadge>
           </div>
         </div>
 
         {/* Section 2: Info grid */}
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Machine</span>
+            <span className="text-fg-4">Machine</span>
             {machine ? (
-              <p className="font-medium text-gray-900 dark:text-gray-100">
+              <p className="font-medium text-fg-1">
                 <Link
                   to={`/machines/${machine.id}`}
-                  className="text-primary-600 hover:text-primary-700 underline"
+                  className="text-brand-cyan hover:text-brand-cyan/80 underline"
                 >
                   {machine.machine_code} — {machine.machine_name}
                 </Link>
               </p>
             ) : (
-              <p className="font-medium text-gray-900 dark:text-gray-100">Unknown</p>
+              <p className="font-medium text-fg-1">Unknown</p>
             )}
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Category</span>
+            <span className="text-fg-4">Category</span>
             <p className="mt-0.5">
-              <Badge color={getCategoryColor(ticket.category)} size="sm">
+              <StatBadge variant={CATEGORY_VARIANT[ticket.category]}>
                 {CATEGORY_LABEL[ticket.category]}
-              </Badge>
+              </StatBadge>
             </p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Raised By</span>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(ticket.raised_by)}</p>
+            <span className="text-fg-4">Raised By</span>
+            <p className="font-medium text-fg-1">{getUserName(ticket.raised_by)}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Assigned To</span>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{getUserName(ticket.assigned_to)}</p>
+            <span className="text-fg-4">Assigned To</span>
+            <p className="font-medium text-fg-1">{getUserName(ticket.assigned_to)}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Created</span>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(ticket.created_at)}</p>
+            <span className="text-fg-4">Created</span>
+            <p className="font-medium text-fg-1">{formatDate(ticket.created_at)}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">SLA</span>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{ticket.sla_hours} hours</p>
+            <span className="text-fg-4">SLA</span>
+            <p className="font-medium text-fg-1">{ticket.sla_hours} hours</p>
           </div>
         </div>
       </div>
 
       {/* Section 3: Resolution (only if resolved_at set) */}
       {ticket.resolved_at && (
-        <div className="bg-green-50 rounded-lg shadow-sm border border-green-200 p-5">
-          <h3 className="text-sm font-semibold text-green-800 mb-3">Resolution</h3>
+        <div className="bg-green-950/40 rounded-xl shadow-sm border border-brand-green/30 p-5">
+          <h3 className="text-sm font-semibold text-brand-green mb-3">Resolution</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
             <div>
-              <span className="text-green-700">Resolved At</span>
-              <p className="font-medium text-green-900">{formatDate(ticket.resolved_at)}</p>
+              <span className="text-brand-green/80">Resolved At</span>
+              <p className="font-medium text-fg-1">{formatDate(ticket.resolved_at)}</p>
             </div>
             {ticket.resolution_time_mins !== null && (
               <div>
-                <span className="text-green-700">Resolution Time</span>
-                <p className="font-medium text-green-900">{formatMinutes(ticket.resolution_time_mins)}</p>
+                <span className="text-brand-green/80">Resolution Time</span>
+                <p className="font-medium text-fg-1">{formatMinutes(ticket.resolution_time_mins)}</p>
               </div>
             )}
             {ticket.root_cause && (
               <div className="col-span-2 sm:col-span-3">
-                <span className="text-green-700">Root Cause</span>
-                <p className="text-green-900">{ticket.root_cause}</p>
+                <span className="text-brand-green/80">Root Cause</span>
+                <p className="text-fg-2">{ticket.root_cause}</p>
               </div>
             )}
             {ticket.solution && (
               <div className="col-span-2 sm:col-span-3">
-                <span className="text-green-700">Solution</span>
-                <p className="text-green-900">{ticket.solution}</p>
+                <span className="text-brand-green/80">Solution</span>
+                <p className="text-fg-2">{ticket.solution}</p>
               </div>
             )}
             {ticket.parts_used && (
               <div className="col-span-2 sm:col-span-3">
-                <span className="text-green-700">Parts Used</span>
-                <p className="text-green-900">{ticket.parts_used}</p>
+                <span className="text-brand-green/80">Parts Used</span>
+                <p className="text-fg-2">{ticket.parts_used}</p>
               </div>
             )}
             {ticket.customer_rating !== null && (
               <div>
-                <span className="text-green-700">Customer Rating</span>
-                <p className="font-medium text-green-900 text-lg">{renderStars(ticket.customer_rating)}</p>
+                <span className="text-brand-green/80">Customer Rating</span>
+                <p className="font-medium text-yellow-400 text-lg">{renderStars(ticket.customer_rating)}</p>
               </div>
             )}
             {ticket.customer_feedback && (
               <div className="col-span-2 sm:col-span-3">
-                <span className="text-green-700">Customer Feedback</span>
-                <p className="text-green-900">{ticket.customer_feedback}</p>
+                <span className="text-brand-green/80">Customer Feedback</span>
+                <p className="text-fg-2">{ticket.customer_feedback}</p>
               </div>
             )}
           </div>
@@ -411,33 +398,33 @@ export function TicketDetailPage() {
       )}
 
       {/* Section 4: Comment thread */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+      <div className="bg-bg-surface2 rounded-xl shadow-sm border border-line-strong p-5">
+        <h3 className="text-sm font-semibold text-fg-2 mb-3">
           Comments ({comments.length})
         </h3>
 
         {comments.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
+          <p className="text-sm text-fg-4">No comments yet.</p>
         ) : (
           <div className="space-y-3 mb-4">
             {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-50 dark:bg-gray-950 rounded-md p-3 border border-gray-100 dark:border-gray-800">
+              <div key={comment.id} className="bg-bg-surface3 rounded-md p-3 border border-line-strong">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-fg-1">
                     {getUserName(comment.user_id)}
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-fg-4">
                     {formatRelativeTime(comment.created_at)}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">{comment.message}</p>
+                <p className="text-sm text-fg-2">{comment.message}</p>
               </div>
             ))}
           </div>
         )}
 
         {/* Section 5: Add comment form */}
-        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
+        <div className="border-t border-line-strong pt-4 mt-4">
           <TextArea
             label="Add a comment"
             placeholder="Type your comment..."
@@ -461,8 +448,8 @@ export function TicketDetailPage() {
 
       {/* Section 6: Status update panel (engineer + admin only) */}
       {isEngineerOrAdmin && (
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Update Status</h3>
+        <div className="bg-bg-surface2 rounded-xl shadow-sm border border-line-strong p-5">
+          <h3 className="text-sm font-semibold text-fg-2 mb-3">Update Status</h3>
 
           <div className="space-y-4">
             <Select
@@ -474,7 +461,7 @@ export function TicketDetailPage() {
 
             {/* Resolution fields (only when resolving) */}
             {statusUpdateStatus === 'resolved' && (
-              <div className="space-y-3 border-t border-gray-200 dark:border-gray-800 pt-3">
+              <div className="space-y-3 border-t border-line-strong pt-3">
                 <TextArea
                   label="Root Cause"
                   placeholder="Describe the root cause..."
