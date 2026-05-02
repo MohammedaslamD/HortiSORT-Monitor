@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { getDatalogReport } from '../services/datalogService'
 import { MOCK_DAILY_LOGS, MOCK_MACHINES } from '../data/mockData'
 import type { DatalogReport, TdmsError, TdmsMachine, DailyLogStatus } from '../types'
@@ -90,93 +90,166 @@ function SourceBadge({ source }: { source: TableRow['source'] }) {
   )
 }
 
-// ── Error log inline row ──────────────────────────────────────────────────────
 
-function ErrorLogRow({ err, idx }: { err: TdmsError; idx: number }) {
-  const isWarn = err.group === 'SegmentAndRegroupUnit'
-  return (
-    <tr className={`border-t border-white/5 ${idx % 2 !== 0 ? 'bg-white/[0.015]' : ''}`}>
-      <td className="py-1.5 px-4 text-xs text-fg-4 whitespace-nowrap font-mono">{err.datetime}</td>
-      <td className="py-1.5 px-4 text-xs">
-        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-          isWarn ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
-        }`}>
-          {err.group}
-        </span>
-      </td>
-      <td className="py-1.5 px-4 text-xs text-fg-3 font-mono">{err.error_code || '—'}</td>
-      <td className="py-1.5 px-4 text-xs text-fg-3 max-w-xs truncate">{err.error_source}</td>
-    </tr>
-  )
+// ── Error modal (portal-style, rendered at page level) ───────────────────────
+
+interface ErrorModalProps {
+  machineName: string
+  machineId: string
+  errors: TdmsError[]
+  onClose: () => void
 }
 
-// ── Inline error panel for a table row ───────────────────────────────────────
+function ErrorModal({ machineName, machineId, errors, onClose }: ErrorModalProps) {
+  const backdropRef = useRef<HTMLDivElement>(null)
 
-function InlineErrorPanel({ errors, machineId }: { errors: TdmsError[]; machineId: string }) {
-  const [expanded, setExpanded] = useState(false)
-  if (errors.length === 0) {
-    return <span className="text-xs text-fg-5">No errors</span>
+  // Close on backdrop click
+  function handleBackdropClick(e: React.MouseEvent) {
+    if (e.target === backdropRef.current) onClose()
   }
-  const latest = errors[errors.length - 1]
-  return (
-    <div className="space-y-1">
-      {/* Latest error — one line summary */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] font-mono text-fg-4">{latest.datetime}</span>
-        <span className={`inline-block px-1 py-0.5 rounded text-[9px] font-semibold ${
-          latest.group === 'SegmentAndRegroupUnit' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
-        }`}>
-          {latest.group}
-        </span>
-        <span className="text-[10px] text-fg-3 truncate max-w-[180px]">{latest.error_source}</span>
-        <button
-          onClick={() => setExpanded((p) => !p)}
-          className="ml-1 text-[10px] font-semibold text-brand-blue hover:underline whitespace-nowrap"
-          aria-label={`${expanded ? 'Hide' : 'View all'} errors for ${machineId}`}
-        >
-          {expanded ? 'Hide' : `View all ${errors.length}`}
-        </button>
-      </div>
 
-      {/* Expanded error table */}
-      {expanded && (
-        <div className="mt-2 rounded-lg border border-line overflow-hidden">
-          <div className="bg-surface-3 px-3 py-1.5 flex items-center gap-2 border-b border-line">
-            <span className="text-[11px] font-semibold text-fg-2">Error Log — {machineId}</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
-              {errors.length}
-            </span>
-            <button
-              onClick={() => setExpanded(false)}
-              className="ml-auto text-[10px] text-fg-5 hover:text-fg-2"
-            >
-              ✕ Close
-            </button>
+  // Close on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const warnCount  = errors.filter((e) => e.group === 'SegmentAndRegroupUnit').length
+  const errorCount = errors.length - warnCount
+
+  return (
+    <div
+      ref={backdropRef}
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Error log for ${machineId}`}
+    >
+      <div className="bg-surface-1 border border-line rounded-2xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col max-h-[80vh]">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-line flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-semibold text-fg-1 truncate">
+              Error Log — {machineName}
+            </h2>
+            <p className="text-[11px] text-fg-5 mt-0.5">{machineId}</p>
           </div>
-          <div className="max-h-60 overflow-y-auto">
+          {/* Summary badges */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
+              {errorCount} errors
+            </span>
+            {warnCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                {warnCount} warnings
+              </span>
+            )}
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-fg-3 border border-white/10">
+              {errors.length} total
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-2 shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-fg-4 hover:text-fg-1 transition-colors text-sm"
+            aria-label="Close error log"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Error table */}
+        <div className="overflow-y-auto flex-1">
+          {errors.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-2xl mb-2">✅</p>
+              <p className="text-sm font-semibold text-fg-2">No Errors Recorded</p>
+              <p className="text-xs text-fg-5 mt-1">This machine ran without any logged errors.</p>
+            </div>
+          ) : (
             <table className="w-full text-left">
-              <thead className="sticky top-0 bg-surface-3 z-10">
-                <tr className="text-[10px] text-fg-5 uppercase tracking-wider">
-                  <th className="py-2 px-4 font-medium">Date / Time</th>
-                  <th className="py-2 px-4 font-medium">Group</th>
-                  <th className="py-2 px-4 font-medium">Code</th>
-                  <th className="py-2 px-4 font-medium">Source</th>
+              <thead className="sticky top-0 bg-surface-2 z-10">
+                <tr className="text-[10px] text-fg-5 uppercase tracking-wider border-b border-line">
+                  <th className="py-2.5 px-4 font-medium">Date / Time</th>
+                  <th className="py-2.5 px-4 font-medium">Group</th>
+                  <th className="py-2.5 px-4 font-medium">Code</th>
+                  <th className="py-2.5 px-4 font-medium">Source</th>
                 </tr>
               </thead>
               <tbody>
-                {errors.map((err, i) => (
-                  <ErrorLogRow key={i} err={err} idx={i} />
-                ))}
+                {errors.map((err, i) => {
+                  const isWarn = err.group === 'SegmentAndRegroupUnit'
+                  return (
+                    <tr key={i} className={`border-t border-white/5 ${i % 2 !== 0 ? 'bg-white/[0.015]' : ''}`}>
+                      <td className="py-2 px-4 text-xs text-fg-4 whitespace-nowrap font-mono">{err.datetime}</td>
+                      <td className="py-2 px-4 text-xs">
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                          isWarn ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {err.group}
+                        </span>
+                      </td>
+                      <td className="py-2 px-4 text-xs text-fg-3 font-mono">{err.error_code || '—'}</td>
+                      <td className="py-2 px-4 text-xs text-fg-3">{err.error_source}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
-          </div>
-          {errors.length > 50 && (
-            <p className="text-[10px] text-fg-5 text-center py-1.5 border-t border-line">
-              {errors.length} total errors
-            </p>
           )}
         </div>
-      )}
+
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-line flex items-center justify-between">
+          <p className="text-[11px] text-fg-5">
+            Showing all {errors.length} entries from TDMS error log
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-brand-blue/20 text-brand-blue border border-brand-blue/30 hover:bg-brand-blue/30 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Errors cell ───────────────────────────────────────────────────────────────
+
+interface ErrorsCellProps {
+  errors: TdmsError[] | undefined
+  machineName: string
+  machineId: string
+  onViewAll: (machineName: string, machineId: string, errors: TdmsError[]) => void
+}
+
+function ErrorsCell({ errors, machineName, machineId, onViewAll }: ErrorsCellProps) {
+  // DEMO rows have no errors array
+  if (errors === undefined) {
+    return <span className="text-xs text-fg-6">—</span>
+  }
+  if (errors.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+        <span>✓</span> No Errors
+      </span>
+    )
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/15 text-red-400 border border-red-500/25">
+        ⚠ {errors.length}
+      </span>
+      <button
+        onClick={() => onViewAll(machineName, machineId, errors)}
+        className="text-[11px] font-semibold text-brand-blue hover:underline whitespace-nowrap"
+        aria-label={`View all errors for ${machineId}`}
+      >
+        View All
+      </button>
     </div>
   )
 }
@@ -236,10 +309,17 @@ function buildMockRows(): TableRow[] {
 
 // ── main page ─────────────────────────────────────────────────────────────────
 
+interface ModalState {
+  machineName: string
+  machineId: string
+  errors: TdmsError[]
+}
+
 export function ProductionPage() {
   const [datalog, setDatalog] = useState<DatalogReport | null>(null)
   const [filter, setFilter] = useState<FilterType>('all')
   const [search, setSearch] = useState('')
+  const [modal, setModal] = useState<ModalState | null>(null)
 
   const loadDatalog = useCallback(async () => {
     try {
@@ -395,7 +475,7 @@ export function ProductionPage() {
                   <th className="py-2.5 px-4 font-medium">Total Time</th>
                   <th className="py-2.5 px-4 font-medium text-right">Total Qty</th>
                   <th className="py-2.5 px-4 font-medium">Status</th>
-                  <th className="py-2.5 px-4 font-medium">Latest Error</th>
+                  <th className="py-2.5 px-4 font-medium">Errors</th>
                 </tr>
               </thead>
               <tbody>
@@ -414,11 +494,13 @@ export function ProductionPage() {
                     <td className="py-2.5 px-4 text-xs text-fg-3">{r.duration}</td>
                     <td className="py-2.5 px-4 text-xs text-right font-semibold text-fg-2">{r.qty}</td>
                     <td className="py-2.5 px-4 text-xs"><StatusBadge status={r.status} /></td>
-                    <td className="py-2.5 px-4 min-w-[260px] max-w-xs">
-                      {r.errors !== undefined
-                        ? <InlineErrorPanel errors={r.errors} machineId={r.machineId} />
-                        : <span className="text-xs text-fg-5">—</span>
-                      }
+                    <td className="py-2.5 px-4 text-xs">
+                      <ErrorsCell
+                        errors={r.errors}
+                        machineName={r.machine}
+                        machineId={r.machineId}
+                        onViewAll={(name, id, errs) => setModal({ machineName: name, machineId: id, errors: errs })}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -427,6 +509,16 @@ export function ProductionPage() {
           </div>
         )}
       </div>
+
+      {/* ── Error modal ── */}
+      {modal && (
+        <ErrorModal
+          machineName={modal.machineName}
+          machineId={modal.machineId}
+          errors={modal.errors}
+          onClose={() => setModal(null)}
+        />
+      )}
     </div>
   )
 }

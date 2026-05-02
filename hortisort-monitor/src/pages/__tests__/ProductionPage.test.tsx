@@ -125,10 +125,12 @@ describe('ProductionPage', () => {
     expect(labels).toContain('Errors')
   })
 
-  it('shows latest error inline for LIVE machine row', async () => {
+  it('shows error count badge and View All button for LIVE machine row', async () => {
     mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
-    await waitFor(() => expect(screen.getByText('Disk space warning')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('Compact Inventory Machine1')).toBeInTheDocument())
+    // Errors column shows count badge and View All button
+    expect(screen.getByRole('button', { name: /view all errors for ZLHS/i })).toBeInTheDocument()
   })
 
   it('shows TDMS lot date in table', async () => {
@@ -137,13 +139,13 @@ describe('ProductionPage', () => {
     await waitFor(() => expect(screen.getByText('05 Mar 2026')).toBeInTheDocument())
   })
 
-  it('shows no errors label when machine has no errors', async () => {
+  it('shows No Errors badge when machine has no errors', async () => {
     const emptyMachines = REPORT.machines!.map((m) => ({ ...m, errors: [], error_count: 0 }))
     mockGetDatalogReport.mockResolvedValue({ ...REPORT, errors: [], machines: emptyMachines })
     render(<ProductionPage />)
     await waitFor(() =>
       expect(screen.getByText('Compact Inventory Machine1')).toBeInTheDocument()
     )
-    expect(screen.getAllByText('No errors').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/no errors/i).length).toBeGreaterThan(0)
   })
 })
