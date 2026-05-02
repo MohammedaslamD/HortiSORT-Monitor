@@ -4657,8 +4657,9 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 > **Test floor**: chunk-5 actual = **349**. Chunk 6 adds:
 > `computeSiteVisitStats` (4 tests), StatBadge variant tests
 > (3 cases), `VisitCard` (4 tests), `SiteVisitsPage` page tests
-> (4 tests), dark-mode smoke (+2 themes for one new page)
-> = **17 added**. **New chunk-6 floor: ≥ 366**.
+> (4 tests but file pre-exists with 2 tests, so net +2),
+> dark-mode smoke (+2 themes for one new page) = **15 added net**.
+> **New chunk-6 floor: ≥ 364**.
 
 ### Step 6.1: Add `SiteVisitStats` type + `computeSiteVisitStats` helper
 
@@ -4745,7 +4746,7 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 
 ### Step 6.6: Final per-chunk gate
 
-- [ ] **6.6.1** `npm run test:run` — Chunk-6 floor ≥ **366**.
+- [ ] **6.6.1** `npm run test:run` — Chunk-6 floor ≥ **364**.
 - [ ] **6.6.2** `npm run build` — GREEN.
 - [ ] **6.6.3** `npm run lint` — ≤ 8 errors (no new errors).
 - [ ] **6.6.4** Update spec line 3 → `Status: in implementation

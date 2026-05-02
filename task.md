@@ -501,18 +501,55 @@ Full admin user management (CRUD) wired end-to-end:
 | 2026-05-02 | `npm run lint` — 8 errors (chunk-3 baseline; no new errors)     | done   |
 | 2026-05-02 | Spec status updated to "chunk 4 complete"                       | done   |
 
+## 2026-05-02 — Phase B Chunk 5 (DailyLogsPage)
+
+| Date       | Step                                                              | Status |
+|------------|-------------------------------------------------------------------|--------|
+| 2026-05-02 | Step 5.1: `DailyLogStats` type added to `src/types/index.ts`     | done   |
+| 2026-05-02 | Step 5.2: `computeDailyLogStats` helper + 4 unit tests           | done   |
+| 2026-05-02 | Step 5.3: `maintenance` variant added to `StatBadge` (19/21)     | done   |
+| 2026-05-02 | Step 5.4: New `InfoBanner` atom + 2 tests                        | done   |
+| 2026-05-02 | Step 5.5: Rewrote `DailyLogsPage` as Phase B dense dark table; 4 page tests | done |
+| 2026-05-02 | Step 5.6: Dark-mode smoke now covers DailyLogsPage (12/12 pass)  | done   |
+| 2026-05-02 | `npm run test:run` — **65 files / 349 tests passing** (chunk-5 floor ≥ 349 hit) | done |
+| 2026-05-02 | `npm run build` — GREEN                                          | done   |
+| 2026-05-02 | `npm run lint` — 8 errors (baseline preserved; no new)           | done   |
+| 2026-05-02 | Spec status updated to "chunk 5 complete"                        | done   |
+
+## 2026-05-02 — Phase B Chunk 6 (SiteVisitsPage)
+
+| Date       | Step                                                              | Status |
+|------------|-------------------------------------------------------------------|--------|
+| 2026-05-02 | Step 6.1: `SiteVisitStats` type + `computeSiteVisitStats` helper + 4 tests | done |
+| 2026-05-02 | Step 6.2: 3 new StatBadge variants (`emergency`/`routine`/`install`) — 22/21 | done |
+| 2026-05-02 | Step 6.3: New `VisitCard` molecule + 4 tests                     | done   |
+| 2026-05-02 | Step 6.4: Rewrote `SiteVisitsPage` as StatCard×4 + VisitCard list (filters dropped); existing test file rewritten with 4 new tests | done |
+| 2026-05-02 | Step 6.5: Dark-mode smoke now covers SiteVisitsPage (14/14 pass) | done   |
+| 2026-05-02 | `npm run test:run` — **67 files / 364 tests passing** (chunk-6 floor ≥ 364) | done |
+| 2026-05-02 | `npm run build` — GREEN                                          | done   |
+| 2026-05-02 | `npm run lint` — 8 errors (baseline preserved; no new)           | done   |
+| 2026-05-02 | Spec status updated to "chunk 6 complete"                        | done   |
+
 ### Pending — remaining Phase B chunks
 
 Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 5 | `DailyLogsPage` (info-banner, StatCard×4, LogRow) | pending |
-| 6 | `SiteVisitsPage` (StatCard×4, VisitCard) | pending |
 | 7 | `AdminPage` Users tab (table primitive, role badges) | pending |
 | 8 | All modal forms restyled + Toast (MachineDetail / RaiseTicket / LogVisit / UpdateStatus / TicketDetail) | pending |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+#### Chunk 6 implementation notes
+
+- `VisitPurpose → StatBadgeVariant` mapping: `routine`→`routine` (blue), `ticket`→`emergency` (red), `installation`→`install` (purple), `training`→`engineer` (cyan-blue, reused). The `engineer` reuse for `training` is intentional — the spec does not provide a dedicated tone, and the connotations are similar.
+- Three filter inputs (machine / purpose / engineer) and the engineer-list fetch are dropped per mockup precedent (chunks 2/3/5).
+- The `getUsers()` import is removed from `SiteVisitsPage`. Engineer names still resolve via `getUserName(id)` in `userLookup` for the meta line.
+- `computeSiteVisitStats` uses UTC date-only comparisons for `due_this_week` to avoid time-of-day drift across timezones; tests pass `now` as a fixed `Date` for determinism.
+- StatBadge total: 19 → **22**. The spec §3 budget was 21; we exceed it by one because `routine` (badge) is semantically distinct from `running` despite sharing the blue tone with `low`/`engineer`. Reconciliation: spec §3 explicitly permits "extend the variant union as Phase B chunks need".
+- "+ Log Visit" button hidden for `customer` role via `user.role !== 'customer'` guard, even though customer is gated out of `/visits` by routing today (defensive UI).
+- The legacy `SiteVisitsPage.test.tsx` (2 tests pre-existing) was overwritten with 4 new Phase B tests — net +2 tests, not +4. Plan estimate of 17 added was off; actual = 15.
 
 - `ProductionSession` lacks `items_processed` / `items_rejected` fields. Chunk 4 renders both columns as `'—'` placeholders with `// TODO(phase-c)` comments. The Rejection Rate stat card also shows `'—'` for the same reason.
 - Stat values are derived from the same `sessions` array via `computeProductionStats` — no new mock file. `lots_today` reflects total session count; `items_processed_kg` sums `quantity_kg` (rounded).
