@@ -547,8 +547,30 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 | # | Page | Status |
 |---|------|--------|
 | 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b + 8c + 8d complete** — chunk 8 done |
-| 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
+| 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | **done** |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+## 2026-05-02 — Phase B Chunk 9 (OperatorConsoleOverlay)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 9.1–9.8: build `OperatorConsoleOverlay` (fullscreen, ticking clock, 15s polling, machine grid) + 7 tests + barrel | done |
+| 2026-05-02 | Step 9.9–9.10: wire launcher button into `Topbar` (admin/engineer only) + 4 new tests | done |
+| 2026-05-02 | Step 9.11: full gate (suite, lint, build) | done |
+
+#### Chunk 9 implementation notes
+
+- New component at `components/dark/OperatorConsoleOverlay.tsx` (~180 lines). Returns `null` when `isOpen=false`. When open: `fixed inset-0 z-[200] bg-bg p-6 overflow-y-auto`.
+- Reused existing infra: `useLivePolling` hook for both `getFleetSummary` and `getMachineRows` at 15s cadence — auto-pauses on `document.hidden`. `StatCard` from dark primitives for the 4-up KPI row.
+- Ticking clock: separate `useEffect` with 1s `setInterval`. Removed the synchronous `setNow(new Date())` call inside the effect after lint flagged "Cannot call impure function during render"; the initial state seeds `now` from `() => new Date()` so the first paint shows current time.
+- Tile body logic: when `status === 'running'` and tons-per-hour is non-null, show the number + "t/hr"; otherwise show the status word + caption ("IDLE/Standby", "DOWN/Fault", "OFF/Offline"). Color via two maps (`TILE_ACCENT` for left border, `TILE_VALUE_COLOR` for the big number).
+- Esc-to-close via `keydown` listener attached only when `isOpen` (cleaned up on close/unmount).
+- Topbar now uses `useAuth()` to gate the launcher button (`admin` and `engineer` only). `customer` users do not see the button. The overlay component is co-located in the `Topbar` so console state stays at the navbar level rather than being lifted to a global provider.
+- Launcher button styling matches mockup `console-btn`: `bg-gradient-to-br from-blue-900 to-blue-600 text-white`, small black-square icon prefix.
+- `PageLayout.test.tsx` needed `vi.mock('../../../context/AuthContext')` and `liveMetricsService` because Topbar now consumes both. The 4 existing tests continued to pass after the mock was added.
+- Test count: 394 → 405 (+11: 7 new console + 4 new Topbar role-gating tests).
+- Lint baseline: 8 errors preserved (after one transient impure-function lint regression was fixed by removing the synchronous setState call).
+- Build: 42.50 → 43.83 kB CSS (+1.33 kB; new `bg-bg`, `border-l-{cyan,red,yellow,slate}`, gradient classes, `tabular-nums`).
 
 ## 2026-05-02 — Phase B Chunk 8d (2 large detail pages)
 

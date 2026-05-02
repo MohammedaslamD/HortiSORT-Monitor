@@ -1,6 +1,6 @@
 # Dark Theme Phase B — Mockup-Fidelity Redesign
 
-> Status: in implementation (chunk 8 complete — all 5 form pages + 2 detail pages dark; remaining: chunks 9, 10)
+> Status: in implementation (chunks 8 + 9 complete — Operator Console live; remaining: chunk 10 NotificationBell)
 > Branch: `feature/dark-theme-phase-b` (off `feature/dark-theme-phase-a`)
 > Source mockup: `.superpowers/brainstorm/1957-1776927382/dark-ui-v2.html`
 > Predecessor: `docs/superpowers/specs/2026-04-23-dark-theme-phase-a-design.md`
