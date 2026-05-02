@@ -36,15 +36,15 @@ export function DeleteUserModal({ isOpen, user, onClose, onDeleted }: DeleteUser
   if (!user) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Delete User" size="max-w-sm">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Delete User" subtitle="This action cannot be undone" size="max-w-sm">
       {error && (
-        <div role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 rounded-md bg-red-950/40 border border-brand-red p-3 text-sm text-red-300">
           {error}
         </div>
       )}
-      <p className="mb-6 text-sm text-gray-700 dark:text-gray-300">
+      <p className="mb-6 text-sm text-fg-2">
         Are you sure you want to permanently delete{' '}
-        <strong>{user.name}</strong>? This action cannot be undone.
+        <strong className="text-fg-1">{user.name}</strong>? This action cannot be undone.
       </p>
       <div className="flex justify-end gap-3">
         <Button type="button" variant="secondary" onClick={handleClose} disabled={isDeleting}>

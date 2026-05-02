@@ -94,9 +94,9 @@ export function EditUserModal({ isOpen, user, onClose, onUpdated }: EditUserModa
   if (!user) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Edit User — ${user.name}`} size="max-w-lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Edit User — ${user.name}`} subtitle="Update team account" size="max-w-lg">
       {submitError && (
-        <div role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 rounded-md bg-red-950/40 border border-brand-red p-3 text-sm text-red-300">
           {submitError}
         </div>
       )}
@@ -135,15 +135,15 @@ export function EditUserModal({ isOpen, user, onClose, onUpdated }: EditUserModa
         {/* Machine assignment — customers only */}
         {role === 'customer' && machines.length > 0 && (
           <div>
-            <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Assigned Machines</p>
-            <div className="max-h-40 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-800 p-2 space-y-1">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-fg-4">Assigned Machines</p>
+            <div className="max-h-40 overflow-y-auto rounded-md bg-bg-surface1 border border-line-strong p-2 space-y-1">
               {machines.map(m => (
-                <label key={m.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={m.id} className="flex items-center gap-2 cursor-pointer text-sm text-fg-2">
                   <input
                     type="checkbox"
                     checked={selectedMachineIds.includes(m.id)}
                     onChange={() => toggleMachine(m.id)}
-                    className="rounded border-gray-300 dark:border-gray-700"
+                    className="rounded border-line-strong bg-bg-surface2 text-brand-cyan focus:ring-brand-cyan/30"
                   />
                   <span>{m.machine_code} — {m.machine_name} ({m.city})</span>
                 </label>

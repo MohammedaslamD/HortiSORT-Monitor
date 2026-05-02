@@ -81,9 +81,9 @@ export function CreateUserModal({ isOpen, onClose, onCreated }: CreateUserModalP
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Add New User" size="max-w-lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Add New User" subtitle="Create a team account" size="max-w-lg">
       {submitError && (
-        <div role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 rounded-md bg-red-950/40 border border-brand-red p-3 text-sm text-red-300">
           {submitError}
         </div>
       )}
