@@ -450,6 +450,86 @@ export interface SiteVisitStats {
   due_this_week: number
 }
 
+// -----------------------------------------------------------------------------
+// TDMS Datalog (from Python parser → public/datalog.json)
+// -----------------------------------------------------------------------------
+
+/** Per-category counter from a TDMS group channel. */
+export interface TdmsCounter {
+  lane1: string
+  total: string
+}
+
+/** Outlet breakdown for MITU 2 group. */
+export interface TdmsOutletRow {
+  outlet_1: string
+  outlet_2: string
+  outlet_3: string
+  outlet_4: string
+  outlet_5: string
+  outlet_6: string
+  outlet_7: string
+  outlet_8: string
+  outlet_9: string
+  outlet_10: string
+}
+
+/** A single parsed production lot from the TDMS debug file. */
+export interface TdmsLot {
+  lot_number: string
+  system_name: string
+  system_id: string
+  installation_date: string
+  lot_start: string
+  lot_stop: string
+  software_version: string
+  app_start_time?: string
+  program_start_time?: string
+  elapsed_time?: string
+  pc_boot_time?: string
+  sgr?: Record<string, TdmsCounter>
+  inspection?: Record<string, TdmsCounter>
+  default_bin?: Record<string, TdmsCounter>
+  outlets?: Record<string, TdmsOutletRow>
+}
+
+/** A single error event from the TDMS error log file. */
+export interface TdmsError {
+  group: string
+  run_id: string
+  error_code: string
+  error_source: string
+  datetime: string
+  additional_info: string
+}
+
+/** Summary row derived from the latest lot (written by the parser). */
+export interface TdmsSummary {
+  machine_name: string
+  machine_id: string
+  software_version: string
+  total_lots: number
+  latest_lot: string
+  latest_lot_start: string
+  latest_lot_stop: string
+  latest_elapsed: string
+  latest_program_start: string
+  fruits_inspected: string
+  fruits_ejected: string
+  fruits_lost: string
+  double_fruits: string
+  fruit_exit_count: string
+  total_errors: number
+}
+
+/** Root structure of public/datalog.json produced by tdms-parser.py */
+export interface DatalogReport {
+  parsed_at: string
+  lots: TdmsLot[]
+  errors: TdmsError[]
+  summary: TdmsSummary
+}
+
 // =============================================================================
 // Phase B: Live metrics, alerts, activity (mock-data layer)
 // =============================================================================

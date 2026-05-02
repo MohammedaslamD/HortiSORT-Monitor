@@ -8,6 +8,7 @@ import {
   SectionCard,
   StatBadge,
   DataTable,
+  DatalogPanel,
   type StatBadgeVariant,
 } from '../components/dark'
 
@@ -168,6 +169,11 @@ export function ProductionPage() {
         ) : (
           <DataTable columns={COLUMNS} rows={tableRows} />
         )}
+      </SectionCard>
+
+      {/* ── TDMS Datalog Report ── */}
+      <SectionCard title="TDMS Datalog Report">
+        <DatalogPanel />
       </SectionCard>
     </div>
   )
