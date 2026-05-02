@@ -7,6 +7,8 @@ import { TicketsPage } from '../TicketsPage'
 import { ProductionPage } from '../ProductionPage'
 import { DailyLogsPage } from '../DailyLogsPage'
 import { SiteVisitsPage } from '../SiteVisitsPage'
+import { RaiseTicketPage } from '../RaiseTicketPage'
+import { LogVisitPage } from '../LogVisitPage'
 
 // ---------------------------------------------------------------------------
 // Router + auth + service mocks (mirrors DashboardPage.test.tsx setup)
@@ -88,6 +90,11 @@ vi.mock('../../services/siteVisitService', () => ({
   logSiteVisit: vi.fn(),
 }))
 
+vi.mock('../../services/ticketService', () => ({
+  getTicketsByMachineId: vi.fn().mockResolvedValue([]),
+  createTicket: vi.fn(),
+}))
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -120,6 +127,8 @@ const pages = [
   { name: 'ProductionPage', Component: ProductionPage, probe: /Live — updates every 15 s/i },
   { name: 'DailyLogsPage', Component: DailyLogsPage, probe: /Auto-generated from machine status updates/i },
   { name: 'SiteVisitsPage', Component: SiteVisitsPage, probe: /Engineer on-site visit records/i },
+  { name: 'RaiseTicketPage', Component: RaiseTicketPage, probe: /Raise Ticket/i },
+  { name: 'LogVisitPage', Component: LogVisitPage, probe: /Log Site Visit/i },
 ]
 
 describe.each(pages)('$name renders in both themes', ({ Component, probe }) => {
