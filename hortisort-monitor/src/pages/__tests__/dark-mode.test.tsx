@@ -4,6 +4,7 @@ import { LoginPage } from '../LoginPage'
 import { DashboardPage } from '../DashboardPage'
 import { MachinesPage } from '../MachinesPage'
 import { TicketsPage } from '../TicketsPage'
+import { ProductionPage } from '../ProductionPage'
 
 // ---------------------------------------------------------------------------
 // Router + auth + service mocks (mirrors DashboardPage.test.tsx setup)
@@ -55,6 +56,14 @@ vi.mock('../../services/liveTicketsService', () => ({
   },
 }))
 
+vi.mock('../../services/productionSessionService', () => ({
+  getAllTodaySessions: vi.fn().mockResolvedValue([]),
+}))
+
+vi.mock('../../hooks/useProductionSocket', () => ({
+  useProductionSocket: () => ({ lastSession: null }),
+}))
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -84,6 +93,7 @@ const pages = [
   { name: 'DashboardPage', Component: DashboardPage, probe: /TOTAL MACHINES/i },
   { name: 'MachinesPage', Component: MachinesPage, probe: /All 12 machines across 4 sites/i },
   { name: 'TicketsPage', Component: TicketsPage, probe: /Maintenance and fault tracking/i },
+  { name: 'ProductionPage', Component: ProductionPage, probe: /Live — updates every 15 s/i },
 ]
 
 describe.each(pages)('$name renders in both themes', ({ Component, probe }) => {
