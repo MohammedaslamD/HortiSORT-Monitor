@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { getMachinesByRole } from '../services/machineService'
 import { createTicket } from '../services/ticketService'
 import { Button, Input, Select, TextArea, Toast } from '../components/common'
+import { SectionCard } from '../components/dark'
 
 // -----------------------------------------------------------------------------
 // Constants
@@ -142,8 +143,8 @@ export function RaiseTicketPage() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 dark:border-gray-700 border-t-primary-600" />
-          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">Loading...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-line-strong border-t-brand-cyan" />
+          <p className="mt-3 text-sm text-fg-4">Loading...</p>
         </div>
       </div>
     )
@@ -161,98 +162,100 @@ export function RaiseTicketPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Raise Ticket</h2>
+        <h2 className="text-xl font-semibold text-fg-1">Raise Ticket</h2>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5 space-y-5">
-        {/* Machine picker */}
-        <Select
-          label="Machine"
-          options={machineOptions}
-          value={machineId}
-          onChange={(e) => setMachineId(e.target.value)}
-          error={errors.machineId}
-        />
+      {/* Form inside Phase B SectionCard */}
+      <SectionCard title="Ticket Details">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Machine picker */}
+          <Select
+            label="Machine"
+            options={machineOptions}
+            value={machineId}
+            onChange={(e) => setMachineId(e.target.value)}
+            error={errors.machineId}
+          />
 
-        {/* Severity radio buttons */}
-        <fieldset>
-          <legend className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity</legend>
-          <div className="space-y-2">
-            {SEVERITY_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className={`
-                  flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors
-                  ${severity === opt.value
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:bg-gray-950'}
-                `.trim()}
-              >
-                <input
-                  type="radio"
-                  name="severity"
-                  value={opt.value}
-                  checked={severity === opt.value}
-                  onChange={() => setSeverity(opt.value)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{opt.label}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 ml-2">{opt.sla}</span>
-                </div>
-              </label>
-            ))}
+          {/* Severity radio buttons */}
+          <fieldset>
+            <legend className="block text-[11px] font-semibold uppercase tracking-wider text-fg-4 mb-2">Severity</legend>
+            <div className="space-y-2">
+              {SEVERITY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`
+                    flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors
+                    ${severity === opt.value
+                      ? 'border-brand-cyan bg-brand-cyan/10'
+                      : 'border-line-strong bg-bg-surface1 hover:bg-bg-surface3'}
+                  `.trim()}
+                >
+                  <input
+                    type="radio"
+                    name="severity"
+                    value={opt.value}
+                    checked={severity === opt.value}
+                    onChange={() => setSeverity(opt.value)}
+                    className="h-4 w-4 text-brand-cyan focus:ring-brand-cyan/30"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-fg-1">{opt.label}</span>
+                    <span className="text-xs text-fg-4 ml-2">{opt.sla}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* Category */}
+          <Select
+            label="Category"
+            options={CATEGORY_OPTIONS}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            error={errors.category}
+          />
+
+          {/* Title */}
+          <Input
+            label="Title"
+            placeholder="Brief summary of the issue"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            error={errors.title}
+          />
+
+          {/* Description */}
+          <TextArea
+            label="Description"
+            placeholder="Detailed description of the problem..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            error={errors.description}
+            rows={4}
+          />
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isSubmitting}
+            >
+              Raise Ticket
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate('/tickets')}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
           </div>
-        </fieldset>
-
-        {/* Category */}
-        <Select
-          label="Category"
-          options={CATEGORY_OPTIONS}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          error={errors.category}
-        />
-
-        {/* Title */}
-        <Input
-          label="Title"
-          placeholder="Brief summary of the issue"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          error={errors.title}
-        />
-
-        {/* Description */}
-        <TextArea
-          label="Description"
-          placeholder="Detailed description of the problem..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          error={errors.description}
-          rows={4}
-        />
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-3 pt-2">
-          <Button
-            type="submit"
-            variant="primary"
-            isLoading={isSubmitting}
-          >
-            Raise Ticket
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => navigate('/tickets')}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
+        </form>
+      </SectionCard>
     </div>
   )
 }

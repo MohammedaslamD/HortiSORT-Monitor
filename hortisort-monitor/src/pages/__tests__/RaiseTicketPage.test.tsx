@@ -107,4 +107,17 @@ describe('RaiseTicketPage — assigned_to not hardcoded', () => {
     expect(callArg.machine_id).toBe(10)
     expect(callArg.raised_by).toBe(1)
   }, 15000)
+
+  it('renders Phase B dark header (text-fg-1) and SectionCard form wrapper (stat-gradient)', async () => {
+    render(<RaiseTicketPage />)
+    await waitFor(() => {
+      expect(screen.getByText('HS-001 — Sorter A')).toBeTruthy()
+    })
+    const heading = screen.getByRole('heading', { name: /raise ticket/i })
+    expect(heading.className).toMatch(/text-fg-1/)
+    const form = document.querySelector('form')
+    // The form's parent wrapper should be a stat-gradient SectionCard
+    expect(form).not.toBeNull()
+    expect(form!.closest('.stat-gradient')).not.toBeNull()
+  }, 15000)
 })
