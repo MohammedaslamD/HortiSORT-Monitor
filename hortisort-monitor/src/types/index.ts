@@ -399,6 +399,25 @@ export interface ProductionSessionFilters {
   limit?: number
 }
 
+// -----------------------------------------------------------------------------
+// Phase B: Production page aggregates derived from ProductionSession[]
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four ProductionPage stat cards.
+ *  Derived live from today's sessions; not persisted, not mocked. */
+export interface ProductionStats {
+  /** Sessions whose status === 'running'. */
+  active_sessions: number
+  /** Total session count for the day (any status). */
+  lots_today: number
+  /** Sum of quantity_kg across all sessions, in kg, integer. Items-processed
+   *  is approximated by quantity for now; phase-c may replace with a real
+   *  count if the type grows an `items_processed` field. */
+  items_processed_kg: number
+  /** Always 0 until the type carries items_rejected; rendered as '—'. */
+  rejection_rate_pct: number
+}
+
 // =============================================================================
 // Phase B: Live metrics, alerts, activity (mock-data layer)
 // =============================================================================
