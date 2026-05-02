@@ -482,3 +482,42 @@ Full admin user management (CRUD) wired end-to-end:
 - Frontend `apiClient` is a named export — mock factory: `vi.mock('../apiClient', () => ({ apiClient: {...} }))`
 - `vi.mock` factory is hoisted — top-level variables referenced in factory cause ReferenceError; use `beforeEach` with `vi.mocked()` instead
 - Full vitest suite times out in WSL (~50s per test file due to happy-dom env setup); individual files verified
+
+---
+
+## Dark Theme Phase B — Chunk 4: ProductionPage
+
+### Status: COMPLETE
+
+| Date       | Task                                                            | Status |
+|------------|-----------------------------------------------------------------|--------|
+| 2026-05-02 | Append Chunk 4 plan to phase-b plan file                        | done   |
+| 2026-05-02 | Step 4.1: `ProductionStats` type added to `src/types/index.ts`  | done   |
+| 2026-05-02 | Step 4.2: `computeProductionStats` helper + 4 unit tests        | done   |
+| 2026-05-02 | Step 4.4: Rewrote `ProductionPage` (StatCard×4 + DataTable + StatBadge live/completed); 4 page tests | done |
+| 2026-05-02 | Step 4.5: Dark-mode smoke test now covers ProductionPage (10/10 pass) | done |
+| 2026-05-02 | `npm run test:run` — **62 files / 336 tests passing** (was 326 before chunk 4) | done |
+| 2026-05-02 | `npm run build` — GREEN                                         | done   |
+| 2026-05-02 | `npm run lint` — 8 errors (chunk-3 baseline; no new errors)     | done   |
+| 2026-05-02 | Spec status updated to "chunk 4 complete"                       | done   |
+
+### Pending — remaining Phase B chunks
+
+Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
+
+| # | Page | Status |
+|---|------|--------|
+| 5 | `DailyLogsPage` (info-banner, StatCard×4, LogRow) | pending |
+| 6 | `SiteVisitsPage` (StatCard×4, VisitCard) | pending |
+| 7 | `AdminPage` Users tab (table primitive, role badges) | pending |
+| 8 | All modal forms restyled + Toast (MachineDetail / RaiseTicket / LogVisit / UpdateStatus / TicketDetail) | pending |
+| 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
+| 10 | `NotificationBell` dropdown (new) | pending |
+
+### Implementation notes (Chunk 4)
+
+- `ProductionSession` lacks `items_processed` / `items_rejected` fields. Chunk 4 renders both columns as `'—'` placeholders with `// TODO(phase-c)` comments. The Rejection Rate stat card also shows `'—'` for the same reason.
+- Stat values are derived from the same `sessions` array via `computeProductionStats` — no new mock file. `lots_today` reflects total session count; `items_processed_kg` sums `quantity_kg` (rounded).
+- `LIVE` and `Completed` `StatBadge` variants already shipped in chunk 2; no atom changes required.
+- Socket.io live-update effect from the old page is preserved verbatim.
+- The native `@rolldown/binding-win32-x64-msvc` was missing from `node_modules` after the OpenCode reinstall — `npm i @rolldown/binding-win32-x64-msvc` fixed Vitest startup.

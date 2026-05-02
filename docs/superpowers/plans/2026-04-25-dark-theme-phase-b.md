@@ -4093,3 +4093,252 @@ git commit -m "docs(spec): mark phase B chunk 3 complete"
 ```
 
 **End of Chunk 3.**
+
+---
+
+## Chunk 4: Production page (dense dark table + live stats)
+
+> **Spec reference:** §7 row 4 — `ProductionPage` redesign uses
+> `StatCard×4`, the `DataTable` molecule from chunk 2, and an animated
+> `b-live` `StatBadge` per row. Mockup: `dark-ui-v2.html` lines 524-545
+> (page-production section).
+>
+> **Behaviour deltas vs current `ProductionPage`:** the existing page already
+> renders today's sessions through `ProductionLotTable` with a green
+> `animate-pulse` "Live — updates every 15 s" indicator. The chunk-4 rewrite
+> replaces the old light-theme table with the `DataTable` primitive,
+> adds the 4-card stat header (Active Sessions / Lots Today / Items
+> Processed / Rejection Rate) **derived from the same `sessions` array**
+> (no new mock file), and swaps the inline status bullet for `StatBadge`
+> with the `live` and `completed` variants. The "Live — updates every
+> 15 s" subtitle is preserved (Socket.io stream is unchanged). Legacy
+> `ProductionLotTable` and `ProductionStatusBadge` remain in
+> `src/components/production/` as dead code (mirroring how `MachineCard`
+> and `TicketCard` were preserved in chunks 2-3).
+>
+> **Data gap acknowledged:** the mockup shows "Processed" and "Rejected"
+> columns. Today's `ProductionSession` type only carries `quantity_kg`.
+> Chunk 4 renders these two columns with `'—'` placeholders and a
+> `// TODO(phase-c)` comment in the page. The other 7 columns (Lot,
+> Machine, Fruit, Status, Start, Stop, Qty) are sourced from existing
+> fields. No `ProductionSession` type or mock changes in this chunk.
+>
+> **StatBadge variants needed:** `live`, `completed`. Both shipped in
+> chunk 2 (variant set still 18/21). The `error` ProductionStatus maps
+> to existing `down` variant. No new variants required.
+>
+> **No new chunk-1 primitives required.** All atoms/molecules
+> (`StatCard`, `SectionCard`, `StatBadge`, `DataTable`) already exist.
+>
+> **Test floor**: chunk-3 floor = **329** (per step 3.9.1). Chunk 4 adds:
+> derived-stats helper (4 tests), ProductionPage page tests (4 tests),
+> dark-mode smoke (+2 for both themes) = **10 added**.
+> **New chunk-4 floor: ≥ 339**.
+
+### Step 4.1: Add `ProductionStats` type
+
+- [ ] **4.1.1** Append to `src/types/index.ts` (after `ProductionSessionFilters`):
+
+```typescript
+// -----------------------------------------------------------------------------
+// Phase B: Production page aggregates derived from ProductionSession[]
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four ProductionPage stat cards.
+ *  Derived live from today's sessions; not persisted, not mocked. */
+export interface ProductionStats {
+  /** Sessions whose status === 'running'. */
+  active_sessions: number
+  /** Total session count for the day (any status). */
+  lots_today: number
+  /** Sum of quantity_kg across all sessions, in kg, integer. Items-processed
+   *  is approximated by quantity for now; chunk-c may replace with a real
+   *  count if the type grows an `items_processed` field. */
+  items_processed_kg: number
+  /** Always 0 until the type carries items_rejected; rendered as '—'. */
+  rejection_rate_pct: number
+}
+```
+
+- [ ] **4.1.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
+- [ ] **4.1.3** Commit `feat(types): add ProductionStats for Phase B production page`.
+
+### Step 4.2: Helper `computeProductionStats(sessions)` (RED → GREEN)
+
+- [ ] **4.2.1** New file `src/utils/productionStats.ts`:
+
+```typescript
+import type { ProductionSession, ProductionStats } from '../types'
+
+/** Pure derivation — no I/O, no Date.now(). Test-friendly. */
+export function computeProductionStats(sessions: ProductionSession[]): ProductionStats {
+  let active = 0
+  let qty = 0
+  for (const s of sessions) {
+    if (s.status === 'running') active++
+    if (s.quantity_kg) qty += parseFloat(s.quantity_kg)
+  }
+  return {
+    active_sessions: active,
+    lots_today: sessions.length,
+    items_processed_kg: Math.round(qty),
+    rejection_rate_pct: 0,
+  }
+}
+```
+
+- [ ] **4.2.2** New test file `src/utils/__tests__/productionStats.test.ts` —
+      4 cases:
+  1. Empty array → `{0, 0, 0, 0}`
+  2. Only running sessions → `active_sessions === sessions.length`
+  3. Mixed running/completed/error → `active_sessions` counts only `'running'`
+  4. `quantity_kg` sums (parseFloat) — including a `null` row that's skipped
+- [ ] **4.2.3** Run `npx vitest run src/utils/__tests__/productionStats.test.ts`.
+      Expected: GREEN (4 tests pass).
+- [ ] **4.2.4** Commit `feat(utils): add computeProductionStats helper`.
+
+### Step 4.3: Build `ProductionRow` projection inline (no new mock)
+
+The dense table renders directly from `ProductionSession[]`. The page
+maps each session to the 9 columns in the render path; no new
+`ProductionRow` type or mock array is created (sessions are already
+fetched on mount). This mirrors how chunk 1 mapped `Machine[]` to
+`MachineTile` props in-place.
+
+- [ ] **4.3.1** No file changes; design decision recorded in this section.
+
+### Step 4.4: Rewrite `ProductionPage` (RED → GREEN)
+
+- [ ] **4.4.1** Write the failing tests first, then the page.
+
+New file `src/pages/__tests__/ProductionPage.test.tsx` — 4 cases:
+  1. Renders the page header `Production` and the live subtitle
+     `Live — updates every 15 s`.
+  2. Renders 4 stat cards with labels `ACTIVE SESSIONS`, `LOTS TODAY`,
+     `ITEMS PROCESSED`, `REJECTION RATE` — values derived from a
+     `getAllTodaySessions` mock returning 3 sessions (1 running, 2
+     completed, total quantity 1500.5 kg) → `1 / 3 / 1501 / —`.
+  3. Renders the `DataTable` with one `<tr>` per session, status cell
+     uses `StatBadge` with text `LIVE` for running and `Completed` for
+     completed.
+  4. Empty state: when service returns `[]`, table absent and
+     `No production data for today yet.` message visible.
+
+Mocks (top of test file):
+- `react-router-dom` `useNavigate` (mirrors chunk-3 test).
+- `../../context/AuthContext` `useAuth` returns admin.
+- `../../services/productionSessionService` `getAllTodaySessions` returns
+  a `vi.fn().mockResolvedValue([...])`.
+- `../../hooks/useProductionSocket` `useProductionSocket` returns
+  `{ lastSession: null }` (a no-op stub so the live-update effect is
+  inert during unit tests).
+
+- [ ] **4.4.2** Run page test → expect RED (page still uses old markup).
+
+- [ ] **4.4.3** Rewrite `src/pages/ProductionPage.tsx`. Skeleton:
+
+```tsx
+import { useState, useEffect, useCallback } from 'react'
+import type { ProductionSession } from '../types'
+import { getAllTodaySessions } from '../services/productionSessionService'
+import { useProductionSocket } from '../hooks/useProductionSocket'
+import { computeProductionStats } from '../utils/productionStats'
+import { StatCard, StatBadge, SectionCard, DataTable } from '../components/dark'
+import { formatRelative } from '../utils/formatters' // unused; remove if lint flags
+
+export function ProductionPage() {
+  const [sessions, setSessions] = useState<ProductionSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const today = new Date().toISOString().slice(0, 10)
+
+  const fetchSessions = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setSessions(await getAllTodaySessions(today))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load production data')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [today])
+
+  useEffect(() => { void fetchSessions() }, [fetchSessions])
+
+  const { lastSession } = useProductionSocket({ allMachines: true })
+  useEffect(() => {
+    if (!lastSession) return
+    setSessions((prev) => {
+      const idx = prev.findIndex(
+        (s) => s.machine_id === lastSession.machine_id && s.lot_number === lastSession.lot_number,
+      )
+      if (idx >= 0) {
+        const next = [...prev]; next[idx] = lastSession; return next
+      }
+      return [lastSession, ...prev]
+    })
+  }, [lastSession])
+
+  const stats = computeProductionStats(sessions)
+
+  // Header row
+  // Stat cards row (4)
+  //   ACTIVE SESSIONS (green, dot:'green', value stats.active_sessions, valueColor #4ade80)
+  //   LOTS TODAY (blue, value stats.lots_today)
+  //   ITEMS PROCESSED (cyan, value stats.items_processed_kg.toLocaleString())
+  //   REJECTION RATE (yellow, value '—' until type carries items_rejected)
+  // SectionCard wrapping DataTable
+  //   columns: Lot, Machine, Fruit, Status, Start, Stop, Processed, Rejected, Qty
+  //   rows: sessions.map(s => ({ id: s.id, cells: [...] }))
+  //   Status cell: <StatBadge variant={s.status === 'running' ? 'live' : s.status === 'completed' ? 'completed' : 'down'}>{...}</StatBadge>
+  //   Processed/Rejected cells: '—' (TODO(phase-c): wire real fields)
+  //   Qty cell: parseFloat(s.quantity_kg).toLocaleString() + ' kg' or '—'
+  //   Start/Stop: formatTime helper (HH:MM 24h)
+  // Empty state when sessions.length === 0 && !isLoading: '<p>No production data for today yet.</p>'
+  // Loading state: spinner / skeleton (mirrors DashboardPage Phase B)
+  // Error state: red banner if error
+}
+```
+
+- [ ] **4.4.4** Implement the JSX per the comments above. Use the same
+      page padding (`p-6 max-w-7xl mx-auto`) and the same SectionCard
+      idiom as chunk 2 MachinesPage.
+- [ ] **4.4.5** Run page test → expect GREEN.
+- [ ] **4.4.6** Run `npm run test:run` → no regressions vs chunk-3 floor (329).
+- [ ] **4.4.7** Commit `feat(production): rewrite ProductionPage as Phase B dense dark table`.
+
+### Step 4.5: Update dark-mode smoke test
+
+- [ ] **4.5.1** In `src/pages/__tests__/dark-mode.test.tsx`:
+  - Add import `import { ProductionPage } from '../ProductionPage'`.
+  - Add to the `pages` array:
+    ```ts
+    { name: 'ProductionPage', Component: ProductionPage, probe: /Live — updates every 15 s/i },
+    ```
+  - Add a service mock for `productionSessionService` returning `[]` and
+    `useProductionSocket` returning `{ lastSession: null }`.
+- [ ] **4.5.2** Run `npx vitest run src/pages/__tests__/dark-mode.test.tsx`.
+      Expected: 10 tests pass (was 8 with 4 pages × 2 themes; now 10
+      with 5 pages × 2 themes).
+- [ ] **4.5.3** Commit `test(dark-mode): cover ProductionPage Phase B markup`.
+
+### Step 4.6: Final per-chunk gate
+
+- [ ] **4.6.1** `npm run test:run` — Chunk-4 floor ≥ **339**. Record actual.
+- [ ] **4.6.2** `npm run build` — GREEN.
+- [ ] **4.6.3** `npm run lint` — ≤ 8 errors (no new errors vs chunk-3).
+- [ ] **4.6.4** Manual smoke: `/production` route as admin —
+  - Header `Production` + subtitle with green pulsing dot + `Live —
+    updates every 15 s`.
+  - 4 stat cards (green/blue/cyan/yellow accents); values reflect the
+    seeded sessions.
+  - Table renders with `LIVE` (green) and `Completed` (green)
+    StatBadges; running rows visibly differ via uppercase label.
+  - Mobile width 375 px: stat cards 2-up; table horizontally scrolls.
+  - Light theme toggle: no console errors.
+- [ ] **4.6.5** Update spec
+      `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md`
+      line 3: `Status: in implementation (chunk 4 complete)`.
+- [ ] **4.6.6** Commit `docs(spec): mark phase B chunk 4 complete`.
+
+**End of Chunk 4.**
