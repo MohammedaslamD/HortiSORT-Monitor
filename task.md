@@ -514,8 +514,6 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
 
-### Implementation notes (Chunk 4)
-
 - `ProductionSession` lacks `items_processed` / `items_rejected` fields. Chunk 4 renders both columns as `'—'` placeholders with `// TODO(phase-c)` comments. The Rejection Rate stat card also shows `'—'` for the same reason.
 - Stat values are derived from the same `sessions` array via `computeProductionStats` — no new mock file. `lots_today` reflects total session count; `items_processed_kg` sums `quantity_kg` (rounded).
 - `LIVE` and `Completed` `StatBadge` variants already shipped in chunk 2; no atom changes required.

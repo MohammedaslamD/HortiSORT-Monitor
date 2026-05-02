@@ -4342,3 +4342,263 @@ export function ProductionPage() {
 - [ ] **4.6.6** Commit `docs(spec): mark phase B chunk 4 complete`.
 
 **End of Chunk 4.**
+
+---
+
+## Chunk 5: DailyLogsPage (info-banner + dense dark table)
+
+> **Spec reference:** §7 row 5 — `DailyLogsPage` redesign uses
+> `info-banner`, `StatCard×4`, and a row primitive. Mockup:
+> `dark-ui-v2.html` lines 572-635 (page-logs section).
+>
+> **Behaviour deltas vs current `DailyLogsPage`:**
+> 1. The three filter inputs (machine `Select`, date `Input`, status
+>    `Select`) are **removed** to match the mockup, mirroring the
+>    drop-filters precedent set by `MachinesPage` (chunk 2) and
+>    `TicketsPage` (chunk 3). The legacy `DailyLogCard` component is
+>    left in `src/components/logs/` as dead code.
+> 2. An `InfoBanner` atom is added above the stat cards with the copy
+>    *"How daily logs work: A log entry is automatically created each
+>    time an engineer updates a machine status..."* (mockup line 574).
+> 3. The 4 stat cards (Logs This Week / Running Days / Maintenance
+>    Days / Not-Running Days) are **derived** live from the role-scoped
+>    log array via a new `computeDailyLogStats` helper. No new mock
+>    file (matches Chunk 4 pattern).
+> 4. Existing role-scoping (admin sees all, engineer sees own,
+>    customer sees their machines') is preserved verbatim.
+>
+> **StatBadge variants:** mockup uses `b-running` (green) and
+> `b-notrun` (slate) which already exist, plus `b-maint` (amber) which
+> does not. **Add a `maintenance` variant** in this chunk (StatBadge
+> total: 18 → **19**/21).
+>
+> **New atoms in this chunk:**
+> - `InfoBanner` (cyan-tinted alert/banner; reused by Chunk 8 modal
+>   forms for the Update-Status auto-log notice).
+>
+> **No new molecules.** `StatCard`, `SectionCard`, `StatBadge`,
+> `DataTable` already exist.
+>
+> **Test floor**: chunk-4 actual = **336**. Chunk 5 adds:
+> `computeDailyLogStats` (4 tests), `InfoBanner` (2 tests), StatBadge
+> `maintenance` variant (1 test), `DailyLogsPage` page tests (4 tests),
+> dark-mode smoke (+2 themes for one new page) = **13 added**.
+> **New chunk-5 floor: ≥ 349**.
+
+### Step 5.1: Add `DailyLogStats` type
+
+- [ ] **5.1.1** Append to `src/types/index.ts` (after `ProductionStats`):
+
+```typescript
+// -----------------------------------------------------------------------------
+// Phase B: Daily logs page aggregates derived from DailyLog[]
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four DailyLogsPage stat cards.
+ *  Derived live from the role-scoped log list. */
+export interface DailyLogStats {
+  /** Total log entries within the past 7 days (inclusive of today). */
+  logs_this_week: number
+  /** Distinct (machine_id, date) pairs whose status === 'running'. */
+  running_days: number
+  /** Distinct (machine_id, date) pairs whose status === 'maintenance'. */
+  maintenance_days: number
+  /** Distinct (machine_id, date) pairs whose status === 'not_running'. */
+  not_running_days: number
+}
+```
+
+- [ ] **5.1.2** Run `npx tsc -b --noEmit`. Expected: GREEN.
+- [ ] **5.1.3** Commit `feat(types): add DailyLogStats for Phase B daily logs page`.
+
+### Step 5.2: `computeDailyLogStats(logs, now)` helper (RED → GREEN)
+
+> Pure function — `now` is injected so tests can use a fixed reference
+> date instead of relying on `Date.now()`.
+
+- [ ] **5.2.1** New test file `src/utils/__tests__/dailyLogStats.test.ts`
+      — 4 cases:
+  1. Empty array → `{0, 0, 0, 0}`.
+  2. `logs_this_week` counts only logs whose `date` is within the past
+     7 days inclusive (>= now-6d). Logs older than 7 days are excluded.
+  3. `running_days` / `maintenance_days` / `not_running_days` each
+     count distinct `(machine_id, date)` pairs by status — duplicate
+     entries on the same day for the same machine collapse to 1.
+  4. Mixed-status logs across multiple machines compute all four
+     fields independently.
+
+- [ ] **5.2.2** New file `src/utils/dailyLogStats.ts`:
+
+```typescript
+import type { DailyLog, DailyLogStats } from '../types'
+
+/** ms in 7 days (inclusive: now-6d through now). */
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+
+export function computeDailyLogStats(logs: DailyLog[], now: Date = new Date()): DailyLogStats {
+  const cutoff = now.getTime() - WEEK_MS + 1
+  let logsThisWeek = 0
+  const runningPairs = new Set<string>()
+  const maintPairs = new Set<string>()
+  const notRunningPairs = new Set<string>()
+  for (const l of logs) {
+    const t = new Date(l.date).getTime()
+    if (!Number.isNaN(t) && t >= cutoff) logsThisWeek++
+    const key = `${l.machine_id}|${l.date}`
+    if (l.status === 'running') runningPairs.add(key)
+    else if (l.status === 'maintenance') maintPairs.add(key)
+    else if (l.status === 'not_running') notRunningPairs.add(key)
+  }
+  return {
+    logs_this_week: logsThisWeek,
+    running_days: runningPairs.size,
+    maintenance_days: maintPairs.size,
+    not_running_days: notRunningPairs.size,
+  }
+}
+```
+
+- [ ] **5.2.3** Run test. Expected: GREEN.
+- [ ] **5.2.4** Commit `feat(utils): add computeDailyLogStats helper`.
+
+### Step 5.3: Add `maintenance` variant to `StatBadge`
+
+- [ ] **5.3.1** New test in `src/components/dark/__tests__/StatBadge.test.tsx`:
+      asserts `<StatBadge variant="maintenance">Maintenance</StatBadge>`
+      renders with the amber tone classes (`bg-amber-500/15
+      text-amber-400 border-amber-500/30`).
+- [ ] **5.3.2** Extend `StatBadge.tsx`:
+  - Add `'maintenance'` to the `StatBadgeVariant` union.
+  - Add the entry to `toneClasses`:
+    `maintenance: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',`
+- [ ] **5.3.3** Run test. Expected: GREEN.
+- [ ] **5.3.4** Commit `feat(dark): add maintenance variant to StatBadge`.
+
+### Step 5.4: New `InfoBanner` atom (RED → GREEN)
+
+> A cyan-tinted banner used at the top of pages and inside Chunk 8
+> modals. Mockup `info-banner` class lines 168-170 in `dark-ui-v2.html`.
+
+- [ ] **5.4.1** New test `src/components/dark/__tests__/InfoBanner.test.tsx`
+      — 2 cases:
+  1. Renders `children` text inside the banner role.
+  2. Applies the cyan tone classes (`bg-cyan-500/10`,
+     `border-cyan-500/30`, `text-cyan-200`).
+
+- [ ] **5.4.2** New file `src/components/dark/InfoBanner.tsx`:
+
+```typescript
+import type { ReactNode } from 'react'
+
+interface InfoBannerProps {
+  children: ReactNode
+}
+
+/** Cyan-tinted informational banner (mockup `info-banner`). */
+export function InfoBanner({ children }: InfoBannerProps) {
+  return (
+    <div
+      role="note"
+      className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-200 px-4 py-3 text-xs leading-relaxed"
+    >
+      {children}
+    </div>
+  )
+}
+```
+
+- [ ] **5.4.3** Add `export { InfoBanner } from './InfoBanner'` to
+      `src/components/dark/index.ts`.
+- [ ] **5.4.4** Run test. Expected: GREEN.
+- [ ] **5.4.5** Commit `feat(dark): add InfoBanner atom`.
+
+### Step 5.5: Rewrite `DailyLogsPage` (RED → GREEN)
+
+- [ ] **5.5.1** New test file `src/pages/__tests__/DailyLogsPage.test.tsx`
+      — 4 cases (mock `dailyLogService`, `machineService`,
+      `userLookup.getUserName`, `useAuth`):
+  1. Renders header `Daily Logs`, subtitle `Auto-generated from
+     machine status updates`, and the InfoBanner copy `How daily logs
+     work:`.
+  2. Renders 4 stat cards — labels `LOGS THIS WEEK`, `RUNNING DAYS`,
+     `MAINTENANCE DAYS`, `NOT-RUNNING DAYS` with values derived from
+     a fixture of 6 logs (e.g. 6/2/1/1).
+  3. Renders one `<tr>` per log; status cell uses correct StatBadge
+     (Running / Maintenance / Not Running) per row.
+  4. Empty state: when service returns `[]`, table absent and
+     `No logs found.` visible.
+
+- [ ] **5.5.2** Rewrite `src/pages/DailyLogsPage.tsx`:
+
+```tsx
+import { useState, useEffect } from 'react'
+import type { DailyLog, Machine } from '../types'
+import { useAuth } from '../context/AuthContext'
+import { getAllDailyLogs } from '../services/dailyLogService'
+import { getMachinesByRole } from '../services/machineService'
+import { getUserName } from '../utils/userLookup'
+import { computeDailyLogStats } from '../utils/dailyLogStats'
+import {
+  StatCard, SectionCard, StatBadge, DataTable, InfoBanner,
+  type StatBadgeVariant,
+} from '../components/dark'
+
+const COLUMNS = [
+  { key: 'date',    label: 'Date' },
+  { key: 'machine', label: 'Machine' },
+  { key: 'status',  label: 'Status' },
+  { key: 'fruit',   label: 'Fruit / Tons' },
+  { key: 'notes',   label: 'Notes' },
+  { key: 'by',      label: 'By' },
+]
+
+const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: string }> = {
+  running:     { variant: 'running',     label: 'Running' },
+  maintenance: { variant: 'maintenance', label: 'Maintenance' },
+  not_running: { variant: 'notrun',      label: 'Not Running' },
+}
+
+// header (h1 + subtitle)
+// InfoBanner with the copy
+// 4 StatCards (blue/green/yellow/red, dot:'green' on running)
+// SectionCard "Recent Daily Logs" wrapping DataTable
+// preserve role-scoping logic from existing page
+// formatDate(l.date) → '23 Apr 2026' style
+// formatAuto(l.created_at) → 'auto - HH:MM' string under the date cell
+```
+
+- [ ] **5.5.3** Implement the JSX. Date cell renders two stacked spans
+      (top: formatted date in `text-fg-1 font-semibold`; bottom:
+      `auto · HH:MM` in `text-[10px] text-fg-6`).
+- [ ] **5.5.4** Run page test. Expected: GREEN.
+- [ ] **5.5.5** Run `npm run test:run`. Expected: ≥ 349.
+- [ ] **5.5.6** Commit `feat(logs): rewrite DailyLogsPage as Phase B dense dark table`.
+
+### Step 5.6: Update dark-mode smoke test
+
+- [ ] **5.6.1** In `src/pages/__tests__/dark-mode.test.tsx`:
+  - Import `DailyLogsPage`.
+  - Add to the `pages` array:
+    ```ts
+    { name: 'DailyLogsPage', Component: DailyLogsPage, probe: /Auto-generated from machine status updates/i },
+    ```
+  - Add service mocks: `dailyLogService.getAllDailyLogs` →
+    `[]`; `machineService.getMachinesByRole` → `[]`.
+- [ ] **5.6.2** Run smoke. Expected: 12 tests pass (6 pages × 2).
+- [ ] **5.6.3** Commit `test(dark-mode): cover DailyLogsPage Phase B markup`.
+
+### Step 5.7: Final per-chunk gate
+
+- [ ] **5.7.1** `npm run test:run` — Chunk-5 floor ≥ **349**.
+- [ ] **5.7.2** `npm run build` — GREEN.
+- [ ] **5.7.3** `npm run lint` — ≤ 8 errors (no new errors).
+- [ ] **5.7.4** Manual smoke `/daily-logs`: header + subtitle, info
+      banner, 4 stat cards (blue/green/yellow/red), table with
+      Running/Maintenance/Not Running badges, mobile 375px stat cards
+      2-up, light theme toggle no console errors.
+- [ ] **5.7.5** Update spec line 3 → `Status: in implementation
+      (chunk 5 complete)`.
+- [ ] **5.7.6** Append Chunk 5 entry to `task.md`.
+- [ ] **5.7.7** Commit `docs: mark phase B chunk 5 complete (DailyLogsPage)`.
+
+**End of Chunk 5.**
