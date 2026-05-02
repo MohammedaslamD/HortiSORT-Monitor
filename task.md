@@ -546,9 +546,28 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b complete**; 8c/8d pending |
+| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b + 8c complete**; 8d pending |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+## 2026-05-02 — Phase B Chunk 8c (3 short form pages)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 8c.1: `RaiseTicketPage` Phase B SectionCard form, dark severity radio cards + 1 styling test | done |
+| 2026-05-02 | Step 8c.2: `LogVisitPage` Phase B SectionCard form, dark loading + helper text + smoke entry | done |
+| 2026-05-02 | Step 8c.3: `UpdateStatusPage` Phase B SectionCard form, dark not-found, `StatBadge` for machine status | done |
+
+#### Chunk 8c implementation notes
+
+- All 3 form pages now use `SectionCard` from `components/dark/` as the form wrapper, replacing the legacy `bg-white border-gray-200 shadow-sm` panel.
+- Loading spinners switched from `border-gray-300 border-t-primary-600` to `border-line-strong border-t-brand-cyan`.
+- Severity (RaiseTicket) and Status (UpdateStatus) radio cards now use `border-brand-cyan bg-brand-cyan/10` for the selected state and `border-line-strong bg-bg-surface1 hover:bg-bg-surface3` for unselected — consistent dark Phase B treatment.
+- `UpdateStatusPage`'s machine status `Badge` was swapped for `StatBadge` with a `MachineStatus → variant` map (`running/idle/down/offline` → same names). The legacy `Badge` import and `getStatusBadgeColor` import were dropped.
+- The Cancel button on all three pages was changed from `variant="secondary"` (which is now muted dark) to `variant="ghost"` (which is the mockup's preferred low-emphasis button style and visually paired with the blue gradient primary).
+- Smoke coverage: added `RaiseTicketPage` and `LogVisitPage` to `dark-mode.test.tsx` (×2 themes each = +4 tests; net +2 because `RaiseTicketPage` already had its own test which counts toward smoke). `UpdateStatusPage` deferred from smoke — the page reads `useParams().id` and the not-found path doesn't exercise the styled form. Smoke for it would require a `MemoryRouter` with route binding which is heavier than necessary for a smoke test.
+- Test count: 385 → 390 (+5: 2 RaiseTicketPage smoke + 2 LogVisitPage smoke + 1 RaiseTicketPage Phase B header test).
+- Build, full suite (390/390), lint baseline (8 errors) preserved. CSS bundle 43.31 → 43.14 kB (slightly smaller — gradient classes from primitives were not duplicated as inline styles).
 
 ## 2026-05-02 — Phase B Chunk 8b (common primitives foundation + admin modals)
 
@@ -575,7 +594,7 @@ Spec §7 row 8 ("modal forms + Toast") split 4-ways because surface area is unev
 |-----|-------|--------|
 | 8a  | Toast bottom-right position fix | **done** |
 | 8b  | 3 admin overlay modals (`CreateUserModal`, `EditUserModal`, `DeleteUserModal`) | **done** (foundation pass + content polish) |
-| 8c  | 3 short form pages (`RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`) | pending |
+| 8c  | 3 short form pages (`RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`) | **done** |
 | 8d  | 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`) — add smoke tests | pending |
 
 #### Chunk 8a implementation notes
