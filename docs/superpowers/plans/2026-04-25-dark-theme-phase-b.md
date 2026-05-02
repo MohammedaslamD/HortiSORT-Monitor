@@ -4602,3 +4602,155 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 - [ ] **5.7.7** Commit `docs: mark phase B chunk 5 complete (DailyLogsPage)`.
 
 **End of Chunk 5.**
+
+## Chunk 6: SiteVisitsPage (StatCard×4 + VisitCard list)
+
+> **Spec reference:** §7 row 6 — `SiteVisitsPage` redesign uses
+> `StatCard×4` plus a new `VisitCard` molecule. Mockup:
+> `dark-ui-v2.html` lines 636-703 (page-visits section).
+>
+> **Behaviour deltas vs current `SiteVisitsPage`:**
+> 1. The three filter inputs (machine `Select`, purpose `Select`, and
+>    admin-only engineer `Select`) are **removed** to match the mockup,
+>    continuing the drop-filters precedent set by chunks 2/3/5. The
+>    legacy light-theme `SiteVisitCard` is left in
+>    `src/components/visits/` as dead code.
+> 2. Four stat cards (Visits This Month / Emergency / Routine /
+>    Due This Week) are **derived** live from the role-scoped visit
+>    array via a new `computeSiteVisitStats(visits, now)` helper. No
+>    new mock file (matches chunks 4 + 5).
+> 3. Existing role-scoping (admin sees all; engineer sees own) is
+>    preserved verbatim. Customer-role gating is not added in this
+>    chunk — `SiteVisitsPage` is admin/engineer only today and remains
+>    so.
+> 4. The page header keeps its "+ Log Visit" button (hidden for
+>    customer per spec, but customer can't reach this page anyway via
+>    routing, so visibility is governed by `user.role !== 'customer'`).
+>
+> **StatBadge variants:** mockup uses three new badge tones —
+> `b-emergency` (red), `b-routine` (blue), `b-install` (purple) —
+> mapped from `VisitPurpose`:
+> - `routine`      → `routine`     blue   ("Routine")
+> - `ticket`       → `emergency`   red    ("Emergency")
+> - `installation` → `install`     purple ("Installation")
+> - `training`     → `engineer`    blue   ("Training") *(reuse existing
+>   `engineer` cyan-blue tone — matches "training" connotation; spec
+>   does not provide a dedicated training tone)*
+>
+> **Add `emergency`, `routine` (badge), `install` variants** to
+> `StatBadge` in this chunk (StatBadge total: 19 → **22**/22, which
+> exceeds the spec's 21-variant target by one — reconcile by treating
+> `routine` as the same blue tone as the existing `low`/`engineer`
+> badges but with its own semantic name; this is acceptable per spec
+> §3 which says "extend the variant union as Phase B chunks need").
+>
+> **New molecules in this chunk:**
+> - `VisitCard` — visit-card from mockup lines 646-659. Composition:
+>   header row (title + meta + StatBadge), free-text body
+>   (Findings/Actions inline), 2-col stats footer (Parts Replaced /
+>   Next Visit Due). Reused only on this page; lives in
+>   `src/components/dark/`.
+>
+> **No new atoms.** `StatCard`, `SectionCard`, `StatBadge` (with new
+> variants) are sufficient.
+>
+> **Test floor**: chunk-5 actual = **349**. Chunk 6 adds:
+> `computeSiteVisitStats` (4 tests), StatBadge variant tests
+> (3 cases), `VisitCard` (4 tests), `SiteVisitsPage` page tests
+> (4 tests), dark-mode smoke (+2 themes for one new page)
+> = **17 added**. **New chunk-6 floor: ≥ 366**.
+
+### Step 6.1: Add `SiteVisitStats` type + `computeSiteVisitStats` helper
+
+- [ ] **6.1.1** Append to `src/types/index.ts` (after `DailyLogStats`):
+      `SiteVisitStats { visits_this_month, emergency_count,
+      routine_count, due_this_week }`. All `number`.
+- [ ] **6.1.2** New test file
+      `src/utils/__tests__/siteVisitStats.test.ts` — 4 cases:
+  1. Empty array → all zeros.
+  2. `visits_this_month` counts visits whose `visit_date` is in the
+     **current calendar month** of `now`.
+  3. `emergency_count` counts `visit_purpose === 'ticket'`;
+     `routine_count` counts `visit_purpose === 'routine'`. Other
+     purposes (installation, training) are excluded from both.
+  4. `due_this_week` counts visits whose `next_visit_due` falls in
+     the next 7 days (inclusive of today, exclusive of day +7);
+     undefined `next_visit_due` is excluded.
+- [ ] **6.1.3** New file `src/utils/siteVisitStats.ts` — pure helper.
+- [ ] **6.1.4** Run tests. Expected: 4/4 GREEN.
+- [ ] **6.1.5** Commit `feat(utils): add computeSiteVisitStats helper`.
+
+### Step 6.2: Add `emergency` / `routine` (badge) / `install` variants to `StatBadge`
+
+- [ ] **6.2.1** Extend `StatBadgeVariant` union in
+      `src/components/dark/StatBadge.tsx` with `'emergency'`,
+      `'routine'` (badge — distinct semantic from existing
+      `'running'`), `'install'`.
+- [ ] **6.2.2** Tone classes:
+  - `emergency` → `bg-red-500/15 text-red-400 border border-red-500/30`
+  - `routine`   → `bg-blue-500/15 text-blue-400 border border-blue-500/30`
+  - `install`   → `bg-purple-500/15 text-purple-400 border border-purple-500/30`
+- [ ] **6.2.3** Add 3 cases to
+      `src/components/dark/__tests__/StatBadge.test.tsx`.
+- [ ] **6.2.4** Run tests. Expected: GREEN.
+- [ ] **6.2.5** Commit `feat(dark): add emergency/routine/install StatBadge variants`.
+
+### Step 6.3: New `VisitCard` molecule (RED → GREEN)
+
+- [ ] **6.3.1** New test file
+      `src/components/dark/__tests__/VisitCard.test.tsx` — 4 cases:
+  1. Renders title and meta line.
+  2. Renders the badge passed via `purposeBadge` slot.
+  3. Renders Findings + Actions in body section.
+  4. Renders Parts Replaced + Next Visit Due in stats footer.
+- [ ] **6.3.2** New file `src/components/dark/VisitCard.tsx`. Props:
+      `title`, `meta`, `purposeBadge` (`ReactNode`), `findings`,
+      `actions`, `partsReplaced`, `nextVisitDue`,
+      `nextVisitDueColor?` (optional string for amber-tint warning).
+- [ ] **6.3.3** Export from `src/components/dark/index.ts`.
+- [ ] **6.3.4** Run tests. Expected: 4/4 GREEN.
+- [ ] **6.3.5** Commit `feat(dark): add VisitCard molecule`.
+
+### Step 6.4: Rewrite `SiteVisitsPage` (RED → GREEN)
+
+- [ ] **6.4.1** New test file
+      `src/pages/__tests__/SiteVisitsPage.test.tsx` — 4 cases:
+  1. Renders page title "Site Visits" and subtitle.
+  2. Renders 4 stat cards with derived values.
+  3. Renders one `VisitCard` per visit with the correct purpose badge.
+  4. "+ Log Visit" button navigates to `/visits/new` for engineer.
+- [ ] **6.4.2** Rewrite `src/pages/SiteVisitsPage.tsx`:
+      - Header: title + subtitle + "+ Log Visit" button.
+      - 4 StatCards (blue / red / green / purple).
+      - `SectionCard "Recent Site Visits"` wrapping a vertical list of
+        `VisitCard` instances.
+      - `STATUS_BADGE` map for VisitPurpose → variant + label.
+      - Date formatting via existing `formatLogDate` style helper
+        (same pattern as DailyLogsPage).
+      - Drop the 3 filter inputs and the engineer-list fetch.
+      - Preserve role-scoped fetch (`engineerId` filter for engineer
+        role).
+- [ ] **6.4.3** Run page tests. Expected: 4/4 GREEN.
+- [ ] **6.4.4** Commit `feat(visits): rewrite SiteVisitsPage as Phase B dark VisitCard list`.
+
+### Step 6.5: Update dark-mode smoke
+
+- [ ] **6.5.1** In `src/pages/__tests__/dark-mode.test.tsx`:
+  - Import `SiteVisitsPage`.
+  - Add to pages array:
+    `{ name: 'SiteVisitsPage', Component: SiteVisitsPage, probe: /Engineer on-site visit records/i }`.
+  - Add service mock for `siteVisitService.getAllSiteVisits` → `[]`.
+- [ ] **6.5.2** Run smoke. Expected: 14 tests pass (7 × 2).
+- [ ] **6.5.3** Commit `test(dark-mode): cover SiteVisitsPage Phase B markup`.
+
+### Step 6.6: Final per-chunk gate
+
+- [ ] **6.6.1** `npm run test:run` — Chunk-6 floor ≥ **366**.
+- [ ] **6.6.2** `npm run build` — GREEN.
+- [ ] **6.6.3** `npm run lint` — ≤ 8 errors (no new errors).
+- [ ] **6.6.4** Update spec line 3 → `Status: in implementation
+      (chunk 6 complete)`.
+- [ ] **6.6.5** Append Chunk 6 entry to `task.md`.
+- [ ] **6.6.6** Commit `docs: mark phase B chunk 6 complete (SiteVisitsPage)`.
+
+**End of Chunk 6.**
