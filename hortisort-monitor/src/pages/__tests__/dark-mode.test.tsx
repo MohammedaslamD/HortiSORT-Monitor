@@ -5,6 +5,7 @@ import { DashboardPage } from '../DashboardPage'
 import { MachinesPage } from '../MachinesPage'
 import { TicketsPage } from '../TicketsPage'
 import { ProductionPage } from '../ProductionPage'
+import { DailyLogsPage } from '../DailyLogsPage'
 
 // ---------------------------------------------------------------------------
 // Router + auth + service mocks (mirrors DashboardPage.test.tsx setup)
@@ -64,6 +65,22 @@ vi.mock('../../hooks/useProductionSocket', () => ({
   useProductionSocket: () => ({ lastSession: null }),
 }))
 
+vi.mock('../../services/dailyLogService', () => ({
+  getAllDailyLogs: vi.fn().mockResolvedValue([]),
+  getDailyLogs: vi.fn().mockResolvedValue([]),
+  getDailyLogsByMachineId: vi.fn().mockResolvedValue([]),
+  getRecentDailyLogs: vi.fn().mockResolvedValue([]),
+  addDailyLog: vi.fn(),
+}))
+
+vi.mock('../../services/machineService', () => ({
+  getMachinesByRole: vi.fn().mockResolvedValue([]),
+  getMachines: vi.fn().mockResolvedValue([]),
+  getMachineById: vi.fn().mockResolvedValue(null),
+  getMachineStats: vi.fn().mockResolvedValue({ total: 0, running: 0, idle: 0, down: 0, offline: 0 }),
+  updateMachineStatus: vi.fn(),
+}))
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -94,6 +111,7 @@ const pages = [
   { name: 'MachinesPage', Component: MachinesPage, probe: /All 12 machines across 4 sites/i },
   { name: 'TicketsPage', Component: TicketsPage, probe: /Maintenance and fault tracking/i },
   { name: 'ProductionPage', Component: ProductionPage, probe: /Live — updates every 15 s/i },
+  { name: 'DailyLogsPage', Component: DailyLogsPage, probe: /Auto-generated from machine status updates/i },
 ]
 
 describe.each(pages)('$name renders in both themes', ({ Component, probe }) => {
