@@ -21,6 +21,10 @@ vi.mock('../../../services/liveMetricsService', () => ({
   },
 }))
 
+vi.mock('../../../services/alertService', () => ({
+  alertService: { getAlerts: vi.fn().mockResolvedValue([]) },
+}))
+
 describe('Topbar', () => {
   beforeEach(() => { currentUser = mockUser })
 
@@ -72,5 +76,17 @@ describe('Topbar', () => {
     render(<Topbar pageTitle="X" onOpenSidebar={() => {}} />)
     await user.click(screen.getByRole('button', { name: /operator console/i }))
     expect(await screen.findByText(/HortiSort Operator Console/i)).toBeInTheDocument()
+  })
+
+  it('shows the NotificationBell for admin', () => {
+    currentUser = { ...mockUser, role: 'admin' }
+    render(<Topbar pageTitle="X" onOpenSidebar={() => {}} />)
+    expect(screen.getByLabelText('Notifications')).toBeInTheDocument()
+  })
+
+  it('hides the NotificationBell for customer', () => {
+    currentUser = { ...mockUser, role: 'customer' }
+    render(<Topbar pageTitle="X" onOpenSidebar={() => {}} />)
+    expect(screen.queryByLabelText('Notifications')).not.toBeInTheDocument()
   })
 })

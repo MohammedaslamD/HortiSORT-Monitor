@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ThemeToggle } from '../common/ThemeToggle'
 import { OperatorConsoleOverlay } from '../dark/OperatorConsoleOverlay'
+import { NotificationBell } from '../dark/NotificationBell'
 
 interface TopbarProps {
   pageTitle: string
@@ -52,6 +53,7 @@ export function Topbar({ pageTitle, onOpenSidebar }: TopbarProps) {
               Operator Console
             </button>
           )}
+          {canOpenConsole && <NotificationBell />}
           <ThemeToggle />
         </div>
       </header>

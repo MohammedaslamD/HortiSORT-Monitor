@@ -18,6 +18,10 @@ vi.mock('../../../services/liveMetricsService', () => ({
   },
 }))
 
+vi.mock('../../../services/alertService', () => ({
+  alertService: { getAlerts: vi.fn().mockResolvedValue([]) },
+}))
+
 describe('PageLayout', () => {
   it('renders pageTitle in the topbar and children in the main area', () => {
     render(
