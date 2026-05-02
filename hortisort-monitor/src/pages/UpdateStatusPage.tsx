@@ -5,13 +5,21 @@ import type { Machine, DailyLogStatus, MachineStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { getMachineById, updateMachineStatus } from '../services/machineService';
 import { addDailyLog } from '../services/dailyLogService';
-import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Select } from '../components/common/Select';
 import { TextArea } from '../components/common/TextArea';
 import { Toast } from '../components/common/Toast';
-import { getStatusBadgeColor } from '../utils/formatters';
+import { SectionCard } from '../components/dark/SectionCard';
+import { StatBadge } from '../components/dark/StatBadge';
+
+/** Map MachineStatus → StatBadge variant. */
+const STATUS_BADGE_VARIANT: Record<MachineStatus, 'running' | 'idle' | 'down' | 'offline'> = {
+  running: 'running',
+  idle: 'idle',
+  down: 'down',
+  offline: 'offline',
+};
 
 // -----------------------------------------------------------------------------
 // Constants
@@ -182,7 +190,7 @@ export function UpdateStatusPage() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <svg
-            className="animate-spin h-8 w-8 text-primary-600"
+            className="animate-spin h-8 w-8 text-brand-cyan"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -202,7 +210,7 @@ export function UpdateStatusPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading machine data...</p>
+          <p className="text-fg-4 text-sm">Loading machine data...</p>
         </div>
       </div>
     );
@@ -214,9 +222,9 @@ export function UpdateStatusPage() {
   if (notFound || !machine) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="rounded-full bg-red-100 p-3">
+        <div className="rounded-full bg-red-500/15 border border-brand-red p-3">
           <svg
-            className="h-8 w-8 text-red-600"
+            className="h-8 w-8 text-brand-red"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -225,13 +233,13 @@ export function UpdateStatusPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Machine not found</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+        <h2 className="text-lg font-semibold text-fg-1">Machine not found</h2>
+        <p className="text-sm text-fg-3">
           The machine you're looking for doesn't exist or you don't have access to it.
         </p>
         <Link
           to="/"
-          className="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+          className="text-sm font-medium text-brand-cyan hover:text-brand-green underline"
         >
           Back to Dashboard
         </Link>
@@ -256,130 +264,132 @@ export function UpdateStatusPage() {
       <div className="max-w-lg mx-auto space-y-6">
         {/* Page title */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-xl font-semibold text-fg-1">
             Update Status &mdash; {machine.machine_code}
           </h2>
         </div>
 
         {/* Machine info header */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between">
+        <div className="bg-bg-surface2 border border-line-strong rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{machine.machine_name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-0.5">{machine.machine_code}</p>
+            <p className="text-sm font-medium text-fg-1">{machine.machine_name}</p>
+            <p className="text-xs text-fg-4 mt-0.5">{machine.machine_code}</p>
           </div>
-          <Badge color={getStatusBadgeColor(machine.status)} size="sm">
+          <StatBadge variant={STATUS_BADGE_VARIANT[machine.status]}>
             {machine.status.charAt(0).toUpperCase() + machine.status.slice(1)}
-          </Badge>
+          </StatBadge>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-5 space-y-5" noValidate>
-          {/* Status — Radio buttons */}
-          <fieldset>
-            <legend className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Status <span className="text-red-500">*</span>
-            </legend>
-            <div className="flex flex-wrap gap-3">
-              {DAILY_LOG_STATUS_OPTIONS.map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`
-                    flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-2.5
-                    transition-colors duration-150
-                    ${status === opt.value
-                      ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
-                      : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:bg-gray-950'
-                    }
-                  `.trim()}
-                >
-                  <input
-                    type="radio"
-                    name="status"
-                    value={opt.value}
-                    checked={status === opt.value}
-                    onChange={() => setStatus(opt.value)}
-                    className="text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{opt.label}</span>
-                </label>
-              ))}
+        <SectionCard title="Status Update">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {/* Status — Radio buttons */}
+            <fieldset>
+              <legend className="block text-[11px] font-semibold uppercase tracking-wider text-fg-4 mb-2">
+                Status <span className="text-brand-red">*</span>
+              </legend>
+              <div className="flex flex-wrap gap-3">
+                {DAILY_LOG_STATUS_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`
+                      flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-2.5
+                      transition-colors duration-150
+                      ${status === opt.value
+                        ? 'border-brand-cyan bg-brand-cyan/10 ring-1 ring-brand-cyan'
+                        : 'border-line-strong bg-bg-surface1 hover:bg-bg-surface3'
+                      }
+                    `.trim()}
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      value={opt.value}
+                      checked={status === opt.value}
+                      onChange={() => setStatus(opt.value)}
+                      className="text-brand-cyan focus:ring-brand-cyan/30"
+                    />
+                    <span className="text-sm text-fg-1 font-medium">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {/* Fruit Type */}
+            <Select
+              label="Fruit Type"
+              options={FRUIT_TYPE_OPTIONS}
+              value={fruitType}
+              onChange={(e) => setFruitType(e.target.value)}
+              error={errors.fruitType}
+              placeholder="Select a fruit type..."
+              required
+            />
+
+            {/* Tons Processed */}
+            <Input
+              label="Tons Processed"
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="e.g. 5.5"
+              value={tonsProcessed}
+              onChange={(e) => setTonsProcessed(e.target.value)}
+              error={errors.tonsProcessed}
+              required
+            />
+
+            {/* Shift times */}
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Shift Start"
+                type="time"
+                value={shiftStart}
+                onChange={(e) => setShiftStart(e.target.value)}
+                error={errors.shiftStart}
+                required
+              />
+              <Input
+                label="Shift End"
+                type="time"
+                value={shiftEnd}
+                onChange={(e) => setShiftEnd(e.target.value)}
+                error={errors.shiftEnd}
+                required
+              />
             </div>
-          </fieldset>
 
-          {/* Fruit Type */}
-          <Select
-            label="Fruit Type"
-            options={FRUIT_TYPE_OPTIONS}
-            value={fruitType}
-            onChange={(e) => setFruitType(e.target.value)}
-            error={errors.fruitType}
-            placeholder="Select a fruit type..."
-            required
-          />
-
-          {/* Tons Processed */}
-          <Input
-            label="Tons Processed"
-            type="number"
-            min="0"
-            step="0.1"
-            placeholder="e.g. 5.5"
-            value={tonsProcessed}
-            onChange={(e) => setTonsProcessed(e.target.value)}
-            error={errors.tonsProcessed}
-            required
-          />
-
-          {/* Shift times */}
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Shift Start"
-              type="time"
-              value={shiftStart}
-              onChange={(e) => setShiftStart(e.target.value)}
-              error={errors.shiftStart}
-              required
+            {/* Notes */}
+            <TextArea
+              label="Notes"
+              placeholder="Any observations, issues, or remarks..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
             />
-            <Input
-              label="Shift End"
-              type="time"
-              value={shiftEnd}
-              onChange={(e) => setShiftEnd(e.target.value)}
-              error={errors.shiftEnd}
-              required
-            />
-          </div>
 
-          {/* Notes */}
-          <TextArea
-            label="Notes"
-            placeholder="Any observations, issues, or remarks..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-          />
-
-          {/* Action buttons */}
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              Submit Update
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate(`/machines/${machine.id}`)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+            {/* Action buttons */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                Submit Update
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate(`/machines/${machine.id}`)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </SectionCard>
       </div>
     </>
   );
