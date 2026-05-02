@@ -546,9 +546,31 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b + 8c complete**; 8d pending |
+| 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b + 8c + 8d complete** — chunk 8 done |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+## 2026-05-02 — Phase B Chunk 8d (2 large detail pages)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 8d.1: `MachineDetailPage` Phase B (header, today's-prod card, dark tabs, production table, ticket/visit/history cards, timeline, EmptyState) + smoke entry | done |
+| 2026-05-02 | Step 8d.2: `TicketDetailPage` Phase B (header, info grid, dark-green resolution panel, comment thread, status panel) + smoke entry | done |
+
+#### Chunk 8d implementation notes
+
+- Smoke harness extended with a second `describe.each` for route-param pages: a small `renderRouted(Component, path, entry)` helper wraps the page in `MemoryRouter` + `Routes` + `ThemeProvider`. Adds 4 tests (2 themes × 2 pages).
+- Mocks added to dark-mode.test.tsx: `getMachineHistoryService.getHistoryByMachineId`, `getTodaySessions`; existing `ticketService` mock expanded with `getTicketById` (returns Smoke ticket fixture), `getTicketComments`, `addTicketComment`, `updateTicketStatus`. `getMachineById` now returns a real `Smoke Machine` fixture (was `null`).
+- Reused existing dark helpers (`statusToBadgeVariant`, `severityToBadgeVariant`, `ticketStatusToBadgeVariant`) to keep mappings centralized.
+- New maps inside MachineDetailPage: `DAILY_LOG_STATUS_VARIANT` (`running|notrun|maintenance`) and `VISIT_PURPOSE_VARIANT` (`routine`/`medium`/`install`/`engineer` for ticket/training reuse). Inside TicketDetailPage: `CATEGORY_VARIANT` mapping the 5 ticket categories to existing `StatBadge` tones.
+- Dropped `Badge`, `getStatusBadgeColor`, `getSeverityBadgeColor` imports from both pages.
+- Resolution panel (TicketDetailPage) reskinned from `bg-green-50 border-green-200 text-green-*` → `bg-green-950/40 border-brand-green/30 text-brand-green/80` for labels and `text-fg-1`/`text-fg-2` for values. Stars now `text-yellow-400`.
+- Machine history timeline: `bg-line-strong` line, `bg-fg-4 border-bg` dot, dark card wrappers. Single `medium` `StatBadge` for all change-type pills (no per-type colors needed in mockup).
+- Production-history table now wrapped in `bg-bg-surface2 border border-line-strong rounded-xl` to give it a panel feel; row hover → `bg-bg-surface3`.
+- `EmptyState` sub-component → `border-line-strong bg-bg-surface2 text-fg-4`.
+- `SectionCard` was considered but its uppercase title styling didn't fit the existing free-form headers in these two pages; we used raw `bg-bg-surface2 border border-line-strong rounded-xl` panels for tighter visual control.
+- Test count: 390 → 394 (+4: 2 MachineDetail + 2 TicketDetail × theme).
+- Lint baseline preserved (8 errors). Build clean. CSS bundle 43.14 → 42.50 kB (-0.64 kB; light `dark:bg-gray-900` etc. classes removed since both files no longer reference them).
 
 ## 2026-05-02 — Phase B Chunk 8c (3 short form pages)
 
@@ -595,7 +617,7 @@ Spec §7 row 8 ("modal forms + Toast") split 4-ways because surface area is unev
 | 8a  | Toast bottom-right position fix | **done** |
 | 8b  | 3 admin overlay modals (`CreateUserModal`, `EditUserModal`, `DeleteUserModal`) | **done** (foundation pass + content polish) |
 | 8c  | 3 short form pages (`RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`) | **done** |
-| 8d  | 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`) — add smoke tests | pending |
+| 8d  | 2 large detail pages (`MachineDetailPage`, `TicketDetailPage`) — add smoke tests | **done** |
 
 #### Chunk 8a implementation notes
 
