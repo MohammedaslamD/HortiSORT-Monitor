@@ -5249,3 +5249,94 @@ overlay; Esc or "Exit Console" button closes it.
 - [ ] **9.12** Commit (split into multiple commits if it reads more
       naturally — e.g. component first, integration second).
 - [ ] **9.13** Update `task.md` and spec status.
+
+---
+
+## Chunk 10 — `NotificationBell` dropdown (added 2026-05-02)
+
+**Goal:** Add a bell icon with red unread-count badge to the Topbar that
+opens a dropdown panel listing recent alerts. Click-outside closes.
+Reuses existing `AlertRow` and `alertService.getAlerts()`. Chunk 9
+already wires `useAuth` into Topbar; the bell shows for the same
+roles (admin, engineer) so it co-locates naturally next to the
+Operator Console launcher.
+
+### Component design
+
+- **File:** `src/components/dark/NotificationBell.tsx`.
+- **Props:** none — fetches alerts internally on mount + 30s polling
+  per spec line 418 ("Dashboard alerts feed — 30s, polls
+  alertService"). The bell shares the same cadence so badge counts
+  stay in sync with the dashboard feed.
+- **State:**
+  - `alerts: Alert[]` — populated from `alertService.getAlerts()`.
+  - `isOpen: boolean` — dropdown panel open state.
+  - Unread count derived as `alerts.filter(a => a.severity === 'critical' || a.severity === 'warn').length`
+    (caps at 99 for badge display: `unread > 99 ? '99+' : String(unread)`).
+- **Visual:**
+  - Wrapper `<div className="relative">` (anchor for absolute dropdown).
+  - Bell button: `w-9 h-9 rounded-lg bg-bg-surface3 border border-line
+    flex items-center justify-center text-fg-2 hover:text-fg-1
+    hover:border-line-strong transition` matching `bell-icon` in
+    mockup (line 13 of `dark-ui-v2.html`).
+  - Inline SVG bell glyph (`<svg viewBox="0 0 24 24">…</svg>`) — avoid
+    emoji rendering inconsistency across OSes.
+  - Red badge: `absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brand-red
+    text-[9px] font-bold text-white flex items-center justify-center
+    border-2 border-bg ring-0` matching `bell-badge` in mockup line 14.
+    Hidden when `unread === 0`.
+  - Dropdown: `absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto
+    bg-bg-surface2 border border-line-strong rounded-xl shadow-xl
+    z-[150] p-3`. Header row inside: `<div className="flex items-center
+    justify-between mb-2"><h3 className="text-sm font-semibold text-fg-1">
+    Notifications</h3><span className="text-[10px] text-fg-4">{count}
+    new</span></div>`. Body: vertical stack of `AlertRow` (cap at 8
+    most-recent for the panel; if more, footer says "View all").
+    Empty state: centered `text-fg-4` "No notifications".
+- **Click-outside:** `useEffect` registers a `mousedown` listener on
+  `document` while `isOpen`; if `event.target` is not within the
+  wrapper ref, set `isOpen=false`. Cleanup removes the listener. Use
+  a `useRef<HTMLDivElement>` on the wrapper.
+- **Esc-to-close:** parallel `keydown` listener for `event.key ===
+  'Escape'`.
+- **Aria:** bell button has `aria-label="Notifications"`,
+  `aria-haspopup="true"`, `aria-expanded={isOpen}`. Dropdown has
+  `role="menu"` and is conditionally rendered (not just hidden) so
+  screen readers don't see it when closed. `data-testid="notification-bell"`
+  for the button and `data-testid="notification-panel"` for the panel.
+
+### Steps
+
+- [ ] **10.1** RED: write failing test
+      `src/components/dark/__tests__/NotificationBell.test.tsx` with
+      these cases (mock `alertService.getAlerts` via
+      `vi.mock('../../../services/alertService', …)`):
+      - renders bell button with `aria-label="Notifications"`
+      - hides panel by default (`queryByTestId('notification-panel')`
+        is null)
+      - shows red badge with unread count from mock data
+      - clicking bell opens panel and lists alert messages
+      - clicking outside the wrapper closes the panel
+      - pressing Esc closes the panel
+      - empty state when no alerts
+      All wrapped in custom `render` from `test/utils.tsx`. Use
+      `userEvent` for interactions.
+- [ ] **10.2** GREEN: implement component per design above.
+- [ ] **10.3** Export from `components/dark/index.ts`.
+- [ ] **10.4** Wire into `Topbar.tsx`: place between the Operator
+      Console launcher and the user chip; same role gating
+      (admin/engineer only) — `customer` users see neither console
+      button nor bell.
+- [ ] **10.5** Update `Topbar.test.tsx`: 1 new test asserting bell
+      shows for admin and is hidden for customer.
+- [ ] **10.6** GREEN full suite (`npm run test:run`) + lint
+      (`npm run lint`) + build (`npm run build`). Lint baseline 8
+      preserved.
+- [ ] **10.7** Commit split:
+      - `feat(notification-bell): add NotificationBell dropdown with
+        30s polling`
+      - `feat(topbar): mount NotificationBell next to Operator Console
+        launcher`
+- [ ] **10.8** Update `task.md` chunk 10 entries and spec line 3 to
+      "Phase B complete".
+- [ ] **10.9** Commit `docs(phase-b): mark Phase B complete`.

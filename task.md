@@ -548,7 +548,30 @@ Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 |---|------|--------|
 | 8 | All modal forms restyled + Toast (split 8a–8d) | **8a + 8b + 8c + 8d complete** — chunk 8 done |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | **done** |
-| 10 | `NotificationBell` dropdown (new) | pending |
+| 10 | `NotificationBell` dropdown (new) | **done** |
+
+## 2026-05-02 — Phase B Chunk 10 (NotificationBell)
+
+| Date | Task | Status |
+|------|------|--------|
+| 2026-05-02 | Step 10.1–10.3: build `NotificationBell` (bell button, red badge, dropdown panel, 30s polling, click-outside, Esc-to-close) + 9 tests + barrel | done |
+| 2026-05-02 | Step 10.4–10.5: mount in `Topbar` next to Operator Console; +2 role-gating tests | done |
+| 2026-05-02 | Step 10.6: full gate (suite, lint, build) | done |
+
+#### Chunk 10 implementation notes
+
+- New component at `components/dark/NotificationBell.tsx` (~120 lines). `useRef<HTMLDivElement>` on the wrapper for click-outside detection.
+- Reuses existing `AlertRow` (severity-tinted left border) and `formatRelativeTime` so the dropdown matches the dashboard alerts feed visually with zero new variant maps.
+- 30s polling matches the dashboard alerts feed cadence (spec line 418); pauses when `document.hidden` so a backgrounded tab does not hammer the (eventually real) backend.
+- Initial fetch deferred via `setTimeout(refresh, 0)` to satisfy the React Compiler lint rule "Calling setState synchronously within an effect can trigger cascading renders". The Operator Console hit the same rule with its `setNow(new Date())` and resolved by deletion; here the call is genuinely needed (we want fresh data before 30s elapses), so a microtask deferral was the correct fix.
+- Unread badge counts only `critical` + `warn` severities — `info` and `ok` items still appear in the panel but don't drive the red dot. Caps display at "99+".
+- Inline SVG bell glyph instead of the 🔔 emoji from the mockup. Cross-OS rendering of emoji is inconsistent; SVG keeps the bell visually aligned with the rest of the icon set.
+- Three separate `useEffect` hooks (polling, click-outside, Esc) so each can register/cleanup independently and the click-outside/Esc listeners don't run when the panel is closed.
+- Panel caps at `MAX_PANEL_ROWS = 8` rows; if more alerts exist a footer reads "Showing 8 of N". No "View all" link yet — `/alerts` page is Phase C scope.
+- `Topbar` already had `useAuth` + `liveMetricsService` mocks from chunk 9; chunk 10 added `alertService` mock to both `Topbar.test.tsx` and `PageLayout.test.tsx` (PageLayout renders Topbar transitively).
+- Test count: 405 → 416 (+11: 9 new bell + 2 Topbar bell role-gating).
+- Lint baseline 8 preserved (after the cascading-render lint regression was fixed).
+- Build: 43.83 → 44.57 kB CSS (+0.74 kB for `bg-bg-surface3`, `min-w-[16px]`, `border-l-[3px]` reuse, dropdown sizing classes).
 
 ## 2026-05-02 — Phase B Chunk 9 (OperatorConsoleOverlay)
 
