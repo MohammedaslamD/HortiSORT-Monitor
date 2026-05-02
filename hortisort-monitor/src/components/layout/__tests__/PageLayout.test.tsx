@@ -2,6 +2,22 @@ import { render, screen } from '../../../test/utils'
 import userEvent from '@testing-library/user-event'
 import { PageLayout } from '../PageLayout'
 
+vi.mock('../../../context/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 1, name: 'A', email: 'a@x.com', role: 'admin', is_active: true } }),
+}))
+
+vi.mock('../../../services/liveMetricsService', () => ({
+  liveMetricsService: {
+    getFleetSummary: vi.fn().mockResolvedValue({
+      total_machines: 0, running: 0, idle: 0, down: 0, offline: 0,
+      in_production: 0, today_throughput_tons: 0,
+      trend_running_vs_yesterday: 0, trend_throughput_pct: 0,
+      open_tickets: { total: 0, p1: 0, p2: 0, p3: 0, p4: 0 },
+    }),
+    getMachineRows: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 describe('PageLayout', () => {
   it('renders pageTitle in the topbar and children in the main area', () => {
     render(
