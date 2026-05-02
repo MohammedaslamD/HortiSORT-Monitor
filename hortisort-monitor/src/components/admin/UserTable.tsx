@@ -1,6 +1,5 @@
 import type { User, UserRole } from '../../types'
-import { Badge } from '../common/Badge'
-import { Button } from '../common/Button'
+import { DataTable, StatBadge, type StatBadgeVariant } from '../dark'
 
 interface UserTableProps {
   users: User[]
@@ -11,115 +10,131 @@ interface UserTableProps {
   onAddUser?: () => void
 }
 
-/** Maps user role to Badge color. */
-const ROLE_COLOR_MAP: Record<UserRole, 'purple' | 'blue' | 'green'> = {
-  admin: 'purple',
-  engineer: 'blue',
-  customer: 'green',
+const ROLE_BADGE: Record<UserRole, { variant: StatBadgeVariant; label: string }> = {
+  admin:    { variant: 'admin',    label: 'Admin' },
+  engineer: { variant: 'engineer', label: 'Engineer' },
+  customer: { variant: 'customer', label: 'Customer' },
+}
+
+const COLUMNS = [
+  { key: 'name',    label: 'Name' },
+  { key: 'email',   label: 'Email' },
+  { key: 'role',    label: 'Role' },
+  { key: 'site',    label: 'Site' },
+  { key: 'status',  label: 'Status' },
+  { key: 'login',   label: 'Last Login' },
+  { key: 'actions', label: 'Actions' },
+]
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Inline relative-time formatter used for the Last Login column. */
+function formatRelativeTime(iso: string, now: Date = new Date()): string {
+  const t = new Date(iso).getTime()
+  if (Number.isNaN(t)) return '—'
+  const diff = now.getTime() - t
+  if (diff < 60_000) return 'Now'
+  if (diff < 4 * 60 * 60_000) {
+    return `Today ${String(new Date(iso).getHours()).padStart(2, '0')}:${String(new Date(iso).getMinutes()).padStart(2, '0')}`
+  }
+  const days = Math.floor(diff / DAY_MS)
+  if (days === 0) {
+    return `Today ${String(new Date(iso).getHours()).padStart(2, '0')}:${String(new Date(iso).getMinutes()).padStart(2, '0')}`
+  }
+  if (days === 1) return 'Yesterday'
+  return `${days} days ago`
 }
 
 /**
- * User management table for the admin dashboard.
- * Displays name, email, role badge, status badge, created date, and toggle action.
- * Email and created columns are hidden on mobile.
- * The currently logged-in admin's deactivate button is disabled.
+ * Phase B Users management table — dense dark `DataTable` with
+ * role/status `StatBadge` pills and ghost action buttons. Mockup
+ * reference: `dark-ui-v2.html` lines 706-720.
+ *
+ * Notes:
+ * - The `User` type lacks `site` and `last_login_at` fields today;
+ *   we render `'—'` for Site and use `updated_at` as a proxy for
+ *   Last Login. TODO(phase-c): add the real fields and swap.
+ * - Currently-logged-in admin's Deactivate / Delete buttons remain
+ *   disabled to prevent self-lockout.
  */
-export function UserTable({ users, currentUserId, onToggleActive, onEdit, onDelete, onAddUser }: UserTableProps) {
+export function UserTable({
+  users,
+  currentUserId,
+  onToggleActive,
+  onEdit,
+  onDelete,
+  onAddUser,
+}: UserTableProps) {
+  const rows = users.map((u) => {
+    const isSelf = u.id === currentUserId
+    const role = ROLE_BADGE[u.role]
+    return {
+      id: u.id,
+      cells: [
+        u.name,
+        <span key="e" className="text-fg-4 text-xs">{u.email}</span>,
+        <StatBadge key="r" variant={role.variant}>{role.label}</StatBadge>,
+        // TODO(phase-c): replace with u.site when User type adds the field.
+        <span key="s" className="text-fg-5">—</span>,
+        <StatBadge key="st" variant={u.is_active ? 'running' : 'idle'}>
+          {u.is_active ? 'Active' : 'Idle'}
+        </StatBadge>,
+        // TODO(phase-c): replace updated_at proxy with last_login_at.
+        <span key="l" className="text-fg-4 text-xs">{formatRelativeTime(u.updated_at)}</span>,
+        <div key="a" className="flex items-center gap-1.5">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={() => onEdit(u)}
+              className="text-[10px] px-2 py-1 rounded border border-line text-fg-2 hover:bg-bg-surface3"
+            >
+              Edit
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onToggleActive(u.id)}
+            disabled={isSelf}
+            className={
+              u.is_active
+                ? 'text-[10px] px-2 py-1 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed'
+                : 'text-[10px] px-2 py-1 rounded border border-green-500/30 text-green-400 hover:bg-green-500/10 disabled:opacity-40 disabled:cursor-not-allowed'
+            }
+          >
+            {u.is_active ? 'Deactivate' : 'Activate'}
+          </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(u)}
+              disabled={isSelf}
+              className="text-[10px] px-2 py-1 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Delete
+            </button>
+          )}
+        </div>,
+      ],
+    }
+  })
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Users</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-fg-1">Users</h2>
         {onAddUser && (
-          <Button variant="primary" size="sm" onClick={onAddUser}>
+          <button
+            type="button"
+            onClick={onAddUser}
+            className="bg-brand-cyan text-bg font-semibold text-xs rounded px-3 py-1.5 hover:opacity-90"
+          >
             + Add User
-          </Button>
+          </button>
         )}
       </div>
       <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-        <thead className="bg-gray-50 dark:bg-gray-950">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Email
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Role
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Created
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-          {users.map((user) => {
-            const isSelf = user.id === currentUserId
-            return (
-              <tr key={user.id}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {user.name}
-                </td>
-                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                  {user.email}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <Badge color={ROLE_COLOR_MAP[user.role]} size="sm">
-                    {user.role}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <Badge color={user.is_active ? 'green' : 'red'} size="sm">
-                    {user.is_active ? 'active' : 'inactive'}
-                  </Badge>
-                </td>
-                <td className="hidden sm:table-cell px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    {onEdit && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => onEdit(user)}
-                      >
-                        Edit
-                      </Button>
-                    )}
-                    <Button
-                      variant={user.is_active ? 'danger' : 'primary'}
-                      size="sm"
-                      onClick={() => onToggleActive(user.id)}
-                      disabled={isSelf}
-                    >
-                      {user.is_active ? 'Deactivate' : 'Activate'}
-                    </Button>
-                    {onDelete && (
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => onDelete(user)}
-                        disabled={isSelf}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+        <DataTable columns={COLUMNS} rows={rows} />
+      </div>
     </div>
   )
 }
