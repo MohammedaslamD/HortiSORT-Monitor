@@ -530,16 +530,35 @@ Full admin user management (CRUD) wired end-to-end:
 | 2026-05-02 | `npm run lint` — 8 errors (baseline preserved; no new)           | done   |
 | 2026-05-02 | Spec status updated to "chunk 6 complete"                        | done   |
 
+## 2026-05-02 — Phase B Chunk 7 (UserTable)
+
+| Date       | Step                                                              | Status |
+|------------|-------------------------------------------------------------------|--------|
+| 2026-05-02 | Step 7.1: Rewrote `UserTable` as dark `DataTable` + role/status `StatBadge` pills + ghost action buttons; added 4 component tests (none existed before) | done |
+| 2026-05-02 | `npm run test:run` — **68 files / 368 tests passing** (chunk-7 floor ≥ 368 hit exactly) | done |
+| 2026-05-02 | `npm run build` — GREEN                                          | done   |
+| 2026-05-02 | `npm run lint` — 8 errors (baseline preserved; no new)           | done   |
+| 2026-05-02 | Spec status updated to "chunk 7 complete"                        | done   |
+
 ### Pending — remaining Phase B chunks
 
 Per `docs/superpowers/specs/2026-04-25-dark-theme-phase-b-design.md` §7:
 
 | # | Page | Status |
 |---|------|--------|
-| 7 | `AdminPage` Users tab (table primitive, role badges) | pending |
-| 8 | All modal forms restyled + Toast (MachineDetail / RaiseTicket / LogVisit / UpdateStatus / TicketDetail) | pending |
+| 8 | All modal forms restyled + Toast (MachineDetail / RaiseTicket / LogVisit / UpdateStatus / TicketDetail / Admin Create/Edit/Delete User) | pending |
 | 9 | `OperatorConsoleOverlay` (new, polls fleet every 15 s) | pending |
 | 10 | `NotificationBell` dropdown (new) | pending |
+
+#### Chunk 7 implementation notes
+
+- Per the user's "users-table-only" directive, only `UserTable.tsx` was rewritten. `AdminPage.tsx`, `AdminStatsCards`, `ActivityFeed`, the three admin modals, and the page-level Toast all retain their light-theme styling and will be migrated in chunks 8+.
+- `User` type lacks `site` and `last_login_at` fields. The new table renders `'—'` for Site and uses `updated_at` as a proxy for Last Login via an inline `formatRelativeTime` helper. Both call sites are marked `// TODO(phase-c)` for backend follow-up.
+- Role-badge mapping uses pre-existing variants: `admin`→`admin` (purple), `engineer`→`engineer` (blue), `customer`→`customer` (cyan). No new StatBadge variants in this chunk.
+- Status-badge mapping: `is_active === true` → `running` variant labelled "Active"; `false` → `idle` variant labelled "Idle". Reuses existing variants verbatim.
+- Self-disable invariant preserved: the currently-logged-in admin's Deactivate and Delete buttons remain disabled (`disabled={isSelf}`).
+- The header bar ("Users" + "+ Add User") continues to be rendered inside `UserTable` to match the existing `AdminPage` composition; Chunk 8 may revisit when the New User modal is restyled.
+- No dark-mode smoke update in this chunk — `AdminPage` itself isn't yet a Phase B page, so adding it to the smoke would require migrating its other sections first.
 
 #### Chunk 6 implementation notes
 
