@@ -4755,3 +4755,89 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 - [ ] **6.6.6** Commit `docs: mark phase B chunk 6 complete (SiteVisitsPage)`.
 
 **End of Chunk 6.**
+
+## Chunk 7: AdminPage Users table (dense dark-table + role badges)
+
+> **Spec reference:** §7 row 7 — `AdminPage` Users tab uses the dense
+> `dark-table` primitive and role pill badges. Mockup:
+> `dark-ui-v2.html` lines 706-720 (page-users section).
+>
+> **Behaviour deltas vs current `UserTable`:**
+> 1. The legacy `<table>` markup wrapped by a Tailwind shadow card is
+>    replaced by the existing dark `DataTable` molecule, matching the
+>    mockup's table density and divider styling.
+> 2. Role text → `StatBadge` with `admin` (purple) / `engineer` (blue)
+>    / `customer` (cyan) variants. These already exist; no new
+>    variants in this chunk.
+> 3. Status column shows an `Active` / `Idle` `StatBadge` derived from
+>    `is_active` (`true` → `running` variant green; `false` → `idle`
+>    variant yellow). Reuses existing variants.
+> 4. New "Site" column added per mockup. The `User` type does not have
+>    a `site` field today, so render `'—'` with a `// TODO(phase-c)`
+>    comment.
+> 5. New "Last Login" column added per mockup. The `User` type does
+>    not have a `last_login_at` field today; use `updated_at` as a
+>    proxy with a relative formatter (`Now`, `Today HH:MM`, `Yesterday`,
+>    `N days ago`). Mark with `// TODO(phase-c)`.
+> 6. Action buttons keep their existing handlers (Edit / Activate /
+>    Deactivate / Delete) but are restyled as ghost buttons matching
+>    the mockup's `btn-ghost` style. The currently-logged-in admin's
+>    Deactivate/Delete buttons remain disabled.
+> 7. Page-header "Users" title + "+ Add User" button continue to be
+>    rendered by `UserTable` itself for now (matches existing
+>    `AdminPage` composition; chunk 8 will revisit when modals are
+>    restyled).
+>
+> **Out of scope for this chunk** (per the user's "users-table-only"
+> directive):
+> - `AdminPage` page header, `AdminStatsCards`, `ActivityFeed`,
+>   modals, Toast — all keep their current light-theme styling.
+> - `AdminPage` itself is not rewritten in this chunk; only its
+>   internal `UserTable` is.
+>
+> **No new atoms or molecules.** `DataTable`, `StatBadge` are
+> sufficient.
+>
+> **Test floor**: chunk-6 actual = **364**. Chunk 7 adds:
+> `UserTable` component tests (4 cases) = **4 added**. Dark-mode
+> smoke is **not** updated in this chunk because the page-level
+> AdminPage smoke would also need restyle work that's out of scope.
+> **New chunk-7 floor: ≥ 368**.
+
+### Step 7.1: Rewrite `UserTable` (RED → GREEN)
+
+- [ ] **7.1.1** New test file
+      `src/components/admin/__tests__/UserTable.test.tsx` — 4 cases:
+  1. Renders one row per user with name, email, role badge.
+  2. Renders Active badge for `is_active === true`, Idle for `false`.
+  3. Disables Deactivate and Delete buttons for the current admin's
+     own row (`currentUserId === user.id`).
+  4. Calls `onToggleActive(id)`, `onEdit(user)`, `onDelete(user)`,
+     `onAddUser()` when respective buttons are clicked.
+- [ ] **7.1.2** Rewrite `src/components/admin/UserTable.tsx`:
+      - Drop the legacy Tailwind `<table>` markup.
+      - Use `DataTable` with columns: Name, Email, Role, Site,
+        Status, Last Login, Actions.
+      - Map `user.role` → `StatBadge` variant (`admin` purple,
+        `engineer` blue, `customer` cyan).
+      - Map `user.is_active` → `StatBadge` variant (`running` green
+        with label "Active" or `idle` yellow with label "Idle").
+      - Render Site column as `'—'` (TODO).
+      - Render Last Login via a small inline `formatRelativeTime`
+        helper using `user.updated_at` as a proxy (TODO).
+      - Action buttons: small dark ghost buttons inline.
+      - Header "Users" + "+ Add User" still rendered above the table.
+- [ ] **7.1.3** Run UserTable tests. Expected: 4/4 GREEN.
+- [ ] **7.1.4** Commit `feat(admin): rewrite UserTable with DataTable + dark role badges`.
+
+### Step 7.2: Final per-chunk gate
+
+- [ ] **7.2.1** `npm run test:run` — Chunk-7 floor ≥ **368**.
+- [ ] **7.2.2** `npm run build` — GREEN.
+- [ ] **7.2.3** `npm run lint` — ≤ 8 errors (no new errors).
+- [ ] **7.2.4** Update spec line 3 → `Status: in implementation
+      (chunk 7 complete)`.
+- [ ] **7.2.5** Append Chunk 7 entry to `task.md`.
+- [ ] **7.2.6** Commit `docs: mark phase B chunk 7 complete (UserTable)`.
+
+**End of Chunk 7.**
