@@ -1,5 +1,5 @@
 {
-  "parsed_at": "2026-05-02T19:27:07.672190",
+  "parsed_at": "2026-05-02T19:41:32.731593",
   "lots": [
     {
       "lot_number": "L260305101959",
@@ -7864,5 +7864,3539 @@
     "double_fruits": "0",
     "fruit_exit_count": "0",
     "total_errors": 913
-  }
+  },
+  "machines": [
+    {
+      "machine_id": "ZLHS",
+      "machine_name": "Compact Inventory Machine1",
+      "software_version": "Hortisort V8.10.2601.1305",
+      "total_lots": 12,
+      "first_lot_start": "05-03-2026 : 10:20",
+      "last_lot_stop": "05-03-2026 : 16:53",
+      "total_inspected": 57,
+      "total_ejected": 0,
+      "total_lost": 114,
+      "lot_ids": [
+        "L260305101959",
+        "L260305103632",
+        "L260305104234",
+        "L260305105202",
+        "L260305105444",
+        "L260305130808",
+        "L260305132421",
+        "L260305132546",
+        "L260305141941",
+        "L260305142454",
+        "L260305152207",
+        "L260305165330"
+      ],
+      "errors": [
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:03",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:02",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:01",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:25:00",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:59",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:58",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:57",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:56",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:56",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:56",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305142454",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 14:24:56",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:17",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:16",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:16",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:16",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:16",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:16",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:15",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:14",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:14",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:14",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:14",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132546",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:27:13",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:28",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:27",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305132421",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 13:24:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:50",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:49",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:48",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:47",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:46",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:46",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105444",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:54:46",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:09",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:08",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:07",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:06",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:05",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:04",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305105202",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:52:04",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:46",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:46",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:45",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:45",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:45",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:45",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:45",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:44",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:43",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:42",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:41",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:40",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305104234",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:42:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:39",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:38",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SCU",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "Low Free Space in the following Disk(s). Please take immediate action.\n\nC:  3.3%  Free\r\nD:  5.4%  Free",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "DiskSpace"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:37",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:36",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:35",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305103632",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:36:34",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:26",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:25",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:24",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:23",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:22",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:21",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:20",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:19",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        },
+        {
+          "group": "SegmentAndRegroupUnit",
+          "run_id": "L260305101959",
+          "error_code": "0",
+          "error_source": "lost/double image save not happenning because of low disk space",
+          "datetime": "05-Mar-26 10:20:18",
+          "additional_info": "From -Check fruit loss vi"
+        }
+      ],
+      "error_count": 438
+    }
+  ]
 }

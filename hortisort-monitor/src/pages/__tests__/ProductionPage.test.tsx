@@ -19,6 +19,15 @@ vi.mock('../../services/datalogService', () => ({
   getDatalogReport: () => mockGetDatalogReport(),
 }))
 
+const MOCK_ERROR = {
+  group: 'SCU',
+  run_id: 'L260305101959',
+  error_code: 'E001',
+  error_source: 'Disk space warning',
+  datetime: '05-03-2026 10:20:00',
+  additional_info: '',
+}
+
 const REPORT: DatalogReport = {
   parsed_at: '2026-03-05T16:53:00.000Z',
   lots: [
@@ -35,10 +44,7 @@ const REPORT: DatalogReport = {
       default_bin: { 'Lost Fruit': { lane1: '3', total: '3' } },
     },
   ],
-  errors: [
-    { group: 'SCU', run_id: 'L260305101959', error_code: 'E001',
-      error_source: 'Disk space warning', datetime: '05-03-2026 10:20:00', additional_info: '' },
-  ],
+  errors: [MOCK_ERROR],
   summary: {
     machine_name: 'Compact Inventory Machine1', machine_id: 'ZLHS',
     software_version: 'Hortisort V8.10.2601.1305', total_lots: 1,
@@ -48,6 +54,22 @@ const REPORT: DatalogReport = {
     fruits_ejected: '0', fruits_lost: '3', double_fruits: '0',
     fruit_exit_count: '0', total_errors: 1,
   },
+  machines: [
+    {
+      machine_id: 'ZLHS',
+      machine_name: 'Compact Inventory Machine1',
+      software_version: 'Hortisort V8.10.2601.1305',
+      total_lots: 1,
+      first_lot_start: '05-03-2026 : 10:20',
+      last_lot_stop: '05-03-2026 : 10:20',
+      total_inspected: 6,
+      total_ejected: 0,
+      total_lost: 3,
+      lot_ids: ['L260305101959'],
+      errors: [MOCK_ERROR],
+      error_count: 1,
+    },
+  ],
 }
 
 beforeEach(() => { mockNavigate.mockReset(); mockGetDatalogReport.mockReset() })
@@ -69,7 +91,7 @@ describe('ProductionPage', () => {
     expect(screen.getByText(/errors today/i)).toBeInTheDocument()
   })
 
-  it('renders TDMS real rows with LIVE badge', async () => {
+  it('renders TDMS machine row with LIVE badge', async () => {
     mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
     await waitFor(() =>
@@ -103,11 +125,10 @@ describe('ProductionPage', () => {
     expect(labels).toContain('Errors')
   })
 
-  it('shows error log with TDMS errors', async () => {
+  it('shows latest error inline for LIVE machine row', async () => {
     mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
     await waitFor(() => expect(screen.getByText('Disk space warning')).toBeInTheDocument())
-    expect(screen.getByText(/error log/i)).toBeInTheDocument()
   })
 
   it('shows TDMS lot date in table', async () => {
@@ -116,9 +137,13 @@ describe('ProductionPage', () => {
     await waitFor(() => expect(screen.getByText('05 Mar 2026')).toBeInTheDocument())
   })
 
-  it('shows no errors message when error list empty', async () => {
-    mockGetDatalogReport.mockResolvedValue({ ...REPORT, errors: [] })
+  it('shows no errors label when machine has no errors', async () => {
+    const emptyMachines = REPORT.machines!.map((m) => ({ ...m, errors: [], error_count: 0 }))
+    mockGetDatalogReport.mockResolvedValue({ ...REPORT, errors: [], machines: emptyMachines })
     render(<ProductionPage />)
-    await waitFor(() => expect(screen.getByText(/no errors recorded/i)).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText('Compact Inventory Machine1')).toBeInTheDocument()
+    )
+    expect(screen.getAllByText('No errors').length).toBeGreaterThan(0)
   })
 })

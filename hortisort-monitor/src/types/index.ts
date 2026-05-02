@@ -522,12 +522,29 @@ export interface TdmsSummary {
   total_errors: number
 }
 
+/** Per-machine aggregate produced by tdms-parser.py (machines[] array). */
+export interface TdmsMachine {
+  machine_id: string
+  machine_name: string
+  software_version: string
+  total_lots: number
+  first_lot_start: string
+  last_lot_stop: string
+  total_inspected: number
+  total_ejected: number
+  total_lost: number
+  lot_ids: string[]
+  errors: TdmsError[]
+  error_count: number
+}
+
 /** Root structure of public/datalog.json produced by tdms-parser.py */
 export interface DatalogReport {
   parsed_at: string
   lots: TdmsLot[]
   errors: TdmsError[]
   summary: TdmsSummary
+  machines?: TdmsMachine[]
 }
 
 // =============================================================================

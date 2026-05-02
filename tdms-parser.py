@@ -293,6 +293,54 @@ def main():
             "total_errors": len(result["errors"]),
         }
 
+    # Build per-machine aggregates
+    machines_map = {}
+    for lot in result["lots"]:
+        mid = lot.get("system_id", "")
+        if not mid:
+            continue
+        if mid not in machines_map:
+            machines_map[mid] = {
+                "machine_id": mid,
+                "machine_name": lot.get("system_name", ""),
+                "software_version": lot.get("software_version", ""),
+                "total_lots": 0,
+                "first_lot_start": lot.get("lot_start", ""),
+                "last_lot_stop": lot.get("lot_stop", ""),
+                "total_inspected": 0,
+                "total_ejected": 0,
+                "total_lost": 0,
+                "lot_ids": [],
+            }
+        m = machines_map[mid]
+        m["total_lots"] += 1
+        m["last_lot_stop"] = lot.get("lot_stop", "")
+        m["lot_ids"].append(lot.get("lot_number", ""))
+        insp = lot.get("inspection", {})
+        defbin = lot.get("default_bin", {})
+        m["total_inspected"] += int(insp.get("Vision Result Count", {}).get("total", "0") or "0")
+        m["total_ejected"]   += int(insp.get("Ejection done", {}).get("total", "0") or "0")
+        m["total_lost"]      += int(defbin.get("Lost Fruit", {}).get("total", "0") or "0")
+
+    result["machines"] = list(machines_map.values())
+
+    # Build per-machine error index (latest error per machine matched by run_id / lot_id)
+    machine_errors_map = {}
+    for err in result["errors"]:
+        run_id = err.get("run_id", "")
+        # Find which machine this run_id belongs to
+        for m in result["machines"]:
+            if run_id in m["lot_ids"]:
+                mid = m["machine_id"]
+                if mid not in machine_errors_map:
+                    machine_errors_map[mid] = []
+                machine_errors_map[mid].append(err)
+                break
+    # Attach errors to each machine
+    for m in result["machines"]:
+        m["errors"] = machine_errors_map.get(m["machine_id"], [])
+        m["error_count"] = len(m["errors"])
+
     # Write output
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
