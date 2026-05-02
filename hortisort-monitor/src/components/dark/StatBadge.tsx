@@ -5,7 +5,7 @@ export type StatBadgeVariant =
   | 'critical' | 'high' | 'medium' | 'low'
   | 'open' | 'inprog' | 'resolved' | 'completed'
   | 'admin' | 'engineer' | 'customer'
-  | 'notrun'
+  | 'notrun' | 'maintenance'
 
 interface StatBadgeProps {
   variant: StatBadgeVariant
@@ -30,6 +30,7 @@ const toneClasses: Record<StatBadgeVariant, string> = {
   engineer:  'bg-blue-500/15 text-blue-400 border border-blue-500/30',
   customer:  'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30',
   notrun:    'bg-slate-500/15 text-slate-400 border border-slate-500/30',
+  maintenance: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
 }
 
 /**

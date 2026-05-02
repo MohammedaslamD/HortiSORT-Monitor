@@ -26,6 +26,7 @@ describe('StatBadge', () => {
     ['engineer',  'bg-blue-500/15',   'text-blue-400'],
     ['customer',  'bg-cyan-500/15',   'text-cyan-400'],
     ['notrun',    'bg-slate-500/15',  'text-slate-400'],
+    ['maintenance','bg-amber-500/15', 'text-amber-400'],
   ] as const)('variant %s applies bg %s and text %s', (variant, bg, text) => {
     render(<StatBadge variant={variant}>X</StatBadge>)
     const el = screen.getByText('X')
