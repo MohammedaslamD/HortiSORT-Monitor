@@ -58,7 +58,7 @@ export function Toast({
     <div
       role="alert"
       className={[
-        'fixed top-4 right-4 z-[100] flex items-center gap-3',
+        'fixed bottom-4 right-4 z-[100] flex items-center gap-3',
         'px-4 py-3 border-l-4 rounded-lg shadow-lg',
         'stat-gradient text-fg-1 animate-slide-in',
         accentBorder[type],

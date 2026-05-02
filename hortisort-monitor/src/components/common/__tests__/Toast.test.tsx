@@ -51,4 +51,12 @@ describe('Toast', () => {
     await user.click(screen.getByLabelText(/dismiss notification/i))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('positions itself at the bottom-right of the viewport per Phase B mockup', () => {
+    render(<Toast message="m" type="success" isVisible={true} onClose={() => {}} />)
+    const root = screen.getByRole('alert')
+    expect(root).toHaveClass('bottom-4')
+    expect(root).toHaveClass('right-4')
+    expect(root).not.toHaveClass('top-4')
+  })
 })
