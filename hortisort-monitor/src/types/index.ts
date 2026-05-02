@@ -418,6 +418,23 @@ export interface ProductionStats {
   rejection_rate_pct: number
 }
 
+// -----------------------------------------------------------------------------
+// Phase B: Daily logs page aggregates derived from DailyLog[]
+// -----------------------------------------------------------------------------
+
+/** Aggregate counts shown in the four DailyLogsPage stat cards.
+ *  Derived live from the role-scoped log list. */
+export interface DailyLogStats {
+  /** Total log entries within the past 7 days (inclusive of today). */
+  logs_this_week: number
+  /** Distinct (machine_id, date) pairs whose status === 'running'. */
+  running_days: number
+  /** Distinct (machine_id, date) pairs whose status === 'maintenance'. */
+  maintenance_days: number
+  /** Distinct (machine_id, date) pairs whose status === 'not_running'. */
+  not_running_days: number
+}
+
 // =============================================================================
 // Phase B: Live metrics, alerts, activity (mock-data layer)
 // =============================================================================
