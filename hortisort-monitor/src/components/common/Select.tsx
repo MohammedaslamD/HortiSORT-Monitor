@@ -15,7 +15,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 /**
  * Dropdown select with optional label and error display.
- * Uses @tailwindcss/forms for base styling.
+ * Phase B dark styling.
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, placeholder, id, className = '', ...rest }, ref) => {
@@ -26,7 +26,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            className="block text-[11px] font-semibold uppercase tracking-wider text-fg-4 mb-1.5"
           >
             {label}
           </label>
@@ -35,13 +35,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={`
-            block w-full rounded-md shadow-sm text-sm
-            bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
-            disabled:bg-gray-100 dark:disabled:bg-gray-800
+            block w-full rounded-md text-sm
+            bg-bg-surface1 text-fg-1
+            disabled:bg-bg-surface2 disabled:text-fg-4
+            focus:outline-none focus:ring-2
             ${
               error
-                ? 'border-red-300 dark:border-red-700 text-red-900 dark:text-red-200 focus:ring-red-500 focus:border-red-500'
-                : 'border-gray-300 dark:border-gray-700 focus:ring-primary-500 focus:border-primary-500'
+                ? 'border border-brand-red focus:ring-brand-red/20'
+                : 'border border-line-strong focus:border-brand-cyan focus:ring-brand-cyan/20'
             }
             ${className}
           `.trim()}
@@ -50,18 +51,18 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {...rest}
         >
           {placeholder && (
-            <option value="" disabled>
+            <option value="" disabled className="bg-bg-surface1 text-fg-1">
               {placeholder}
             </option>
           )}
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
+            <option key={opt.value} value={opt.value} className="bg-bg-surface1 text-fg-1">
               {opt.label}
             </option>
           ))}
         </select>
         {error && (
-          <p id={`${selectId}-error`} className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+          <p id={`${selectId}-error`} className="mt-1 text-xs text-brand-red" role="alert">
             {error}
           </p>
         )}
