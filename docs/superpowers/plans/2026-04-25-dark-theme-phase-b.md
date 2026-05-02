@@ -4841,3 +4841,59 @@ const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: s
 - [ ] **7.2.6** Commit `docs: mark phase B chunk 7 complete (UserTable)`.
 
 **End of Chunk 7.**
+
+## Chunk 8: Modal forms restyled + Toast (4-way split)
+
+> **Spec reference:** §7 row 8 — all modal forms restyled + Toast.
+> Mockup uses overlay modals for forms (`modalRaiseTicket`,
+> `modalUpdateStatus`, `modalSiteVisit`, `modalAddUser`); our app
+> implements those as routed pages instead. Per user direction
+> (chunk-7 question), we **restyle existing pages in place** rather
+> than migrating them to overlay modals — this preserves routing,
+> deep-links, and browser back-button behaviour.
+>
+> The chunk is split into four sequential sub-chunks because the
+> surface area is uneven (one Toast component, three admin overlay
+> modals, three short form pages, two large detail pages) and only
+> one of the five form pages (`RaiseTicketPage`) currently has tests.
+>
+> ### Sub-chunk overview
+>
+> | Sub | Scope | Existing tests? |
+> |-----|-------|-----------------|
+> | 8a  | `Toast` component — fix position to bottom-right per mockup; verify mockup-aligned gradient + 4px left accent border are already in place. | yes (8 tests) |
+> | 8b  | 3 admin overlay modals: `CreateUserModal`, `EditUserModal`, `DeleteUserModal`. Restyle to `dark-modal` shell with dark `Input/Select` controls and dark footer buttons. | yes (3 files) |
+> | 8c  | 3 short form pages: `RaiseTicketPage`, `LogVisitPage`, `UpdateStatusPage`. Restyle headers, form controls, action buttons. | partial (1/3) |
+> | 8d  | 2 large detail pages: `MachineDetailPage`, `TicketDetailPage`. Restyle in place; add basic smoke tests. | none (0/2) |
+
+### Chunk 8a: Toast position fix
+
+> The current `Toast` component already uses `stat-gradient`,
+> `border-brand-{green/red/amber/cyan}`, and `animate-slide-in`,
+> closely matching mockup line 205. The only mockup-divergent detail
+> is positioning: mockup specifies `bottom: 20px; right: 20px` while
+> the current implementation uses `top-4 right-4`. This sub-chunk
+> fixes that.
+>
+> **Test floor**: chunk-7 actual = **368**. Chunk 8a adds 1 test
+> (`bottom-4 right-4` positioning) = **+1 added**.
+> **New chunk-8a floor: ≥ 369**.
+
+#### Step 8a.1: Move Toast to bottom-right (RED → GREEN)
+
+- [ ] **8a.1.1** Add a 9th case to
+      `src/components/common/__tests__/Toast.test.tsx` asserting the
+      alert root has `bottom-4` and `right-4` classes (and does NOT
+      have `top-4`).
+- [ ] **8a.1.2** Run test. Expected: RED.
+- [ ] **8a.1.3** Update `src/components/common/Toast.tsx`: replace
+      `top-4 right-4` with `bottom-4 right-4` in the className list.
+- [ ] **8a.1.4** Run test. Expected: 9/9 GREEN.
+- [ ] **8a.1.5** Final gate (full suite, build, lint).
+- [ ] **8a.1.6** Commit `feat(toast): position bottom-right per Phase B mockup`.
+
+**End of Chunk 8a.**
+
+> Sub-chunks 8b, 8c, and 8d will be planned in detail at the start
+> of each one (after 8a is committed) so the plan stays close to
+> implementation reality.
