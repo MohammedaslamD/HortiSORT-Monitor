@@ -5,6 +5,8 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  /** Optional subtitle rendered under the title (Phase B mockup `.modal-sub`). */
+  subtitle?: string;
   children: ReactNode;
   /** Max-width class. Defaults to 'max-w-lg'. */
   size?: 'max-w-sm' | 'max-w-md' | 'max-w-lg' | 'max-w-xl' | 'max-w-2xl';
@@ -12,12 +14,14 @@ interface ModalProps {
 
 /**
  * Accessible modal dialog with backdrop overlay.
- * Closes on Escape key and backdrop click. Traps focus inside the modal.
+ * Closes on Escape key and backdrop click. Phase B dark shell:
+ * dark surface panel, blurred 75% black backdrop, uppercase-style header.
  */
 export function Modal({
   isOpen,
   onClose,
   title,
+  subtitle,
   children,
   size = 'max-w-lg',
 }: ModalProps) {
@@ -53,30 +57,41 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 transition-opacity"
+        data-modal-backdrop
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
       <div
+        data-modal-panel
         className={`
-          relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full mx-4
+          relative bg-bg-surface2 border border-line-strong rounded-2xl shadow-2xl
+          w-full mx-4 max-h-[90vh] overflow-y-auto
           ${size}
         `.trim()}
       >
-        {title && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {title}
-            </h2>
+        {(title || subtitle) && (
+          <div className="flex items-start justify-between px-5 pt-5 pb-3">
+            <div>
+              {title && (
+                <h2 id="modal-title" className="text-base font-bold text-fg-1">
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="mt-0.5 text-xs text-fg-4">{subtitle}</p>
+              )}
+            </div>
             <button
+              type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-md bg-line-strong text-fg-4 hover:text-fg-1 hover:bg-line transition-colors"
               aria-label="Close modal"
             >
               <svg
-                className="h-5 w-5"
+                className="h-3.5 w-3.5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -88,7 +103,7 @@ export function Modal({
           </div>
         )}
 
-        <div className="px-4 py-4">{children}</div>
+        <div className="px-5 pb-5">{children}</div>
       </div>
     </div>
   );
