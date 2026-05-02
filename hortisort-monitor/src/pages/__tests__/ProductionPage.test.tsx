@@ -1,10 +1,10 @@
 import { screen, waitFor } from '@testing-library/react'
 import { render } from '../../test/utils'
 import { ProductionPage } from '../ProductionPage'
-import type { ProductionSession } from '../../types'
+import type { DatalogReport } from '../../types'
 
 // ---------------------------------------------------------------------------
-// Router + auth + service mocks
+// Mocks
 // ---------------------------------------------------------------------------
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -12,114 +12,169 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-const mockAdmin = { id: 5, name: 'Aslam Sheikh', email: 'aslam@hortisort.com', role: 'admin' as const, is_active: true }
 vi.mock('../../context/AuthContext', () => ({
-  useAuth: () => ({ user: mockAdmin }),
+  useAuth: () => ({
+    user: { id: 5, name: 'Aslam Sheikh', email: 'aslam@hortisort.com', role: 'admin' as const, is_active: true },
+  }),
 }))
 
-const mockGetAllTodaySessions = vi.fn<(date?: string) => Promise<ProductionSession[]>>()
-vi.mock('../../services/productionSessionService', () => ({
-  getAllTodaySessions: (...args: unknown[]) => mockGetAllTodaySessions(...args as [string?]),
-}))
-
-vi.mock('../../hooks/useProductionSocket', () => ({
-  useProductionSocket: () => ({ lastSession: null }),
+const mockGetDatalogReport = vi.fn()
+vi.mock('../../services/datalogService', () => ({
+  getDatalogReport: () => mockGetDatalogReport(),
 }))
 
 // ---------------------------------------------------------------------------
 // Fixture
 // ---------------------------------------------------------------------------
-const baseSession = (overrides: Partial<ProductionSession>): ProductionSession => ({
-  id: 1,
-  machine_id: 1,
-  lot_number: 1,
-  session_date: '2026-05-01',
-  start_time: '2026-05-01T06:00:00Z',
-  stop_time: null,
-  fruit_type: 'Banana',
-  quantity_kg: null,
-  status: 'running',
-  raw_tdms_rows: null,
-  created_at: '2026-05-01T06:00:00Z',
-  updated_at: '2026-05-01T06:00:00Z',
-  machine: { machine_code: 'HS-2024-0001', machine_name: 'Sorter 1' },
-  ...overrides,
-})
-
-const threeSessions: ProductionSession[] = [
-  baseSession({
-    id: 41, lot_number: 41, status: 'completed',
-    start_time: '2026-05-01T06:00:00Z', stop_time: '2026-05-01T09:30:00Z',
-    fruit_type: 'Banana', quantity_kg: '850.0',
-    machine: { machine_code: 'M-001', machine_name: 'Banana sorter' },
-  }),
-  baseSession({
-    id: 42, lot_number: 42, status: 'running',
-    start_time: '2026-05-01T10:00:00Z', stop_time: null,
-    fruit_type: 'Banana', quantity_kg: '360.5',
-    machine: { machine_code: 'M-001', machine_name: 'Banana sorter' },
-  }),
-  baseSession({
-    id: 43, lot_number: 43, status: 'completed',
-    start_time: '2026-05-01T07:30:00Z', stop_time: '2026-05-01T11:00:00Z',
-    fruit_type: 'Mango', quantity_kg: '290.0',
-    machine: { machine_code: 'M-002', machine_name: 'Mango sorter' },
-  }),
-]
+const REPORT: DatalogReport = {
+  parsed_at: '2026-03-05T16:53:00.000Z',
+  lots: [
+    {
+      lot_number: 'L260305101959',
+      system_name: 'Compact Inventory Machine1',
+      system_id: 'ZLHS',
+      installation_date: '04-12-2025',
+      lot_start: '05-03-2026 : 10:20',
+      lot_stop: '05-03-2026 : 10:20',
+      software_version: 'Hortisort V8.10.2601.1305',
+      elapsed_time: '0 Hrs 2 Min 9.023 Sec',
+      program_start_time: '05-03-2026 : 10:20:17',
+      inspection: {
+        'Vision Result Count': { lane1: '42', total: '42' },
+        'Ejection done': { lane1: '5', total: '5' },
+      },
+      default_bin: { 'Lost Fruit': { lane1: '3', total: '3' } },
+    },
+    {
+      lot_number: 'L260305103632',
+      system_name: 'Compact Inventory Machine1',
+      system_id: 'ZLHS',
+      installation_date: '04-12-2025',
+      lot_start: '05-03-2026 : 10:36',
+      lot_stop: '05-03-2026 : 10:37',
+      software_version: 'Hortisort V8.10.2601.1305',
+      elapsed_time: '0 Hrs 0 Min 4.823 Sec',
+      inspection: {
+        'Vision Result Count': { lane1: '10', total: '10' },
+      },
+    },
+  ],
+  errors: [
+    {
+      group: 'SCU',
+      run_id: 'L260305101959',
+      error_code: 'E001',
+      error_source: 'Disk space warning',
+      datetime: '05-03-2026 10:20:00',
+      additional_info: '',
+    },
+    {
+      group: 'SegmentAndRegroupUnit',
+      run_id: 'L260305101959',
+      error_code: 'W002',
+      error_source: 'Lost fruit image detected',
+      datetime: '05-03-2026 10:21:00',
+      additional_info: '',
+    },
+  ],
+  summary: {
+    machine_name: 'Compact Inventory Machine1',
+    machine_id: 'ZLHS',
+    software_version: 'Hortisort V8.10.2601.1305',
+    total_lots: 2,
+    latest_lot: 'L260305103632',
+    latest_lot_start: '05-03-2026 : 10:36',
+    latest_lot_stop: '05-03-2026 : 10:37',
+    latest_elapsed: '0 Hrs 0 Min 4.823 Sec',
+    latest_program_start: '05-03-2026 : 10:36:34',
+    fruits_inspected: '52',
+    fruits_ejected: '5',
+    fruits_lost: '3',
+    double_fruits: '0',
+    fruit_exit_count: '52',
+    total_errors: 2,
+  },
+}
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
-describe('ProductionPage (Phase B)', () => {
+describe('ProductionPage', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
-    mockGetAllTodaySessions.mockReset()
+    mockGetDatalogReport.mockReset()
   })
 
-  it('renders the page header and live subtitle', async () => {
-    mockGetAllTodaySessions.mockResolvedValue([])
+  it('renders the page header', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: /production/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     })
-    expect(screen.getByText(/Live — updates every 15 s/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/live production/i)
   })
 
-  it('renders four stat cards with values derived from sessions', async () => {
-    mockGetAllTodaySessions.mockResolvedValue(threeSessions)
+  it('renders four stat cards', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
-    await waitFor(() => {
-      expect(screen.getByText(/ACTIVE SESSIONS/i)).toBeInTheDocument()
-    })
-    expect(screen.getByText(/LOTS TODAY/i)).toBeInTheDocument()
-    expect(screen.getByText(/ITEMS PROCESSED/i)).toBeInTheDocument()
-    expect(screen.getByText(/REJECTION RATE/i)).toBeInTheDocument()
-    // active_sessions === 1, lots_today === 3, items_processed_kg === 1501 (rounded from 1500.5)
-    expect(screen.getByText('3')).toBeInTheDocument()
-    expect(screen.getByText('1,501')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/machines running/i)).toBeInTheDocument())
+    expect(screen.getByText(/total lots today/i)).toBeInTheDocument()
+    expect(screen.getByText(/total qty today/i)).toBeInTheDocument()
+    expect(screen.getByText(/errors today/i)).toBeInTheDocument()
   })
 
-  it('renders a row per session with a LIVE badge for running sessions', async () => {
-    mockGetAllTodaySessions.mockResolvedValue(threeSessions)
+  it('shows total lots count from TDMS data', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
-    await waitFor(() => {
-      expect(screen.getByText('LIVE')).toBeInTheDocument()
-    })
-    // All three lot numbers visible in the body
-    expect(screen.getByText('LOT-2026-041')).toBeInTheDocument()
-    expect(screen.getByText('LOT-2026-042')).toBeInTheDocument()
-    expect(screen.getByText('LOT-2026-043')).toBeInTheDocument()
-    // Two completed badges (sessions 41 + 43)
-    expect(screen.getAllByText('Completed').length).toBe(2)
+    await waitFor(() => expect(screen.getByText(/total lots today/i)).toBeInTheDocument())
+    // The Total Lots Today card value should show 2
+    const card = screen.getByText(/total lots today/i).closest('div')
+    expect(card?.textContent).toContain('2')
   })
 
-  it('shows the empty state when there are no sessions', async () => {
-    mockGetAllTodaySessions.mockResolvedValue([])
+  it('renders a row per lot with lot number', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
+    render(<ProductionPage />)
+    await waitFor(() => expect(screen.getByText('101959')).toBeInTheDocument())
+    expect(screen.getByText('103632')).toBeInTheDocument()
+  })
+
+  it('renders machine name in the table', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
     render(<ProductionPage />)
     await waitFor(() => {
-      expect(screen.getByText(/No production data for today yet/i)).toBeInTheDocument()
+      expect(screen.getAllByText('Compact Inventory Machine1').length).toBeGreaterThan(0)
     })
-    // No table rendered
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('shows the error log section with error entries', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
+    render(<ProductionPage />)
+    await waitFor(() => expect(screen.getByText(/error log/i)).toBeInTheDocument())
+    expect(screen.getByText('Disk space warning')).toBeInTheDocument()
+    expect(screen.getByText('Lost fruit image detected')).toBeInTheDocument()
+  })
+
+  it('shows the error count badge', async () => {
+    mockGetDatalogReport.mockResolvedValue(REPORT)
+    render(<ProductionPage />)
+    await waitFor(() => expect(screen.getByText(/error log/i)).toBeInTheDocument())
+    // badge shows error count
+    const badges = screen.getAllByText('2')
+    expect(badges.length).toBeGreaterThan(0)
+  })
+
+  it('shows loading state initially', () => {
+    mockGetDatalogReport.mockReturnValue(new Promise(() => {}))
+    render(<ProductionPage />)
+    expect(screen.getByText(/loading production data/i)).toBeInTheDocument()
+  })
+
+  it('shows empty state message when no lots match filter', async () => {
+    mockGetDatalogReport.mockResolvedValue({ ...REPORT, lots: [] })
+    render(<ProductionPage />)
+    await waitFor(() =>
+      expect(screen.getByText(/no lots match/i)).toBeInTheDocument()
+    )
   })
 })
