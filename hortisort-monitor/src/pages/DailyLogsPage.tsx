@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 
-import type { DailyLog, Machine, DailyLogStatus } from '../types'
+import type { DailyLog, Machine, User, DailyLogStatus } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getAllDailyLogs } from '../services/dailyLogService'
 import { getMachinesByRole } from '../services/machineService'
-import { getUserName } from '../utils/userLookup'
+import { getUsers } from '../services/userService'
 import { computeDailyLogStats } from '../utils/dailyLogStats'
 import {
   StatCard,
@@ -57,8 +57,9 @@ function formatAuto(iso: string): string {
 export function DailyLogsPage() {
   const { user } = useAuth()
 
-  const [allLogs, setAllLogs] = useState<DailyLog[]>([])
+  const [allLogs,  setAllLogs]  = useState<DailyLog[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
+  const [users,    setUsers]    = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -70,9 +71,10 @@ export function DailyLogsPage() {
       setIsLoading(true)
       setError(null)
       try {
-        const [fetchedLogs, fetchedMachines] = await Promise.all([
+        const [fetchedLogs, fetchedMachines, fetchedUsers] = await Promise.all([
           getAllDailyLogs(),
           getMachinesByRole(),
+          getUsers().catch(() => [] as User[]),
         ])
         if (cancelled) return
 
@@ -87,6 +89,7 @@ export function DailyLogsPage() {
         }
         setAllLogs(scoped)
         setMachines(fetchedMachines)
+        setUsers(fetchedUsers)
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Failed to load daily logs.')
@@ -107,6 +110,10 @@ export function DailyLogsPage() {
     machineNameMap[m.id] = m.machine_name
     machineCodeMap[m.id] = m.machine_code
   }
+
+  const userNameMap: Record<number, string> = {}
+  for (const u of users) { userNameMap[u.id] = u.name }
+  const getUserName = (id: number) => userNameMap[id] ?? `User #${id}`
 
   const stats = computeDailyLogStats(allLogs)
 

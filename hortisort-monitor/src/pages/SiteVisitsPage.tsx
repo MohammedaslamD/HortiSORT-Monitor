@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { SiteVisit, Machine, VisitPurpose } from '../types'
+import type { SiteVisit, Machine, User, VisitPurpose } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getAllSiteVisits } from '../services/siteVisitService'
 import { getMachinesByRole } from '../services/machineService'
-import { getUserName } from '../utils/userLookup'
+import { getUsers } from '../services/userService'
 import { computeSiteVisitStats } from '../utils/siteVisitStats'
 import {
   StatCard,
@@ -45,7 +45,8 @@ export function SiteVisitsPage() {
   const navigate = useNavigate()
 
   const [allVisits, setAllVisits] = useState<SiteVisit[]>([])
-  const [machines, setMachines] = useState<Machine[]>([])
+  const [machines,  setMachines]  = useState<Machine[]>([])
+  const [users,     setUsers]     = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -58,13 +59,15 @@ export function SiteVisitsPage() {
       setError(null)
       try {
         const filters = user!.role === 'engineer' ? { engineerId: user!.id } : undefined
-        const [fetchedVisits, fetchedMachines] = await Promise.all([
+        const [fetchedVisits, fetchedMachines, fetchedUsers] = await Promise.all([
           getAllSiteVisits(filters),
           getMachinesByRole(),
+          getUsers().catch(() => [] as User[]),
         ])
         if (cancelled) return
         setAllVisits(fetchedVisits)
         setMachines(fetchedMachines)
+        setUsers(fetchedUsers)
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Failed to load site visits.')
@@ -85,6 +88,10 @@ export function SiteVisitsPage() {
     machineNameMap[m.id] = m.machine_name
     machineCodeMap[m.id] = m.machine_code
   }
+
+  const userNameMap: Record<number, string> = {}
+  for (const u of users) { userNameMap[u.id] = u.name }
+  const getUserName = (id: number) => userNameMap[id] ?? `User #${id}`
 
   const stats = computeSiteVisitStats(allVisits)
 

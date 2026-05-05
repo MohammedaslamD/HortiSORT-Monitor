@@ -6,13 +6,12 @@ export default defineConfig({
   server: {
     host: true,
     port: 3000,
-    // proxy disabled — running on mock data for demo (no backend/DB available)
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:4000',
-    //     changeOrigin: true,
-    //   },
-    // },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     globals: true,
@@ -20,5 +19,6 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
     pool: 'forks',
+    exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**'],
   },
 })

@@ -134,6 +134,7 @@ describe('addDailyLog', () => {
       shift_start: '08:00',
       shift_end: '16:00',
       notes: 'All good',
+      updated_by: 3,
     })
     expect(result).toEqual(created)
   })

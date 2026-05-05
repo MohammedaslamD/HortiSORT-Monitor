@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { FleetSummary, MachineRow } from '../types'
-import { liveMetricsService } from '../services/liveMetricsService'
+import type { Machine, MachineStats } from '../types'
+import { apiClient } from '../services/apiClient'
 import { Button } from '../components/common'
 import {
   StatCard,
   SectionCard,
   StatBadge,
   DataTable,
-  ProgressBar,
   statusToBadgeVariant,
 } from '../components/dark'
 import { formatRelative } from '../utils/formatRelative'
@@ -23,72 +22,67 @@ const STAT_ICON = {
 
 const COLUMNS = [
   { key: 'machine',    label: 'Machine' },
-  { key: 'site',       label: 'Site' },
-  { key: 'fruit',      label: 'Fruit' },
+  { key: 'location',   label: 'Location' },
+  { key: 'model',      label: 'Model' },
   { key: 'status',     label: 'Status' },
-  { key: 'throughput', label: 'Throughput' },
-  { key: 'uptime',     label: 'Uptime Today' },
-  { key: 'lastActive', label: 'Last Active' },
-  { key: 'tickets',    label: 'Open Tickets', align: 'right' as const },
+  { key: 'sw',         label: 'Software' },
+  { key: 'lastActive', label: 'Last Updated' },
   { key: 'actions',    label: 'Actions' },
 ]
 
-const TONE_COLOR: Record<MachineRow['status'], string> = {
-  running: 'text-green-400',
-  idle:    'text-yellow-400',
-  down:    'text-red-400',
-  offline: 'text-slate-400',
-}
+const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
-const PROGRESS_TONE: Record<'running' | 'down', 'green' | 'red'> = {
-  running: 'green',
-  down: 'red',
-}
+const EMPTY_STATS: MachineStats = { total: 0, running: 0, idle: 0, down: 0, offline: 0 }
 
-const capitalize = (s: string): string => s[0].toUpperCase() + s.slice(1)
-
-/** Phase-B Machines page — dense dark table per dark-ui-v2.html lines 498-521. */
+/** Machines page — all data from real backend API. */
 export function MachinesPage() {
   const navigate = useNavigate()
-  const [summary, setSummary] = useState<FleetSummary | null>(null)
-  const [rows, setRows] = useState<MachineRow[] | null>(null)
+  const [stats,    setStats]    = useState<MachineStats>(EMPTY_STATS)
+  const [machines, setMachines] = useState<Machine[] | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([
-      liveMetricsService.getFleetSummary(),
-      liveMetricsService.getMachineRows(),
-    ]).then(([s, r]) => {
-      if (cancelled) return
-      setSummary(s)
-      setRows(r)
-    })
-    return () => { cancelled = true }
+  const loadAll = useCallback(async () => {
+    try {
+      const [statsRes, machinesRes] = await Promise.all([
+        apiClient.get<MachineStats>('/api/v1/machines/stats'),
+        apiClient.get<Machine[]>('/api/v1/machines'),
+      ])
+      setStats(statsRes.data)
+      setMachines(machinesRes.data)
+    } catch {
+      setMachines([])
+    }
   }, [])
 
-  const tableRows = (rows ?? []).map((r) => ({
-    id: r.machine_id,
+  useEffect(() => {
+    void loadAll()
+    const interval = setInterval(() => { void loadAll() }, 30_000)
+    return () => clearInterval(interval)
+  }, [loadAll])
+
+  const tableRows = (machines ?? []).map((m) => ({
+    id: m.id,
     cells: [
-      r.machine_label,
-      r.site,
-      r.fruit,
-      <StatBadge key="s" variant={statusToBadgeVariant(r.status)}>
-        {capitalize(r.status)}
+      <div key="m" className="leading-tight">
+        <div className="text-fg-1 font-semibold text-xs">{m.machine_name}</div>
+        <div className="text-[10px] text-fg-5 font-mono">{m.machine_code}</div>
+      </div>,
+      <div key="loc" className="leading-tight">
+        <div className="text-xs text-fg-2">{m.city}</div>
+        <div className="text-[10px] text-fg-5">{m.state}</div>
+      </div>,
+      <span key="mod" className="text-xs text-fg-4">{m.model}</span>,
+      <StatBadge key="s" variant={statusToBadgeVariant(m.status)}>
+        {capitalize(m.status)}
       </StatBadge>,
-      r.tons_per_hour === null ? '--' : `${r.tons_per_hour.toFixed(1)} t/hr`,
-      r.uptime_percent === null || (r.status !== 'running' && r.status !== 'down') ? '--' : (
-        <div key="u" className="flex items-center gap-1.5">
-          <div className="w-[70px]">
-            <ProgressBar percent={r.uptime_percent} tone={PROGRESS_TONE[r.status]} />
-          </div>
-          <span className={`text-[10px] ${TONE_COLOR[r.status]}`}>{r.uptime_percent}%</span>
-        </div>
-      ),
-      formatRelative(r.last_active),
-      r.open_tickets_count,
+      <span key="sw" className="text-[10px] text-fg-5 font-mono">{m.software_version}</span>,
+      <span key="la" className="text-[11px] text-fg-4">{formatRelative(m.last_updated)}</span>,
       <div key="a" className="flex gap-1">
-        <Button size="xs" variant="ghost" onClick={() => navigate(`/machines/${r.machine_id}/update-status`)}>Update</Button>
-        <Button size="xs" variant="ghost" onClick={() => navigate(`/tickets/new?machine=${r.machine_id}`)}>Ticket</Button>
+        <Button size="xs" variant="ghost" onClick={() => navigate(`/machines/${m.id}/update-status`)}>
+          Update
+        </Button>
+        <Button size="xs" variant="ghost" onClick={() => navigate(`/tickets/new?machine=${m.id}`)}>
+          Ticket
+        </Button>
       </div>,
     ],
   }))
@@ -97,22 +91,22 @@ export function MachinesPage() {
     <div className="space-y-4">
       <header>
         <h1 className="text-xl font-semibold text-fg-1">Machines</h1>
-        <p className="text-sm text-fg-4">All 12 machines across 4 sites</p>
+        <p className="text-sm text-fg-4">
+          {stats.total > 0 ? `${stats.total} machines across all sites` : 'Loading…'}
+        </p>
       </header>
 
-      {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard accent="green"  label="Running" value={summary.running} valueColor="#4ade80" icon={<>{STAT_ICON.running}</>} dot="green" />
-          <StatCard accent="yellow" label="Idle"    value={summary.idle}    valueColor="#fbbf24" icon={<>{STAT_ICON.idle}</>} />
-          <StatCard accent="red"    label="Down"    value={summary.down}    valueColor="#ef4444" icon={<>{STAT_ICON.down}</>} dot="red" />
-          <StatCard accent="blue"   label="Offline" value={summary.offline} valueColor="#64748b" icon={<>{STAT_ICON.offline}</>} />
-        </div>
-      )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard accent="green"  label="Running" value={stats.running} valueColor="#4ade80" icon={<>{STAT_ICON.running}</>} dot="green" />
+        <StatCard accent="yellow" label="Idle"    value={stats.idle}    valueColor="#fbbf24" icon={<>{STAT_ICON.idle}</>} />
+        <StatCard accent="red"    label="Down"    value={stats.down}    valueColor="#ef4444" icon={<>{STAT_ICON.down}</>} dot="red" />
+        <StatCard accent="blue"   label="Offline" value={stats.offline} valueColor="#64748b" icon={<>{STAT_ICON.offline}</>} />
+      </div>
 
       <SectionCard title="Fleet">
-        {rows === null ? (
-          <p className="text-sm text-fg-6 py-8 text-center">Loading...</p>
-        ) : rows.length === 0 ? (
+        {machines === null ? (
+          <p className="text-sm text-fg-6 py-8 text-center">Loading…</p>
+        ) : machines.length === 0 ? (
           <p className="text-sm text-fg-6 py-8 text-center">No machines found.</p>
         ) : (
           <DataTable columns={COLUMNS} rows={tableRows} />

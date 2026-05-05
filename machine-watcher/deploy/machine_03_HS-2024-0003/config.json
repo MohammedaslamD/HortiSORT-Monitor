@@ -1,0 +1,7 @@
+{
+  "backend_url": "http://192.168.1.100:4000",
+  "api_key": "hs-key-machine-003-dev",
+  "machine_id": 3,
+  "data_dir": "C:\\HortiSort\\Datalogs",
+  "poll_interval": 15
+}

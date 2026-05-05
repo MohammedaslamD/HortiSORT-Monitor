@@ -44,6 +44,7 @@ describe('authService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetch.mockReset()
+    sessionStorage.clear()
   })
 
   // --- login ---
@@ -144,6 +145,7 @@ describe('authService', () => {
   })
 
   it('returns null when refresh endpoint returns non-ok', async () => {
+    sessionStorage.setItem('hortisort_session_user', JSON.stringify(MOCK_USER))
     ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({ ok: false })
 
@@ -153,6 +155,7 @@ describe('authService', () => {
   })
 
   it('returns user when refresh + me succeed', async () => {
+    sessionStorage.setItem('hortisort_session_user', JSON.stringify(MOCK_USER))
     ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({
       ok: true,
@@ -163,11 +166,11 @@ describe('authService', () => {
     const result = await authService.restoreSession()
 
     expect(setAccessToken).toHaveBeenCalledWith('newTok')
-    expect(mockGet).toHaveBeenCalledWith('/api/v1/auth/me')
     expect(result).toEqual(MOCK_USER)
   })
 
   it('sends refreshToken in request body to /auth/refresh', async () => {
+    sessionStorage.setItem('hortisort_session_user', JSON.stringify(MOCK_USER))
     ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
     mockFetch.mockResolvedValue({
       ok: true,
@@ -182,17 +185,13 @@ describe('authService', () => {
     expect(fetchBody.refreshToken).toBe('stored-ref-tok')
   })
 
-  it('returns null and clears tokens when /me throws after refresh', async () => {
+  it('returns null and clears tokens when refresh response is not ok', async () => {
+    sessionStorage.setItem('hortisort_session_user', JSON.stringify(MOCK_USER))
     ;(getRefreshToken as ReturnType<typeof vi.fn>).mockReturnValue('stored-ref-tok')
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ data: { accessToken: 'newTok' } }),
-    })
-    mockGet.mockRejectedValue(new Error('Unauthorized'))
+    mockFetch.mockResolvedValue({ ok: false })
 
     const result = await authService.restoreSession()
 
-    expect(clearAccessToken).toHaveBeenCalled()
     expect(clearRefreshToken).toHaveBeenCalled()
     expect(result).toBeNull()
   })
