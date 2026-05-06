@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
-import { Prisma, PrismaClientInitializationError } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import { PrismaClientInitializationError } from '@prisma/client/runtime/library.js'
 import { AppError } from '../utils/AppError.ts'
 
 /**
