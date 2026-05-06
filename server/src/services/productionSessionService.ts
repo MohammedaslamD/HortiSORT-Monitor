@@ -2,7 +2,7 @@ import { prisma } from '../utils/prisma.ts'
 import { Prisma } from '@prisma/client'
 
 interface UpsertSessionData {
-  lot_number: number
+  lot_number: string
   session_date: string
   start_time: string
   stop_time?: string | null

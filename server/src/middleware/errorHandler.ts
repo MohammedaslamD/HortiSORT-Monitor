@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
-import { Prisma } from '@prisma/client'
+import { Prisma, PrismaClientInitializationError } from '@prisma/client'
 import { AppError } from '../utils/AppError.ts'
 
 /**
@@ -33,6 +33,11 @@ export function errorHandler(
       res.status(404).json({ error: 'Record not found' })
       return
     }
+  }
+
+  if (err instanceof PrismaClientInitializationError) {
+    res.status(503).json({ error: 'Database unavailable' })
+    return
   }
 
   console.error('Unhandled error:', err)

@@ -26,7 +26,14 @@ export async function machineAuthenticate(
     return next(new AppError('Missing X-Machine-Key header', 401))
   }
 
-  const record = await prisma.machineApiKey.findUnique({ where: { api_key: key } })
+  let record
+  try {
+    record = await prisma.machineApiKey.findUnique({ where: { api_key: key } })
+  } catch (err) {
+    // Database unreachable — return 503 instead of crashing the process
+    return next(new AppError('Database unavailable', 503))
+  }
+
   if (!record) {
     return next(new AppError('Invalid machine API key', 401))
   }
