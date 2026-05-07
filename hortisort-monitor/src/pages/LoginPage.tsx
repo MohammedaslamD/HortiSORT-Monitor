@@ -37,6 +37,19 @@ export function LoginPage() {
           <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Machine Monitoring Portal</p>
         </div>
 
+        {/* Dev-only: clear session storage without touching other sites */}
+        {import.meta.env.DEV && (
+          <div className="mb-3 text-center">
+            <button
+              type="button"
+              onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.reload() }}
+              className="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 transition-colors"
+            >
+              Clear session &amp; reload
+            </button>
+          </div>
+        )}
+
         {/* Login Card */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Sign In</h2>

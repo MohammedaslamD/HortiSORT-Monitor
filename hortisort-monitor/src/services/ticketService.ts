@@ -116,10 +116,14 @@ export async function createTicket(data: NewTicketData): Promise<Ticket> {
     return res.data
   } catch {
     return {
-      id: Date.now(), ...data, status: 'open',
+      id: Date.now(), ...data, status: 'open' as const,
+      ticket_number: `TKT-TEMP-${Date.now()}`,
+      sla_hours: 24,
       created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      raised_by: 5, assigned_to: null, resolved_at: null,
+      raised_by: 5, assigned_to: 3, resolved_at: null,
       root_cause: null, solution: null, parts_used: null,
+      resolution_time_mins: null, reopen_count: 0, reopened_at: null,
+      customer_rating: null, customer_feedback: null,
     }
   }
 }

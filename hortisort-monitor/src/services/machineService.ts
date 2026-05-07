@@ -18,7 +18,7 @@ export async function getMachines(filters?: MachineFilters): Promise<Machine[]> 
   } catch {
     let results = [...MOCK_MACHINES]
     if (filters?.status) results = results.filter(m => m.status === filters.status)
-    if (filters?.search) results = results.filter(m => m.machine_code.toLowerCase().includes(filters.search!.toLowerCase()) || m.site.toLowerCase().includes(filters.search!.toLowerCase()))
+    if (filters?.search) results = results.filter(m => m.machine_code.toLowerCase().includes(filters.search!.toLowerCase()) || m.location.toLowerCase().includes(filters.search!.toLowerCase()))
     return results
   }
 }

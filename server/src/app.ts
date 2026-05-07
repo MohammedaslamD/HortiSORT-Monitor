@@ -19,7 +19,10 @@ export const app = express()
 // -------------------------------------------------------------------------
 // Global middleware
 // -------------------------------------------------------------------------
-app.use(cors({ origin: /^http:\/\/localhost(:\d+)?$/, credentials: true }))
+app.use(cors({
+  origin: true, // reflect request origin — allows any origin while supporting credentials
+  credentials: true,
+}))
 app.use(express.json())
 app.use(cookieParser())
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API client with JWT token management and automatic refresh.
  *
  * - Stores the current access token in module scope (not localStorage)
@@ -10,6 +10,10 @@
  */
 
 const REFRESH_TOKEN_KEY = 'hortisort_refresh_token'
+
+// Base URL for all API calls — empty string in dev (Vite proxy handles it),
+// set to http://192.168.1.117:4000 in production build via .env.production
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 
 let accessToken: string | null = null
 
@@ -59,7 +63,8 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const res = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`
+  const res = await fetch(url, {
     method,
     headers,
     credentials: 'include', // send cookies (refresh token)
@@ -90,7 +95,7 @@ async function request<T>(
 async function tryRefresh(): Promise<boolean> {
   try {
     const storedRefreshToken = getRefreshToken()
-    const res = await fetch('/api/v1/auth/refresh', {
+    const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
       headers: storedRefreshToken ? { 'Content-Type': 'application/json' } : {},

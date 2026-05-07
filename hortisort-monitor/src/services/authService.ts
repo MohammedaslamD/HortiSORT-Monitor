@@ -1,4 +1,4 @@
-import { apiClient, setAccessToken, clearAccessToken, getAccessToken, setRefreshToken, clearRefreshToken, getRefreshToken } from './apiClient'
+import { apiClient, setAccessToken, clearAccessToken, getAccessToken, setRefreshToken, clearRefreshToken, getRefreshToken, API_BASE } from './apiClient'
 import { MOCK_USERS } from '../data/mockData'
 import type { User } from '../types'
 
@@ -10,6 +10,9 @@ interface LoginResponse {
   refreshToken: string
   user: AuthUser
 }
+
+// sessionStorage key for persisting the user object across page reloads
+const SESSION_USER_KEY = 'hortisort_session_user'
 
 /**
  * Authentication service — communicates with the real API.
@@ -29,6 +32,9 @@ export const authService = {
       const res = await apiClient.post<LoginResponse>('/api/v1/auth/login', { email, password })
       setAccessToken(res.data.accessToken)
       setRefreshToken(res.data.refreshToken)
+      // Persist user to sessionStorage so restoreSession works instantly on remount
+      sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(res.data.user))
+      localStorage.removeItem('hortisort_demo_user')
       return res.data.user
     } catch {
       // Backend unavailable — fall back to mock data for demo/development
@@ -39,7 +45,7 @@ export const authService = {
       const { password_hash: _, ...authUser } = found
       setAccessToken('mock-token-demo')
       setRefreshToken('mock-token-demo')
-      // Also persist to localStorage so the session survives page reloads in demo mode
+      // Persist to localStorage so the session survives page reloads in demo mode
       localStorage.setItem('hortisort_demo_user', JSON.stringify(authUser))
       return authUser
     }
@@ -57,15 +63,52 @@ export const authService = {
       clearAccessToken()
       clearRefreshToken()
       localStorage.removeItem('hortisort_demo_user')
+      sessionStorage.removeItem(SESSION_USER_KEY)
     }
   },
 
   /**
-   * Attempt to restore a session from the httpOnly refresh token cookie.
-   * Falls back gracefully when backend is unavailable.
+   * Attempt to restore a session from sessionStorage (real) or localStorage (demo).
+   * Real-API sessions: user stored in sessionStorage after login — restored instantly.
+   * Demo sessions: user stored in localStorage — restored without API call.
    */
   async restoreSession(): Promise<AuthUser | null> {
     try {
+      // Real session: user cached in sessionStorage after login
+      const sessionUser = sessionStorage.getItem(SESSION_USER_KEY)
+      if (sessionUser) {
+        const authUser = JSON.parse(sessionUser) as AuthUser
+        // Re-acquire a fresh access token using the stored refresh token
+        const storedRefreshToken = getRefreshToken()
+        if (storedRefreshToken && storedRefreshToken !== 'mock-token-demo') {
+          try {
+            const controller = new AbortController()
+            const timer = setTimeout(() => controller.abort(), 3000)
+            const refreshRes = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refreshToken: storedRefreshToken }),
+              signal: controller.signal,
+            })
+            clearTimeout(timer)
+            if (refreshRes.ok) {
+              const refreshBody = (await refreshRes.json()) as { data: { accessToken: string } }
+              setAccessToken(refreshBody.data.accessToken)
+              return authUser
+            }
+          } catch {
+            // refresh failed — clear and fall through
+          }
+          clearRefreshToken()
+          sessionStorage.removeItem(SESSION_USER_KEY)
+          return null
+        }
+        // No refresh token but session user exists (e.g. after hot reload in dev)
+        // Return the cached user — apiClient will get a 401 and handle it
+        return authUser
+      }
+
       // Demo mode: user stored in localStorage — restore instantly, no API call
       const demoUser = localStorage.getItem('hortisort_demo_user')
       if (demoUser) {
@@ -73,29 +116,12 @@ export const authService = {
         setAccessToken('mock-token-demo')
         return authUser
       }
-      const storedRefreshToken = getRefreshToken()
-      if (!storedRefreshToken) return null
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 3000)
-      const refreshRes = await fetch('/api/v1/auth/refresh', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: storedRefreshToken }),
-        signal: controller.signal,
-      })
-      clearTimeout(timer)
-      if (!refreshRes.ok) {
-        clearRefreshToken()
-        return null
-      }
-      const refreshBody = (await refreshRes.json()) as { data: { accessToken: string } }
-      setAccessToken(refreshBody.data.accessToken)
-      const meRes = await apiClient.get<AuthUser>('/api/v1/auth/me')
-      return meRes.data
+
+      return null
     } catch {
       clearAccessToken()
       clearRefreshToken()
+      sessionStorage.removeItem(SESSION_USER_KEY)
       return null
     }
   },

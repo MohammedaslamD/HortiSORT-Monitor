@@ -91,12 +91,13 @@ const VISIT_PURPOSE_VARIANT: Record<VisitPurpose, StatBadgeVariant> = {
 
 /** Format an ISO date string to a readable date. */
 function formatDate(isoString: string): string {
-  const date = new Date(isoString);
+  const date = new Date(isoString)
   return date.toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  });
+    timeZone: 'Asia/Kolkata',
+  })
 }
 
 // =============================================================================

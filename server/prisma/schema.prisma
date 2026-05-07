@@ -8,9 +8,238 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ---------------------------------------------------------------------------
-// Enums
-// ---------------------------------------------------------------------------
+model User {
+  id                Int              @id @default(autoincrement())
+  name              String
+  email             String           @unique
+  phone             String
+  whatsapp_number   String?
+  password_hash     String
+  role              UserRole
+  is_active         Boolean          @default(true)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  activity_logs     ActivityLog[]
+  daily_logs        DailyLog[]
+  machine_history   MachineHistory[]
+  owned_machines    Machine[]        @relation("CustomerMachines")
+  assigned_machines Machine[]        @relation("EngineerMachines")
+  updated_machines  Machine[]        @relation("LastUpdatedByUser")
+  site_visits       SiteVisit[]
+  ticket_comments   TicketComment[]
+  assigned_tickets  Ticket[]         @relation("AssignedToUser")
+  raised_tickets    Ticket[]         @relation("RaisedByUser")
+
+  @@map("users")
+}
+
+model Machine {
+  id                  Int                 @id @default(autoincrement())
+  machine_code        String              @unique
+  machine_name        String
+  model               String
+  serial_number       String              @unique
+  customer_id         Int
+  engineer_id         Int
+  location            String
+  city                String
+  state               String
+  country             String              @default("India")
+  grading_features    String
+  num_lanes           Int
+  software_version    String
+  installation_date   DateTime
+  status              MachineStatus       @default(idle)
+  last_updated        DateTime            @default(now())
+  last_updated_by     Int
+  is_active           Boolean             @default(true)
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  last_heartbeat_at   DateTime?
+  daily_logs          DailyLog[]
+  api_key             MachineApiKey?
+  machine_errors      MachineError[]
+  machine_history     MachineHistory[]
+  customer            User                @relation("CustomerMachines", fields: [customer_id], references: [id])
+  engineer            User                @relation("EngineerMachines", fields: [engineer_id], references: [id])
+  last_updated_user   User                @relation("LastUpdatedByUser", fields: [last_updated_by], references: [id])
+  production_sessions ProductionSession[]
+  site_visits         SiteVisit[]
+  tickets             Ticket[]
+
+  @@index([status])
+  @@index([customer_id])
+  @@index([engineer_id])
+  @@index([city])
+  @@map("machines")
+}
+
+model DailyLog {
+  id              Int            @id @default(autoincrement())
+  machine_id      Int
+  date            DateTime       @db.Date
+  status          DailyLogStatus
+  fruit_type      String
+  tons_processed  Float
+  shift_start     String
+  shift_end       String
+  notes           String
+  updated_by      Int
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  machine         Machine        @relation(fields: [machine_id], references: [id])
+  updated_by_user User           @relation(fields: [updated_by], references: [id])
+
+  @@unique([machine_id, date])
+  @@index([date])
+  @@map("daily_logs")
+}
+
+model Ticket {
+  id                   Int             @id @default(autoincrement())
+  ticket_number        String          @unique
+  machine_id           Int
+  raised_by            Int
+  assigned_to          Int
+  severity             TicketSeverity
+  category             TicketCategory
+  title                String
+  description          String
+  status               TicketStatus    @default(open)
+  sla_hours            Int
+  created_at           DateTime        @default(now())
+  resolved_at          DateTime?
+  resolution_time_mins Int?
+  root_cause           String?
+  solution             String?
+  parts_used           String?
+  reopen_count         Int             @default(0)
+  reopened_at          DateTime?
+  customer_rating      Int?
+  customer_feedback    String?
+  updated_at           DateTime        @updatedAt
+  site_visits          SiteVisit[]
+  comments             TicketComment[]
+  assigned_to_user     User            @relation("AssignedToUser", fields: [assigned_to], references: [id])
+  machine              Machine         @relation(fields: [machine_id], references: [id])
+  raised_by_user       User            @relation("RaisedByUser", fields: [raised_by], references: [id])
+
+  @@index([machine_id])
+  @@index([status])
+  @@index([assigned_to])
+  @@index([raised_by])
+  @@map("tickets")
+}
+
+model TicketComment {
+  id             Int      @id @default(autoincrement())
+  ticket_id      Int
+  user_id        Int
+  message        String
+  attachment_url String?
+  created_at     DateTime @default(now())
+  ticket         Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [user_id], references: [id])
+
+  @@map("ticket_comments")
+}
+
+model SiteVisit {
+  id             Int          @id @default(autoincrement())
+  machine_id     Int
+  engineer_id    Int
+  visit_date     DateTime     @db.Date
+  visit_purpose  VisitPurpose
+  ticket_id      Int?
+  findings       String
+  actions_taken  String
+  parts_replaced String?
+  next_visit_due DateTime?    @db.Date
+  created_at     DateTime     @default(now())
+  engineer       User         @relation(fields: [engineer_id], references: [id])
+  machine        Machine      @relation(fields: [machine_id], references: [id])
+  ticket         Ticket?      @relation(fields: [ticket_id], references: [id])
+
+  @@index([machine_id])
+  @@index([engineer_id])
+  @@map("site_visits")
+}
+
+model MachineHistory {
+  id              Int        @id @default(autoincrement())
+  machine_id      Int
+  change_type     ChangeType
+  old_value       String
+  new_value       String
+  changed_by      Int
+  notes           String?
+  created_at      DateTime   @default(now())
+  changed_by_user User       @relation(fields: [changed_by], references: [id])
+  machine         Machine    @relation(fields: [machine_id], references: [id])
+
+  @@map("machine_history")
+}
+
+model ActivityLog {
+  id          Int        @id @default(autoincrement())
+  user_id     Int
+  action      String
+  entity_type EntityType
+  entity_id   Int
+  details     String
+  created_at  DateTime   @default(now())
+  user        User       @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([entity_type, entity_id])
+  @@map("activity_log")
+}
+
+model ProductionSession {
+  id            Int       @id @default(autoincrement())
+  machine_id    Int
+  lot_number    String    @db.VarChar(50)
+  session_date  DateTime  @db.Date
+  start_time    DateTime  @db.Timestamptz(6)
+  stop_time     DateTime? @db.Timestamptz(6)
+  fruit_type    String?   @db.VarChar(100)
+  quantity_kg   Decimal?  @db.Decimal(10, 2)
+  status        String    @db.VarChar(20)
+  raw_tdms_rows Json?
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+  machine       Machine   @relation(fields: [machine_id], references: [id])
+
+  @@unique([machine_id, session_date, lot_number])
+  @@index([machine_id])
+  @@index([session_date])
+  @@map("production_sessions")
+}
+
+model MachineError {
+  id          Int      @id @default(autoincrement())
+  machine_id  Int
+  occurred_at DateTime @db.Timestamptz(6)
+  error_code  String?  @db.VarChar(100)
+  message     String?
+  raw_line    String?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  machine     Machine  @relation(fields: [machine_id], references: [id])
+
+  @@index([machine_id])
+  @@map("machine_errors")
+}
+
+model MachineApiKey {
+  id         Int      @id @default(autoincrement())
+  machine_id Int      @unique
+  api_key    String   @unique @db.VarChar(128)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  machine    Machine  @relation(fields: [machine_id], references: [id])
+
+  @@map("machine_api_keys")
+}
 
 enum UserRole {
   customer
@@ -72,274 +301,4 @@ enum EntityType {
   machine
   ticket
   user
-}
-
-// ---------------------------------------------------------------------------
-// Models
-// ---------------------------------------------------------------------------
-
-model User {
-  id               Int      @id @default(autoincrement())
-  name             String
-  email            String   @unique
-  phone            String
-  whatsapp_number  String?
-  password_hash    String
-  role             UserRole
-  is_active        Boolean  @default(true)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
-
-  // Relations — machines owned by this customer
-  owned_machines   Machine[] @relation("CustomerMachines")
-  // Relations — machines assigned to this engineer
-  assigned_machines Machine[] @relation("EngineerMachines")
-  // Relations — machines last updated by this user
-  updated_machines Machine[] @relation("LastUpdatedByUser")
-
-  // Relations — daily logs updated by this user
-  daily_logs       DailyLog[]
-
-  // Relations — tickets
-  raised_tickets   Ticket[] @relation("RaisedByUser")
-  assigned_tickets Ticket[] @relation("AssignedToUser")
-
-  // Relations — ticket comments
-  ticket_comments  TicketComment[]
-
-  // Relations — site visits by this engineer
-  site_visits      SiteVisit[]
-
-  // Relations — machine history changes by this user
-  machine_history  MachineHistory[]
-
-  // Relations — activity log entries
-  activity_logs    ActivityLog[]
-
-  @@map("users")
-}
-
-model Machine {
-  id                Int           @id @default(autoincrement())
-  machine_code      String        @unique
-  machine_name      String
-  model             String
-  serial_number     String        @unique
-  customer_id       Int
-  engineer_id       Int
-  location          String
-  city              String
-  state             String
-  country           String        @default("India")
-  grading_features  String
-  num_lanes         Int
-  software_version  String
-  installation_date DateTime
-  status            MachineStatus @default(idle)
-  last_updated      DateTime      @default(now())
-  last_updated_by   Int
-  is_active         Boolean       @default(true)
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
-
-  // Relations
-  customer          User          @relation("CustomerMachines", fields: [customer_id], references: [id])
-  engineer          User          @relation("EngineerMachines", fields: [engineer_id], references: [id])
-  last_updated_user User          @relation("LastUpdatedByUser", fields: [last_updated_by], references: [id])
-
-  daily_logs          DailyLog[]
-  tickets             Ticket[]
-  site_visits         SiteVisit[]
-  machine_history     MachineHistory[]
-  production_sessions ProductionSession[]
-  machine_errors      MachineError[]
-  api_key             MachineApiKey?
-
-  @@index([status])
-  @@index([customer_id])
-  @@index([engineer_id])
-  @@index([city])
-  @@map("machines")
-}
-
-model DailyLog {
-  id              Int            @id @default(autoincrement())
-  machine_id      Int
-  date            DateTime       @db.Date
-  status          DailyLogStatus
-  fruit_type      String
-  tons_processed  Float
-  shift_start     String
-  shift_end       String
-  notes           String
-  updated_by      Int
-  created_at      DateTime       @default(now())
-  updated_at      DateTime       @updatedAt
-
-  // Relations
-  machine         Machine        @relation(fields: [machine_id], references: [id])
-  updated_by_user User           @relation(fields: [updated_by], references: [id])
-
-  @@unique([machine_id, date])
-  @@index([date])
-  @@map("daily_logs")
-}
-
-model Ticket {
-  id                   Int             @id @default(autoincrement())
-  ticket_number        String          @unique
-  machine_id           Int
-  raised_by            Int
-  assigned_to          Int
-  severity             TicketSeverity
-  category             TicketCategory
-  title                String
-  description          String
-  status               TicketStatus    @default(open)
-  sla_hours            Int
-  created_at           DateTime        @default(now())
-  resolved_at          DateTime?
-  resolution_time_mins Int?
-  root_cause           String?
-  solution             String?
-  parts_used           String?
-  reopen_count         Int             @default(0)
-  reopened_at          DateTime?
-  customer_rating      Int?
-  customer_feedback    String?
-  updated_at           DateTime        @updatedAt
-
-  // Relations
-  machine              Machine         @relation(fields: [machine_id], references: [id])
-  raised_by_user       User            @relation("RaisedByUser", fields: [raised_by], references: [id])
-  assigned_to_user     User            @relation("AssignedToUser", fields: [assigned_to], references: [id])
-  comments             TicketComment[]
-  site_visits          SiteVisit[]
-
-  @@index([machine_id])
-  @@index([status])
-  @@index([assigned_to])
-  @@index([raised_by])
-  @@map("tickets")
-}
-
-model TicketComment {
-  id             Int      @id @default(autoincrement())
-  ticket_id      Int
-  user_id        Int
-  message        String
-  attachment_url String?
-  created_at     DateTime @default(now())
-
-  // Relations
-  ticket         Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
-  user           User     @relation(fields: [user_id], references: [id])
-
-  @@map("ticket_comments")
-}
-
-model SiteVisit {
-  id              Int          @id @default(autoincrement())
-  machine_id      Int
-  engineer_id     Int
-  visit_date      DateTime     @db.Date
-  visit_purpose   VisitPurpose
-  ticket_id       Int?
-  findings        String
-  actions_taken   String
-  parts_replaced  String?
-  next_visit_due  DateTime?    @db.Date
-  created_at      DateTime     @default(now())
-
-  // Relations
-  machine         Machine      @relation(fields: [machine_id], references: [id])
-  engineer        User         @relation(fields: [engineer_id], references: [id])
-  ticket          Ticket?      @relation(fields: [ticket_id], references: [id])
-
-  @@index([machine_id])
-  @@index([engineer_id])
-  @@map("site_visits")
-}
-
-model MachineHistory {
-  id          Int        @id @default(autoincrement())
-  machine_id  Int
-  change_type ChangeType
-  old_value   String
-  new_value   String
-  changed_by  Int
-  notes       String?
-  created_at  DateTime   @default(now())
-
-  // Relations
-  machine     Machine    @relation(fields: [machine_id], references: [id])
-  changed_by_user User   @relation(fields: [changed_by], references: [id])
-
-  @@map("machine_history")
-}
-
-model ActivityLog {
-  id          Int        @id @default(autoincrement())
-  user_id     Int
-  action      String
-  entity_type EntityType
-  entity_id   Int
-  details     String
-  created_at  DateTime   @default(now())
-
-  // Relations
-  user        User       @relation(fields: [user_id], references: [id])
-
-  @@index([user_id])
-  @@index([entity_type, entity_id])
-  @@map("activity_log")
-}
-
-model ProductionSession {
-  id           Int       @id @default(autoincrement())
-  machine_id   Int
-  lot_number   Int
-  session_date DateTime  @db.Date
-  start_time   DateTime  @db.Timestamptz
-  stop_time    DateTime? @db.Timestamptz
-  fruit_type   String?   @db.VarChar(100)
-  quantity_kg  Decimal?  @db.Decimal(10, 2)
-  status       String    @db.VarChar(20)
-  raw_tdms_rows Json?
-  created_at   DateTime  @default(now()) @db.Timestamptz
-  updated_at   DateTime  @updatedAt @db.Timestamptz
-
-  machine      Machine   @relation(fields: [machine_id], references: [id])
-
-  @@unique([machine_id, session_date, lot_number])
-  @@index([machine_id])
-  @@index([session_date])
-  @@map("production_sessions")
-}
-
-model MachineError {
-  id          Int      @id @default(autoincrement())
-  machine_id  Int
-  occurred_at DateTime @db.Timestamptz
-  error_code  String?  @db.VarChar(100)
-  message     String?
-  raw_line    String?
-  created_at  DateTime @default(now()) @db.Timestamptz
-
-  machine     Machine  @relation(fields: [machine_id], references: [id])
-
-  @@index([machine_id])
-  @@map("machine_errors")
-}
-
-model MachineApiKey {
-  id         Int      @id @default(autoincrement())
-  machine_id Int      @unique
-  api_key    String   @unique @db.VarChar(128)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now()) @db.Timestamptz
-
-  machine    Machine  @relation(fields: [machine_id], references: [id])
-
-  @@map("machine_api_keys")
 }

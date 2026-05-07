@@ -5,6 +5,7 @@ vi.mock('../apiClient', () => {
   let _token: string | null = null
   let _refreshToken: string | null = null
   return {
+    API_BASE: '',
     apiClient: {
       get: vi.fn(),
       post: vi.fn(),

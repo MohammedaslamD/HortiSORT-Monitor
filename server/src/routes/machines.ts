@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authenticate } from '../middleware/auth.ts'
 import { requireRole } from '../middleware/auth.ts'
+import { machineAuthenticate } from '../middleware/machineAuth.ts'
 import { validate } from '../middleware/validate.ts'
 import { machineQuerySchema, updateMachineStatusSchema } from '../schemas/machines.ts'
 import {
@@ -9,6 +10,11 @@ import {
   getMachineStats,
   updateMachineStatus,
 } from '../services/machineService.ts'
+import { broadcastMachineStatus } from '../socket/productionSocket.ts'
+import { prisma } from '../utils/prisma.ts'
+
+// System user ID used when watcher (machine key) updates status programmatically
+const SYSTEM_USER_ID = 5
 
 export const machinesRouter = Router()
 
@@ -60,7 +66,7 @@ machinesRouter.get('/:id', authenticate, async (req, res, next) => {
   }
 })
 
-// PATCH /machines/:id/status
+// PATCH /machines/:id/status  (JWT — engineer/admin)
 machinesRouter.patch(
   '/:id/status',
   authenticate,
@@ -73,6 +79,36 @@ machinesRouter.patch(
         req.body.status,
         req.user!.userId,
       )
+      res.json({ data: machine })
+    } catch (err) {
+      next(err)
+    }
+  },
+)
+
+// PATCH /machines/:id/heartbeat  (X-Machine-Key — watcher reports online/idle/offline)
+machinesRouter.patch(
+  '/:id/heartbeat',
+  machineAuthenticate,
+  validate(updateMachineStatusSchema),
+  async (req, res, next) => {
+    try {
+      // Only allow the watcher to update its own machine
+      if (req.machine_id !== Number(req.params.id)) {
+        res.status(403).json({ error: 'API key does not match machine id' })
+        return
+      }
+      const machine = await updateMachineStatus(
+        req.machine_id,
+        req.body.status,
+        SYSTEM_USER_ID,
+      )
+      // Stamp last_heartbeat_at so the stale-job knows the watcher is alive
+      await prisma.machine.update({
+        where: { id: req.machine_id },
+        data: { last_heartbeat_at: new Date() },
+      })
+      broadcastMachineStatus(req.machine_id, { machine_id: req.machine_id, status: machine.status })
       res.json({ data: machine })
     } catch (err) {
       next(err)

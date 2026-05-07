@@ -34,5 +34,6 @@ export async function getTodayErrors(machine_id: number, date: string) {
       occurred_at: { gte: start, lte: end },
     },
     orderBy: { occurred_at: 'asc' },
+    take: 100,
   })
 }

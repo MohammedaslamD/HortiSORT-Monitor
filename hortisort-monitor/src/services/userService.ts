@@ -35,7 +35,8 @@ export async function createUser(data: CreateUserPayload): Promise<User> {
     return {
       id: Date.now(), ...data, password_hash: 'hashed_password_123',
       created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      phone: null, whatsapp_number: null,
+      phone: data.phone ?? '', whatsapp_number: data.whatsapp_number ?? null,
+      is_active: true,
     } as User
   }
 }
