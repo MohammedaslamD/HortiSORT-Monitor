@@ -441,7 +441,7 @@ def post_session(config: dict[str, Any], lot: dict[str, Any], status: str = "com
         resp = requests.post(
             url,
             json=payload,
-            headers={"X-Machine-Key": config["api_key"]},
+            headers={"X-Machine-Key": config["api_key"], "ngrok-skip-browser-warning": "1"},
             timeout=10,
         )
         if resp.status_code in (200, 201):
@@ -461,7 +461,7 @@ def post_error(config: dict[str, Any], error: dict[str, Any]) -> bool:
         resp = requests.post(
             url,
             json=error,
-            headers={"X-Machine-Key": config["api_key"]},
+            headers={"X-Machine-Key": config["api_key"], "ngrok-skip-browser-warning": "1"},
             timeout=10,
         )
         if resp.status_code in (200, 201):
@@ -514,7 +514,7 @@ def post_heartbeat(config: dict[str, Any], status: str) -> bool:
         resp = requests.patch(
             url,
             json={"status": status},
-            headers={"X-Machine-Key": config["api_key"]},
+            headers={"X-Machine-Key": config["api_key"], "ngrok-skip-browser-warning": "1"},
             timeout=10,
         )
         if resp.status_code in (200, 201):

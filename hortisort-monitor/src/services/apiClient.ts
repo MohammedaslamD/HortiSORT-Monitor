@@ -17,6 +17,9 @@ export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 
 
 let accessToken: string | null = null
 
+// Single in-flight refresh promise shared across all concurrent 401 retries
+let refreshPromise: Promise<boolean> | null = null
+
 export function setAccessToken(token: string): void {
   accessToken = token
 }
@@ -57,6 +60,8 @@ async function request<T>(
 ): Promise<ApiResponse<T>> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    // Required when backend is served via ngrok free tier — skips the browser warning page
+    'ngrok-skip-browser-warning': '1',
   }
 
   if (accessToken) {
@@ -73,7 +78,11 @@ async function request<T>(
 
   // If unauthorized and this is the first attempt, try to refresh and retry
   if (res.status === 401 && retry) {
-    const refreshed = await tryRefresh()
+    // Deduplicate concurrent refresh attempts — all share the same promise
+    if (!refreshPromise) {
+      refreshPromise = tryRefresh().finally(() => { refreshPromise = null })
+    }
+    const refreshed = await refreshPromise
     if (refreshed) {
       return request<T>(method, path, body, false)
     }
@@ -98,7 +107,9 @@ async function tryRefresh(): Promise<boolean> {
     const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
-      headers: storedRefreshToken ? { 'Content-Type': 'application/json' } : {},
+      headers: storedRefreshToken
+        ? { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' }
+        : { 'ngrok-skip-browser-warning': '1' },
       body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined,
     })
     if (!res.ok) return false

@@ -1,7 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { errorHandler } from './middleware/errorHandler.ts'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+// Resolved path works for both ts-node (src/) and compiled (dist/src/) layouts
+const FRONTEND_DIST = join(__dirname, '../../hortisort-monitor/dist')
 import { authRouter } from './routes/auth.ts'
 import { machinesRouter } from './routes/machines.ts'
 import { dailyLogsRouter } from './routes/dailyLogs.ts'
@@ -45,3 +51,12 @@ app.use('/api/v1/machine-errors', machineErrorsRouter)
 // Error handler (must be last)
 // -------------------------------------------------------------------------
 app.use(errorHandler)
+
+// -------------------------------------------------------------------------
+// Serve frontend static files (SPA fallback)
+// API routes above take priority; everything else returns index.html
+// -------------------------------------------------------------------------
+app.use(express.static(FRONTEND_DIST))
+app.get('*', (_req, res) => {
+  res.sendFile(join(FRONTEND_DIST, 'index.html'))
+})
