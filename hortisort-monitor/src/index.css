@@ -2,37 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-/* Toast slide-in animation */
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: rgb(var(--bg));
+    color: rgb(var(--fg-2));
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  :root {
+    --bg: 248 250 252;
+    --bg-surface1: 255 255 255;
+    --bg-surface2: 255 255 255;
+    --bg-surface3: 241 245 249;
+    --line: 229 231 235;
+    --line-strong: 209 213 219;
+    --fg-1: 15 23 42;
+    --fg-2: 30 41 59;
+    --fg-3: 71 85 105;
+    --fg-4: 100 116 139;
+    --fg-5: 148 163 184;
+    --fg-6: 203 213 225;
+  }
+
+  .dark {
+    --bg: 6 10 24;
+    --bg-surface1: 10 16 32;
+    --bg-surface2: 13 20 36;
+    --bg-surface3: 15 23 40;
+    --line: 26 37 64;
+    --line-strong: 30 45 74;
+    --fg-1: 241 245 249;
+    --fg-2: 226 232 240;
+    --fg-3: 148 163 184;
+    --fg-4: 100 116 139;
+    --fg-5: 74 85 104;
+    --fg-6: 59 72 102;
   }
 }
 
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
+@layer utilities {
+  .stat-gradient {
+    background: linear-gradient(135deg, rgb(var(--bg-surface2)), rgb(var(--bg-surface1)));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse-dot { animation: none !important; }
+    .animate-slide-in  { animation: none !important; }
+  }
 }

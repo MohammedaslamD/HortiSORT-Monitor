@@ -1,3 +1,6 @@
 export { AdminStatsCards } from './AdminStatsCards'
 export { ActivityFeed } from './ActivityFeed'
 export { UserTable } from './UserTable'
+export { CreateUserModal } from './CreateUserModal'
+export { EditUserModal } from './EditUserModal'
+export { DeleteUserModal } from './DeleteUserModal'

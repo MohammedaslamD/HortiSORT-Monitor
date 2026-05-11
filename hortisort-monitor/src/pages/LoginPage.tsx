@@ -29,22 +29,35 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-800 px-4">
       <div className="w-full max-w-sm">
         {/* Logo / Branding */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-600">HortiSort</h1>
-          <p className="text-gray-500 mt-1">Machine Monitoring Portal</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 mt-1">Machine Monitoring Portal</p>
         </div>
 
+        {/* Dev-only: clear session storage without touching other sites */}
+        {import.meta.env.DEV && (
+          <div className="mb-3 text-center">
+            <button
+              type="button"
+              onClick={() => { localStorage.clear(); sessionStorage.clear(); window.location.reload() }}
+              className="text-[11px] text-gray-400 hover:text-red-400 underline underline-offset-2 transition-colors"
+            >
+              Clear session &amp; reload
+            </button>
+          </div>
+        )}
+
         {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Sign In</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Sign In</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email
               </label>
               <input
@@ -53,7 +66,7 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
                 placeholder="you@example.com"
                 autoComplete="email"
               />
@@ -61,7 +74,7 @@ export function LoginPage() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Password
               </label>
               <input
@@ -70,7 +83,7 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="block w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500"
                 placeholder="Enter your password"
                 autoComplete="current-password"
               />

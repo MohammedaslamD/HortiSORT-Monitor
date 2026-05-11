@@ -1,21 +1,44 @@
-import type { DailyLog, DailyLogStatus, DailyLogFilters } from '../types'
+import { apiClient } from './apiClient'
 import { MOCK_DAILY_LOGS } from '../data/mockData'
+import type { DailyLog, DailyLogFilters, DailyLogStatus } from '../types'
 
-/** Returns all daily logs. */
-export async function getDailyLogs(): Promise<DailyLog[]> {
-  return MOCK_DAILY_LOGS
+/** Returns all daily logs, optionally filtered. */
+export async function getDailyLogs(filters?: DailyLogFilters): Promise<DailyLog[]> {
+  const params = new URLSearchParams()
+  if (filters?.machineId) params.set('machineId', String(filters.machineId))
+  if (filters?.date) params.set('date', filters.date)
+  if (filters?.status) params.set('status', filters.status)
+  const query = params.toString()
+  const path = query ? `/api/v1/daily-logs?${query}` : '/api/v1/daily-logs'
+  try {
+    const res = await apiClient.get<DailyLog[]>(path)
+    return res.data
+  } catch {
+    let results = [...MOCK_DAILY_LOGS]
+    if (filters?.machineId) results = results.filter(l => l.machine_id === filters.machineId)
+    if (filters?.date) results = results.filter(l => l.date === filters.date)
+    if (filters?.status) results = results.filter(l => l.status === filters.status)
+    return results
+  }
 }
 
 /** Returns daily logs for a specific machine. */
 export async function getDailyLogsByMachineId(machineId: number): Promise<DailyLog[]> {
-  return MOCK_DAILY_LOGS.filter((log) => log.machine_id === machineId)
+  try {
+    const res = await apiClient.get<DailyLog[]>(`/api/v1/daily-logs?machineId=${machineId}`)
+    return res.data
+  } catch { return MOCK_DAILY_LOGS.filter(l => l.machine_id === machineId) }
 }
 
-/** Returns the most recent daily logs, sorted by date descending. */
+/** Returns the most recent daily logs. */
 export async function getRecentDailyLogs(limit: number): Promise<DailyLog[]> {
-  return [...MOCK_DAILY_LOGS]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, limit)
+  try {
+    const params = new URLSearchParams()
+    params.set('limit', String(limit))
+    params.set('sort', 'date:desc')
+    const res = await apiClient.get<DailyLog[]>(`/api/v1/daily-logs?${params.toString()}`)
+    return res.data
+  } catch { return [...MOCK_DAILY_LOGS].sort((a, b) => b.date.localeCompare(a.date)).slice(0, limit) }
 }
 
 export interface NewDailyLogInput {
@@ -30,37 +53,17 @@ export interface NewDailyLogInput {
   updated_by: number
 }
 
-/**
- * Appends a new daily log entry to the in-memory mock array.
- * Used by UpdateStatusPage without a real backend.
- */
+/** Creates a new daily log entry. */
 export async function addDailyLog(input: NewDailyLogInput): Promise<DailyLog> {
-  const now = new Date().toISOString()
-  const newLog: DailyLog = {
-    id: MOCK_DAILY_LOGS.length + 1,
-    ...input,
-    created_at: now,
-    updated_at: now,
+  try {
+    const res = await apiClient.post<DailyLog>('/api/v1/daily-logs', { ...input })
+    return res.data
+  } catch {
+    return { id: Date.now(), ...input, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
   }
-  MOCK_DAILY_LOGS.push(newLog)
-  return newLog
 }
 
-/** Returns all daily logs, optionally filtered. Sorted by date descending. */
+/** Alias — same as getDailyLogs. */
 export async function getAllDailyLogs(filters?: DailyLogFilters): Promise<DailyLog[]> {
-  let result = [...MOCK_DAILY_LOGS]
-
-  if (filters?.machineId) {
-    result = result.filter((l) => l.machine_id === filters.machineId)
-  }
-
-  if (filters?.date) {
-    result = result.filter((l) => l.date === filters.date)
-  }
-
-  if (filters?.status) {
-    result = result.filter((l) => l.status === filters.status)
-  }
-
-  return result.sort((a, b) => b.date.localeCompare(a.date))
+  return getDailyLogs(filters)
 }

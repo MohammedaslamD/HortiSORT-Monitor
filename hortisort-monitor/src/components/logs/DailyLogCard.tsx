@@ -54,12 +54,12 @@ export function DailyLogCard({
   recordedByName,
 }: DailyLogCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
       {/* Top row: date, machine code, status badge */}
       <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900">{formatDate(log.date)}</span>
-          <span className="text-xs font-mono text-gray-400">{machineCode}</span>
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatDate(log.date)}</span>
+          <span className="text-xs font-mono text-gray-400 dark:text-gray-500">{machineCode}</span>
         </div>
         <Badge color={getLogStatusColor(log.status)} size="sm">
           {STATUS_LABEL[log.status]}
@@ -67,10 +67,10 @@ export function DailyLogCard({
       </div>
 
       {/* Machine name */}
-      <p className="text-sm font-semibold text-gray-900 mb-2">{machineName}</p>
+      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{machineName}</p>
 
       {/* Info: fruit type, tons, shift */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 mb-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400 dark:text-gray-500 mb-2">
         {log.fruit_type && <span>Fruit: {log.fruit_type}</span>}
         {log.tons_processed > 0 && <span>{log.tons_processed} t</span>}
         <span>{log.shift_start} – {log.shift_end}</span>
@@ -78,11 +78,11 @@ export function DailyLogCard({
 
       {/* Notes (truncated) */}
       {log.notes && (
-        <p className="text-xs text-gray-500 mb-2">{truncate(log.notes, 80)}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">{truncate(log.notes, 80)}</p>
       )}
 
       {/* Footer: recorded by */}
-      <p className="text-xs text-gray-400">Recorded by: {recordedByName}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500">Recorded by: {recordedByName}</p>
     </div>
   )
 }

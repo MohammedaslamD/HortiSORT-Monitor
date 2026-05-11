@@ -3,6 +3,8 @@ import type { MachineStats } from '../../types';
 interface StatsCardsProps {
   stats: MachineStats;
   openTicketCount: number;
+  /** Number of machines currently in active TDMS production (running lots). */
+  inProductionCount?: number;
 }
 
 interface StatCardItem {
@@ -15,7 +17,7 @@ interface StatCardItem {
  * Dashboard overview row showing machine status counts and open ticket count.
  * Responsive grid: 2 columns on mobile, 3 on tablet, 6 on desktop.
  */
-export function StatsCards({ stats, openTicketCount }: StatsCardsProps) {
+export function StatsCards({ stats, openTicketCount, inProductionCount }: StatsCardsProps) {
   const cards: StatCardItem[] = [
     { label: 'Total Machines', value: stats.total, dotColor: 'bg-blue-600' },
     { label: 'Running', value: stats.running, dotColor: 'bg-green-600' },
@@ -23,6 +25,9 @@ export function StatsCards({ stats, openTicketCount }: StatsCardsProps) {
     { label: 'Down', value: stats.down, dotColor: 'bg-red-600' },
     { label: 'Offline', value: stats.offline, dotColor: 'bg-gray-500' },
     { label: 'Open Tickets', value: openTicketCount, dotColor: 'bg-purple-600' },
+    ...(inProductionCount !== undefined
+      ? [{ label: 'In Production Now', value: inProductionCount, dotColor: 'bg-emerald-500' }]
+      : []),
   ];
 
   return (
@@ -30,16 +35,16 @@ export function StatsCards({ stats, openTicketCount }: StatsCardsProps) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4"
         >
           <div className="flex items-center gap-2 mb-2">
             <span
               className={`w-3 h-3 rounded-full ${card.dotColor}`}
               aria-hidden="true"
             />
-            <span className="text-sm text-gray-500">{card.label}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{card.label}</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{card.value}</p>
         </div>
       ))}
     </div>

@@ -1,220 +1,173 @@
-# task.md — Task Progress Log
+# TASK.md — HortiSort Monitor Session Log
 
-## Phase 1: Frontend Foundation
-
-### Status: COMPLETE
-
-All Phase 1 tasks are done. The app has:
-- Full auth flow (login/logout with mock data)
-- Role-based routing (customer, engineer, admin)
-- Responsive layout (sidebar + bottom nav)
-- 8 reusable UI components
-- 32 passing tests across 4 test suites
-- Clean TypeScript compilation
-- Production build passing
+## Session: Chunk 3 + Chunk 4 + Test Fixes
 
 ---
 
-## Phase 2: Dashboard + Machine Management
+## Chunk 3 — Connect Remaining Pages to Real API
 
-### Status: COMPLETE
+### MachinesPage (`src/pages/MachinesPage.tsx`)
+- Removed all `liveMetricsService` (100% mock) usage
+- Now fetches `GET /api/v1/machines/stats` + `GET /api/v1/machines` via `apiClient`
+- Shows real machine name, city, state, model, software version, last updated
+- Auto-refreshes every 30 s
+- Navigate buttons route to `/machines/:id/update-status` and `/tickets/new?machine=:id`
 
-All Phase 2 tasks are done. The app now has:
-- Full service layer: 6 services (machine, ticket, dailyLog, siteVisit, machineHistory, auth) with 47 passing tests
-- Dashboard page with stats cards, search/filter bar, and responsive machine card grid
-- Machine detail page with info header, today's production, 4 tabbed sections, and role-based actions
-- Update status form with radio buttons, dropdown, time inputs, validation, and mock submit
-- Role-based data filtering (customer sees own, engineer sees assigned, admin sees all)
-- Role-based route guards (update-status restricted to engineer + admin)
-- Clean TypeScript compilation (zero errors)
-- All 47 service tests passing
+### liveTicketsService (`src/services/liveTicketsService.ts`)
+- Fully rewritten from 100% mock to real API
+- Fetches `GET /api/v1/tickets/stats`, `GET /api/v1/tickets?limit=200`, `GET /api/v1/machines`, `GET /api/v1/users`
+- Resolves `machine_code` from embedded `ticket.machine` or fallback machine list
+- Resolves `assigned_to_name` from users API
 
-### Completed Tasks
+### DailyLogsPage (`src/pages/DailyLogsPage.tsx`)
+- Was already using real API for logs + machines
+- Fixed: `getUserName()` was reading from `MOCK_USERS`
+- Now fetches `GET /api/v1/users` alongside logs/machines and builds local `userNameMap`
 
-#### 2a. AGENTS.md rewrite
-- Rewrote AGENTS.md from 222 to 173 lines
-- Added project identity, exact versions, full src/ structure
-- Added observed code patterns, TypeScript/Vitest/ESLint config details
-
-#### 2b. Service layer (complete)
-- `machineService.ts` — `getMachines(filters)`, `getMachineById(id)`, `getMachineStats(machines)`, `getMachinesByRole(role, userId)` with status/model/city/search filters (15 tests)
-- `ticketService.ts` — `getTickets()`, `getTicketsByMachineId(id)`, `getOpenTicketCount()`, `getRecentTickets(limit)` (6 tests)
-- `dailyLogService.ts` — `getDailyLogs()`, `getDailyLogsByMachineId(id)`, `getRecentDailyLogs(limit)` (5 tests)
-- `siteVisitService.ts` — `getSiteVisitsByMachineId(id)` (4 tests)
-- `machineHistoryService.ts` — `getHistoryByMachineId(id)` (4 tests)
-- `authService.ts` — login/logout/getCurrentUser/isAuthenticated (13 tests)
-
-#### 2c. Utility layer
-- `formatters.ts` — `formatRelativeTime()`, `getStatusBadgeColor()`, `getSeverityBadgeColor()`
-- `userLookup.ts` — `getUserById()`, `getUserName()`
-
-#### 2d. Dashboard components
-- `StatsCards.tsx` — 6 stat cards (Total, Running, Idle, Down, Offline, Open Tickets) in responsive grid
-- `MachineCard.tsx` — Machine summary card with status badge, today's log, ticket count, role-based action buttons
-
-#### 2e. DashboardPage (full implementation)
-- StatsCards row + search bar + status filter dropdown + MachineCard grid
-- Fetches machines via `getMachinesByRole`, tickets, daily logs
-- Client-side search (machine code, name, city, state) and status filtering
-- Loading, error, and empty states
-
-#### 2f. MachineDetailPage (full implementation)
-- Machine info header: code, name, model, serial, status badge, customer/engineer names, location, installation date, last updated
-- Today's Production section with daily log data or empty state
-- 4 tabbed sections: Production History (table), Tickets (cards with severity/status badges), Site Visits (cards), Machine History (timeline)
-- Role-based "Update Status" button for engineer/admin
-- Invalid machine ID error state with "Back to Dashboard" link
-- Loading spinner
-
-#### 2g. UpdateStatusPage (full implementation)
-- Form with DailyLogStatus radio buttons, fruit type dropdown (12 options), tons processed, shift start/end time inputs, notes textarea
-- Machine info header with current status badge
-- Full validation: required fields, tons >= 0, shift end > start
-- Mock submit with loading state, success toast, redirect to machine detail
-- Cancel button, error state for invalid machine ID
-
-#### 2h. Route updates
-- `/machines/:id` — any authenticated user
-- `/machines/:id/update-status` — engineer + admin only (role guard)
+### SiteVisitsPage (`src/pages/SiteVisitsPage.tsx`)
+- Same fix as DailyLogsPage — `getUserName()` now uses real users from API
 
 ---
 
-## Phase 3: Tickets, Daily Logs & Site Visits
+## Chunk 4 — Multi-Machine Support + watcher.exe
 
-### Status: COMPLETE
+### Config Generator (`machine-watcher/generate_configs.py`)
+- Run once on deployment machine to produce `configs/config_machine_NN_HS-XXXX-XXXX.json`
+- Edit `BACKEND_URL` and `DATA_DIR` before running
 
-| Date       | Task                                      | Status      |
-|------------|-------------------------------------------|-------------|
-| 2026-03-15 | Phase 3 design spec                       | done        |
-| 2026-03-15 | Phase 3 new types                         | done        |
-| 2026-03-15 | Extend ticketService (10 functions)       | done        |
-| 2026-03-15 | Extend dailyLogService (getAllDailyLogs)  | done        |
-| 2026-03-15 | Extend siteVisitService (2 functions)     | done        |
-| 2026-03-15 | TicketCard component                      | done        |
-| 2026-03-15 | TicketsPage                               | done        |
-| 2026-03-15 | TicketDetailPage                          | done        |
-| 2026-03-15 | RaiseTicketPage                           | done        |
-| 2026-03-15 | DailyLogCard component                    | done        |
-| 2026-03-15 | DailyLogsPage                             | done        |
-| 2026-03-15 | SiteVisitCard component                   | done        |
-| 2026-03-15 | SiteVisitsPage                            | done        |
-| 2026-03-15 | LogVisitPage                              | done        |
-| 2026-03-15 | Phase 3 complete                          | done        |
+### Per-Machine Configs (`machine-watcher/configs/`)
+- 12 config files generated, one per machine
+- Each pre-filled with `api_key` and `machine_id` matching the DB
+
+### watcher.exe (`machine-watcher/dist/watcher.exe`)
+- Built with PyInstaller 6.20.0, onedir layout, no Python install required
+- Identical binary for all 12 machines — only `config.json` differs
+
+### Deployment Packages (`machine-watcher/deploy/machine-001/`)
+- `launcher/launcher.exe` — double-click to start everything
+- `watcher/watcher.exe` — reads `../config.json`, writes `../watcher.log`, `../watcher_state.json`
+- `serve/serve.exe` — self-contained, `dist/` bundled inside `_internal/`
+- `config.json` — `data_dir`, `tdms_subfolder`, `api_key`, `machine_id`, `backend_url`
 
 ---
 
-## Phase 4: MachinesPage + AdminPage
+## Test Fixes — 435/435 Passing
 
-### Status: COMPLETE
-
-| Date       | Task                                      | Status      |
-|------------|-------------------------------------------|-------------|
-| 2026-03-15 | Phase 4 design spec                       | done        |
-| 2026-03-15 | Phase 4 implementation plan               | done        |
-| 2026-03-15 | userService (3 functions + tests)         | done        |
-| 2026-03-15 | activityLogService (1 function + tests)   | done        |
-| 2026-03-15 | MachinesPage (filters + MachineCard grid) | done        |
-| 2026-03-15 | Admin components (3 components + barrel) | done        |
-| 2026-03-15 | AdminPage (stats + activity + users)      | done        |
-| 2026-03-15 | Phase 4 complete                          | done        |
+| Test file | What changed |
+|---|---|
+| `liveTicketsService.test.ts` | Rewritten: mocks `apiClient`, tests real API behaviour |
+| `MachinesPage.test.tsx` | Rewritten: mocks `apiClient` directly, removed `liveMetricsService` mock |
+| `DashboardPage.test.tsx` | Rewritten: mocks `apiClient` with correct call order for real DashboardPage |
+| `ProductionPage.test.tsx` | Rewritten: mocks `apiClient` + `useProductionSocket`, tests real page shape |
+| `dark-mode.test.tsx` | Replaced `liveMetricsService` mock with `apiClient` mock; updated probes |
+| `authService.test.ts` | `restoreSession` tests now seed `sessionStorage` before calling |
+| `dailyLogService.test.ts` | Added `updated_by` to expected POST body (service sends full input) |
+| `vite.config.ts` | Added `exclude: ['e2e/**']` so Playwright specs are not run by Vitest |
 
 ---
 
-## Phase 5: Backend & Database
-
-### Status: PLANNED — ready for execution
-
-| Date       | Task                                      | Status      |
-|------------|-------------------------------------------|-------------|
-| 2026-03-15 | Phase 5 design spec                       | done        |
-| 2026-03-15 | Phase 5 implementation plan (41 tasks)    | done        |
-
-**Plan:** `docs/superpowers/plans/2026-03-15-phase5-backend-database-plan.md`
-**Spec:** `docs/superpowers/specs/2026-03-15-phase5-backend-database-design.md`
-
-### What Phase 5 builds
-
-Replaces all in-memory mock data with a real Express.js + Prisma + PostgreSQL backend.
-
-| Chunk | Tasks | Scope |
-|-------|-------|-------|
-| 1 | 1–17  | Docker, server scaffold, Prisma schema + seed, JWT, Express app + middleware, auth routes + tests, frontend apiClient + Vite proxy + authService/AuthContext/route guards |
-| 2 | 18–27 | Machines + daily logs — server services, routes, tests, frontend service swaps |
-| 3 | 28–33 | Tickets + comments — server services, routes (tickets.ts + ticketComments.ts), tests, frontend service swap |
-| 4 | 34–41 | Site visits, machine history, activity log, users — server services, routes, tests, frontend service swaps + E2E verification |
+## Session: Live Machine Status + Running/Completed Sessions
 
 ---
 
-### File Structure Summary
+## Heartbeat Fix — `last_heartbeat_at` Column
 
+### Problem
+- Stale heartbeat job was checking `last_updated` (changes on any DB write) instead of a
+  dedicated heartbeat timestamp — machines never went offline even when watcher crashed
+- Job also checked `last_heartbeat_at IS NULL` which wrongly marked all seeded machines
+  `offline` on every backend restart before any watcher connected
+
+### Fix
+- Added `last_heartbeat_at DateTime?` column to `machines` table via raw SQL + `prisma db pull`
+- Heartbeat route (`PATCH /machines/:id/heartbeat`) now stamps `last_heartbeat_at` on every ping
+- Watcher now sends heartbeat **every poll cycle** (not just on status change) so server can
+  detect network loss accurately
+- Stale job now only marks machines `offline` if `last_heartbeat_at IS NOT NULL AND < cutoff` —
+  machines that never had a watcher keep their seeded/manual status
+
+---
+
+## Two-Phase Lot Posting — Running → Completed
+
+### Problem
+- Watcher always posted lots as `status="completed"` — Running tab in ProductionPage was always empty
+- No live visibility into which machines were actively sorting
+
+### Fix — Watcher (`machine-watcher/watcher.py`)
+- `watcher_state.json` now tracks two separate lists:
+  - `running_lots` — posted as `"running"` on first sight; awaiting `lot_stop`
+  - `completed_lots` — re-posted as `"completed"` once `lot_stop` appears; never re-posted again
+- Migrates old `posted_lots` key → `completed_lots` automatically on first run
+- `post_session()` now accepts a `status` parameter (`"running"` or `"completed"`)
+
+### Fix — Backend (`server/src/index.ts`)
+- Added 10-minute session staleness job (runs every 60s):
+  - Finds `production_sessions` with `status = "running"` and `updated_at < now - 10min`
+  - Marks them `"completed"` and broadcasts `session:update` socket event
+  - Safety net for lots where watcher never sees a clean `lot_stop`
+
+### End-to-End Flow
 ```
-hortisort-monitor/src/
-├── App.tsx                          -- Wired with AuthProvider + Router + PageLayout
-├── main.tsx                         -- Entry point
-├── index.css                        -- Tailwind + slide-in animation
-├── types/index.ts                   -- 8 table interfaces + 5 Phase 3 interfaces + 9 union types + MachineFilters + MachineStats
-├── data/mockData.ts                 -- 12 machines, 6 users, 15 logs, 10 tickets, 15 comments, 6 visits, 10 history, 10 activity
-├── utils/
-│   ├── formatters.ts                -- formatRelativeTime, getStatusBadgeColor, getSeverityBadgeColor
-│   └── userLookup.ts                -- getUserById, getUserName
-├── services/
-│   ├── authService.ts               -- login/logout/getCurrentUser/isAuthenticated
-│   ├── machineService.ts            -- getMachines, getMachineById, getMachineStats, getMachinesByRole
-│   ├── dailyLogService.ts           -- getDailyLogs, byMachineId, getRecent, getAllDailyLogs, addDailyLog
-│   ├── ticketService.ts             -- 14 functions (CRUD, queries, status updates, comments)
-│   ├── siteVisitService.ts          -- getSiteVisitsByMachineId, getAllSiteVisits, logSiteVisit
-│   ├── machineHistoryService.ts     -- getHistoryByMachineId
-│   └── __tests__/
-│       ├── authService.test.ts      -- 13 tests
-│       ├── machineService.test.ts   -- 15 tests
-│       ├── dailyLogService.test.ts  -- 5+ tests
-│       ├── ticketService.test.ts    -- 6+ tests
-│       ├── siteVisitService.test.ts -- 4+ tests
-│       └── machineHistoryService.test.ts -- 4 tests
-├── context/
-│   ├── AuthContext.tsx               -- AuthProvider + useAuth
-│   └── __tests__/AuthContext.test.tsx -- 6 tests
-├── components/
-│   ├── common/
-│   │   ├── index.ts                 -- Barrel export (8 components)
-│   │   ├── Button.tsx, Badge.tsx, Card.tsx, Input.tsx, Select.tsx, TextArea.tsx, Modal.tsx, Toast.tsx
-│   │   └── __tests__/              -- Component tests
-│   ├── dashboard/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── StatsCards.tsx           -- 6 stat cards in responsive grid
-│   ├── machines/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── MachineCard.tsx          -- Machine summary card with role-based actions
-│   ├── tickets/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── TicketCard.tsx           -- Ticket summary card (Phase 3)
-│   ├── logs/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── DailyLogCard.tsx         -- Daily log card (Phase 3)
-│   ├── visits/
-│   │   ├── index.ts                 -- Barrel export
-│   │   └── SiteVisitCard.tsx        -- Site visit card (Phase 3)
-│   └── layout/
-│       ├── index.ts, Navbar.tsx, Sidebar.tsx, BottomNav.tsx, PageLayout.tsx
-├── pages/
-│   ├── LoginPage.tsx                -- Complete auth form
-│   ├── DashboardPage.tsx            -- Stats + filters + machine grid (Phase 2)
-│   ├── MachineDetailPage.tsx        -- Full detail with tabs (Phase 2)
-│   ├── UpdateStatusPage.tsx         -- Daily log form (Phase 2)
-│   ├── MachinesPage.tsx             -- Full machine list with 4 filters (Phase 4)
-│   ├── TicketsPage.tsx              -- Ticket list with filters + role scoping (Phase 3)
-│   ├── TicketDetailPage.tsx         -- Ticket detail + comments + status actions (Phase 3)
-│   ├── RaiseTicketPage.tsx          -- Raise ticket form (Phase 3)
-│   ├── DailyLogsPage.tsx            -- Daily log list with filters + role scoping (Phase 3)
-│   ├── SiteVisitsPage.tsx           -- Site visit list with filters + role scoping (Phase 3)
-│   ├── LogVisitPage.tsx             -- Log site visit form (Phase 3)
-│   ├── AdminPage.tsx                -- Admin dashboard: stats + activity + user management (Phase 4)
-│   └── __tests__/LoginPage.test.tsx -- 7 tests
-├── routes/
-│   ├── AppRoutes.tsx                -- All routes including /visits/new, /tickets/new, /tickets/:id
-│   ├── ProtectedRoute.tsx           -- Role-based route guard
-│   └── __tests__/ProtectedRoute.test.tsx -- 6 tests
-└── test/
-    ├── setup.ts
-    └── utils.tsx
+Watcher sees new lot → POST status="running" → frontend Running tab
+Watcher sees lot_stop → POST status="completed" → frontend Completed tab
+If no update for 10 min → server job marks completed → socket broadcast
+New lot starts → back to "running" immediately
 ```
+
+---
+
+## Dashboard Live Socket Status
+
+### Problem
+- Dashboard only polled every 30s — machine status tiles didn't update live when
+  watcher sent a heartbeat
+
+### Fix (`hortisort-monitor/src/pages/DashboardPage.tsx`)
+- Added `useProductionSocket({ allMachines: true })` hook
+- `lastStatusUpdate` socket events instantly update both `machineStatuses` state
+  and the `machines` array — tiles reflect status change within milliseconds
+
+---
+
+## ProductionPage Fixes
+
+### Last Stop + Elapsed Time
+- `stopTime` now uses `stop_time` of the **latest lot** (by `start_time`) specifically
+- `elapsedTime` now parsed from TDMS `elapsed_time` string (`"3 Hrs 55 Min 27.338 Sec"`)
+  instead of computing from timestamps — gives sub-minute precision even when TDMS
+  only records minute-precision for `lot_start`/`lot_stop`
+- Added `parseTdmsElapsed()` helper; falls back to ISO timestamp diff if string absent
+
+---
+
+## Build Status
+- `npm run build` — clean
+- Backend: pm2 `hortisort-backend` stable, port 4000
+- `watcher.exe` + `serve.exe` rebuilt in `deploy/machine-001/`
+
+---
+
+## Pending Tasks
+
+| # | Task | Notes |
+|---|---|---|
+| 1 | **Deploy to machine PC** | Replace `watcher/` + `serve/` folders, restart `watcher.exe` |
+| 2 | **Cloudflare Tunnel** | Cross-network access — currently same WiFi only |
+| 3 | **"Tons processed" column** | Need to identify TDMS channel name for weight data |
+| 4 | **Merge dark theme branch** | `feature/dark-theme-phase-b-chunk4` → `main` |
+
+---
+
+## Current Deploy Setup
+- Server laptop WiFi IP: `192.168.1.117`
+- Backend URL in deploy packages: `http://192.168.1.117:4000`
+- Switch to Cloudflare Tunnel URL when cross-network deployment is needed
+
+## Cloudflare Tunnel Setup (when needed)
+1. Install: `winget install Cloudflare.cloudflared`
+2. Authenticate: `cloudflared tunnel login`
+3. Start: `cloudflared tunnel --url http://localhost:4000 run hortisort`
+4. Get permanent public URL e.g. `https://hortisort.abc123.cfargotunnel.com`
+5. Update `backend_url` in all deploy `config.json` files
+6. Rebuild `launcher.exe` + `serve.exe` and redeploy

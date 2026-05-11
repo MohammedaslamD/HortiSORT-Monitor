@@ -1,75 +1,73 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import type { SiteVisit, Machine, VisitPurpose } from '../types'
+import type { SiteVisit, Machine, User, VisitPurpose } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getAllSiteVisits } from '../services/siteVisitService'
 import { getMachinesByRole } from '../services/machineService'
-import { getUserName } from '../utils/userLookup'
-import { SiteVisitCard } from '../components/visits'
-import { Button, Select } from '../components/common'
-import { MOCK_USERS } from '../data/mockData'
+import { getUsers } from '../services/userService'
+import { computeSiteVisitStats } from '../utils/siteVisitStats'
+import {
+  StatCard,
+  SectionCard,
+  StatBadge,
+  VisitCard,
+  type StatBadgeVariant,
+} from '../components/dark'
 
-// -----------------------------------------------------------------------------
-// Filter options
-// -----------------------------------------------------------------------------
+const PURPOSE_BADGE: Record<VisitPurpose, { variant: StatBadgeVariant; label: string }> = {
+  routine:      { variant: 'routine',   label: 'Routine' },
+  ticket:       { variant: 'emergency', label: 'Emergency' },
+  installation: { variant: 'install',   label: 'Installation' },
+  training:     { variant: 'engineer',  label: 'Training' },
+}
 
-const PURPOSE_OPTIONS = [
-  { value: '', label: 'All Purposes' },
-  { value: 'routine', label: 'Routine' },
-  { value: 'ticket', label: 'Ticket' },
-  { value: 'installation', label: 'Installation' },
-  { value: 'training', label: 'Training' },
-]
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function formatVisitDate(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+}
 
 /**
- * Site visits page with role-scoped data and machine/purpose/engineer filters.
+ * Phase B Site Visits page — 4 derived stat cards + dense `VisitCard`
+ * list per `dark-ui-v2.html` lines 636-703. Filters from the legacy
+ * page are dropped per spec §7 row 6.
  *
- * - admin: sees all visits, gets an engineer filter dropdown
- * - engineer: sees own visits only
- *
- * "Log Visit" button links to /visits/new.
+ * Role scoping is preserved verbatim from the prior implementation:
+ * - admin sees all visits
+ * - engineer sees only their own visits (engineerId filter)
+ * - customer is gated out by routing (page is admin/engineer only)
  */
 export function SiteVisitsPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // Data state
   const [allVisits, setAllVisits] = useState<SiteVisit[]>([])
-  const [machines, setMachines] = useState<Machine[]>([])
+  const [machines,  setMachines]  = useState<Machine[]>([])
+  const [users,     setUsers]     = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filter state
-  const [machineFilter, setMachineFilter] = useState('')
-  const [purposeFilter, setPurposeFilter] = useState<VisitPurpose | ''>('')
-  const [engineerFilter, setEngineerFilter] = useState('')
-
-  // Fetch data on mount, scoped by role
   useEffect(() => {
     if (!user) return
-
     let cancelled = false
 
     async function fetchData() {
       setIsLoading(true)
       setError(null)
-
       try {
-        /* Engineer sees own visits; admin sees all */
-        const filters = user!.role === 'engineer'
-          ? { engineerId: user!.id }
-          : undefined
-
-        const [fetchedVisits, fetchedMachines] = await Promise.all([
+        const filters = user!.role === 'engineer' ? { engineerId: user!.id } : undefined
+        const [fetchedVisits, fetchedMachines, fetchedUsers] = await Promise.all([
           getAllSiteVisits(filters),
-          getMachinesByRole(user!.role, user!.id),
+          getMachinesByRole(),
+          getUsers().catch(() => [] as User[]),
         ])
-
         if (cancelled) return
-
         setAllVisits(fetchedVisits)
         setMachines(fetchedMachines)
+        setUsers(fetchedUsers)
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Failed to load site visits.')
@@ -82,7 +80,8 @@ export function SiteVisitsPage() {
     return () => { cancelled = true }
   }, [user])
 
-  // Lookup maps for card props
+  if (!user) return null
+
   const machineNameMap: Record<number, string> = {}
   const machineCodeMap: Record<number, string> = {}
   for (const m of machines) {
@@ -90,108 +89,93 @@ export function SiteVisitsPage() {
     machineCodeMap[m.id] = m.machine_code
   }
 
-  // Machine filter options
-  const machineFilterOptions = [
-    { value: '', label: 'All Machines' },
-    ...machines.map((m) => ({
-      value: String(m.id),
-      label: `${m.machine_code} — ${m.machine_name}`,
-    })),
-  ]
+  const userNameMap: Record<number, string> = {}
+  for (const u of users) { userNameMap[u.id] = u.name }
+  const getUserName = (id: number) => userNameMap[id] ?? `User #${id}`
 
-  // Engineer filter options — admin only, list all engineers from MOCK_USERS
-  const engineerFilterOptions = [
-    { value: '', label: 'All Engineers' },
-    ...MOCK_USERS
-      .filter((u) => u.role === 'engineer')
-      .map((u) => ({
-        value: String(u.id),
-        label: u.name,
-      })),
-  ]
-
-  // Client-side filtering
-  const filteredVisits = allVisits.filter((v) => {
-    if (machineFilter && v.machine_id !== Number(machineFilter)) return false
-    if (purposeFilter && v.visit_purpose !== purposeFilter) return false
-    if (engineerFilter && v.engineer_id !== Number(engineerFilter)) return false
-    return true
-  })
-
-  if (!user) return null
+  const stats = computeSiteVisitStats(allVisits)
 
   return (
-    <div className="space-y-6">
-      {/* Header row */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Site Visits</h2>
-        <Button variant="primary" onClick={() => navigate('/visits/new')}>
-          Log Visit
-        </Button>
+    <div className="space-y-4">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-fg-1">Site Visits</h1>
+          <p className="text-sm text-fg-4">Engineer on-site visit records</p>
+        </div>
+        {user.role !== 'customer' && (
+          <button
+            type="button"
+            onClick={() => navigate('/visits/new')}
+            className="bg-brand-cyan text-bg font-semibold text-xs rounded px-3 py-1.5 hover:opacity-90"
+          >
+            + Log Visit
+          </button>
+        )}
+      </header>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-md p-3 text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          accent="blue"
+          label="Visits This Month"
+          value={stats.visits_this_month}
+          icon={<>{'\u2691'}</>}
+        />
+        <StatCard
+          accent="red"
+          label="Emergency"
+          value={stats.emergency_count}
+          valueColor="#ef4444"
+          icon={<>{'\u26A0'}</>}
+        />
+        <StatCard
+          accent="green"
+          label="Routine"
+          value={stats.routine_count}
+          valueColor="#4ade80"
+          icon={<>{'\u2699'}</>}
+        />
+        <StatCard
+          accent="purple"
+          label="Due This Week"
+          value={stats.due_this_week}
+          valueColor="#a78bfa"
+          icon={<>{'\u23F0'}</>}
+        />
       </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
-      {/* Loading state */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
-        </div>
-      ) : (
-        <>
-          {/* Filters row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full sm:w-56">
-              <Select
-                options={machineFilterOptions}
-                value={machineFilter}
-                onChange={(e) => setMachineFilter(e.target.value)}
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                options={PURPOSE_OPTIONS}
-                value={purposeFilter}
-                onChange={(e) => setPurposeFilter(e.target.value as VisitPurpose | '')}
-              />
-            </div>
-            {/* Engineer filter — admin only */}
-            {user.role === 'admin' && (
-              <div className="w-full sm:w-48">
-                <Select
-                  options={engineerFilterOptions}
-                  value={engineerFilter}
-                  onChange={(e) => setEngineerFilter(e.target.value)}
+      <SectionCard title="Recent Site Visits">
+        {isLoading ? (
+          <p className="text-sm text-fg-6 py-8 text-center">Loading…</p>
+        ) : allVisits.length === 0 ? (
+          <p className="text-sm text-fg-6 py-8 text-center">No site visits found.</p>
+        ) : (
+          <div>
+            {allVisits.map((v) => {
+              const badge = PURPOSE_BADGE[v.visit_purpose]
+              const machineLabel = `${machineCodeMap[v.machine_id] ?? '#' + v.machine_id} ${machineNameMap[v.machine_id] ?? ''}`.trim()
+              const ticketLink = v.ticket_id ? ` · Linked to TK-${String(v.ticket_id).padStart(4, '0')}` : ''
+              return (
+                <VisitCard
+                  key={v.id}
+                  title={`${machineLabel} — ${badge.label}`}
+                  meta={`${getUserName(v.engineer_id)} · ${formatVisitDate(v.visit_date)}${ticketLink}`}
+                  purposeBadge={<StatBadge variant={badge.variant}>{badge.label}</StatBadge>}
+                  findings={v.findings}
+                  actions={v.actions_taken}
+                  partsReplaced={v.parts_replaced || 'None'}
+                  nextVisitDue={v.next_visit_due ? formatVisitDate(v.next_visit_due) : '—'}
                 />
-              </div>
-            )}
+              )
+            })}
           </div>
-
-          {/* Results or empty state */}
-          {filteredVisits.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No site visits found.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredVisits.map((visit) => (
-                <SiteVisitCard
-                  key={visit.id}
-                  visit={visit}
-                  machineName={machineNameMap[visit.machine_id] ?? 'Unknown'}
-                  machineCode={machineCodeMap[visit.machine_id] ?? '—'}
-                  engineerName={getUserName(visit.engineer_id)}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        )}
+      </SectionCard>
     </div>
   )
 }

@@ -1,78 +1,83 @@
-import { getUsers, getUserById, toggleUserActive } from '../userService'
-import { MOCK_USERS } from '../../data/mockData'
+import { vi, beforeEach, it, expect, describe } from 'vitest'
 
-/** Snapshot of mutable fields — restored after each test to prevent state leaking. */
-let originalStates: Map<number, { is_active: boolean; updated_at: string }>
+vi.mock('../apiClient', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  },
+}))
 
-describe('userService', () => {
-  beforeEach(() => {
-    originalStates = new Map(
-      MOCK_USERS.map((u) => [u.id, { is_active: u.is_active, updated_at: u.updated_at }]),
-    )
+import { apiClient } from '../apiClient'
+import { getUsers, getUserById, toggleUserActive, createUser, updateUser, assignMachinesToUser, deleteUser } from '../userService'
+import type { UserRole } from '../../types'
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+it('getUsers calls GET /api/v1/users', async () => {
+  ;(apiClient.get as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [] })
+  const result = await getUsers()
+  expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users')
+  expect(result).toEqual([])
+})
+
+it('getUserById calls GET /api/v1/users/:id and returns the user', async () => {
+  const mockUser = { id: 2, name: 'Test Engineer', email: 'e@test.com', role: 'engineer' }
+  ;(apiClient.get as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockUser })
+  const result = await getUserById(2)
+  expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users/2')
+  expect(result).toEqual(mockUser)
+})
+
+it('getUserById returns null when the request throws (404)', async () => {
+  ;(apiClient.get as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('User 999 not found'))
+  const result = await getUserById(999)
+  expect(result).toBeNull()
+})
+
+it('toggleUserActive calls PATCH /api/v1/users/:id/active', async () => {
+  const mockUser = { id: 3, is_active: false }
+  ;(apiClient.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ data: mockUser })
+  const result = await toggleUserActive(3)
+  expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/3/active')
+  expect(result).toEqual(mockUser)
+})
+
+describe('createUser', () => {
+  it('posts to /users and returns the created user', async () => {
+    const newUser = { id: 99, name: 'New', email: 'new@test.com', phone: '9000000099', role: 'engineer' as UserRole, is_active: true, created_at: '', updated_at: '', password_hash: '' }
+    ;(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({ data: newUser })
+    const result = await createUser({ name: 'New', email: 'new@test.com', phone: '9000000099', role: 'engineer', password: 'password123' })
+    expect(apiClient.post).toHaveBeenCalledWith('/api/v1/users', expect.objectContaining({ email: 'new@test.com' }))
+    expect(result.email).toBe('new@test.com')
   })
+})
 
-  afterEach(() => {
-    for (const user of MOCK_USERS) {
-      const original = originalStates.get(user.id)
-      if (original) {
-        user.is_active = original.is_active
-        user.updated_at = original.updated_at
-      }
-    }
+describe('updateUser', () => {
+  it('patches /users/:id and returns the updated user', async () => {
+    const updated = { id: 3, name: 'Updated', email: 'amit@test.com', phone: '9999999999', role: 'engineer' as UserRole, is_active: true, created_at: '', updated_at: '', password_hash: '' }
+    ;(apiClient.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ data: updated })
+    const result = await updateUser(3, { name: 'Updated', phone: '9999999999', role: 'engineer' })
+    expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/3', expect.objectContaining({ name: 'Updated' }))
+    expect(result.name).toBe('Updated')
   })
+})
 
-  describe('getUsers', () => {
-    it('returns all 6 mock users', async () => {
-      const users = await getUsers()
-      expect(users).toHaveLength(6)
-    })
-
-    it('returns users with expected properties', async () => {
-      const users = await getUsers()
-      const first = users[0]
-      expect(first).toHaveProperty('id')
-      expect(first).toHaveProperty('name')
-      expect(first).toHaveProperty('email')
-      expect(first).toHaveProperty('role')
-      expect(first).toHaveProperty('is_active')
-    })
+describe('assignMachinesToUser', () => {
+  it('patches /users/:id/machines with machine_ids', async () => {
+    ;(apiClient.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { updated: 2 } })
+    await assignMachinesToUser(1, [3, 4])
+    expect(apiClient.patch).toHaveBeenCalledWith('/api/v1/users/1/machines', { machine_ids: [3, 4] })
   })
+})
 
-  describe('getUserById', () => {
-    it('returns the correct user for a valid ID', async () => {
-      const user = await getUserById(1)
-      expect(user).not.toBeNull()
-      expect(user!.name).toBe('Rajesh Patel')
-      expect(user!.role).toBe('customer')
-    })
-
-    it('returns null for a non-existent ID', async () => {
-      const user = await getUserById(999)
-      expect(user).toBeNull()
-    })
-  })
-
-  describe('toggleUserActive', () => {
-    it('deactivates an active user', async () => {
-      const user = await toggleUserActive(1)
-      expect(user.is_active).toBe(false)
-    })
-
-    it('activates an inactive user', async () => {
-      // Explicitly deactivate first so this test is self-contained
-      await toggleUserActive(1)
-      const user = await toggleUserActive(1)
-      expect(user.is_active).toBe(true)
-    })
-
-    it('throws for a non-existent user ID', async () => {
-      await expect(toggleUserActive(999)).rejects.toThrow('User 999 not found')
-    })
-
-    it('updates the updated_at timestamp', async () => {
-      const before = new Date().toISOString()
-      const user = await toggleUserActive(2)
-      expect(user.updated_at >= before).toBe(true)
-    })
+describe('deleteUser', () => {
+  it('sends DELETE /users/:id', async () => {
+    ;(apiClient.delete as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { deleted: true } })
+    await deleteUser(5)
+    expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/users/5')
   })
 })

@@ -7,7 +7,7 @@ import { getMachines } from '../services/machineService'
 import { getOpenTicketCount } from '../services/ticketService'
 import { getAllSiteVisits } from '../services/siteVisitService'
 import { getRecentActivity } from '../services/activityLogService'
-import { AdminStatsCards, ActivityFeed, UserTable } from '../components/admin'
+import { AdminStatsCards, ActivityFeed, UserTable, CreateUserModal, EditUserModal, DeleteUserModal } from '../components/admin'
 import { Toast } from '../components/common'
 
 /**
@@ -36,6 +36,11 @@ export function AdminPage() {
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
   const [showToast, setShowToast] = useState(false)
+
+  // Modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deletingUser, setDeletingUser] = useState<User | null>(null)
 
   // Fetch all data on mount
   useEffect(() => {
@@ -116,12 +121,36 @@ export function AdminPage() {
     }
   }, [users])
 
+  function handleUserCreated(newUser: User) {
+    setUsers(prev => [newUser, ...prev])
+    setIsCreateModalOpen(false)
+    setToastMessage(`User ${newUser.name} created`)
+    setToastType('success')
+    setShowToast(true)
+  }
+
+  function handleUserUpdated(updatedUser: User) {
+    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u))
+    setEditingUser(null)
+    setToastMessage(`User ${updatedUser.name} updated`)
+    setToastType('success')
+    setShowToast(true)
+  }
+
+  function handleUserDeleted(userId: number) {
+    setUsers(prev => prev.filter(u => u.id !== userId))
+    setDeletingUser(null)
+    setToastMessage('User deleted')
+    setToastType('success')
+    setShowToast(true)
+  }
+
   if (!user) return null
 
   return (
     <div className="space-y-8">
       {/* Page heading */}
-      <h2 className="text-xl font-semibold text-gray-900">Admin Dashboard</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Admin Dashboard</h2>
 
       {/* Error banner */}
       {error && (
@@ -133,7 +162,7 @@ export function AdminPage() {
       {/* Loading state */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 text-sm">Loading...</p>
         </div>
       ) : (
         <>
@@ -149,25 +178,47 @@ export function AdminPage() {
 
           {/* Section 2: Recent Activity */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
               <ActivityFeed activities={activities} />
             </div>
           </div>
 
           {/* Section 3: User Management */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">User Management</h3>
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
               <UserTable
                 users={users}
-                currentUserId={user.id}
+                currentUserId={user?.id}
                 onToggleActive={handleToggleActive}
+                onAddUser={() => setIsCreateModalOpen(true)}
+                onEdit={u => setEditingUser(u)}
+                onDelete={u => setDeletingUser(u)}
               />
             </div>
           </div>
         </>
       )}
+
+      {/* Modals */}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={handleUserCreated}
+      />
+      <EditUserModal
+        isOpen={editingUser !== null}
+        user={editingUser}
+        onClose={() => setEditingUser(null)}
+        onUpdated={handleUserUpdated}
+      />
+      <DeleteUserModal
+        isOpen={deletingUser !== null}
+        user={deletingUser}
+        onClose={() => setDeletingUser(null)}
+        onDeleted={handleUserDeleted}
+      />
 
       {/* Toast notification */}
       <Toast

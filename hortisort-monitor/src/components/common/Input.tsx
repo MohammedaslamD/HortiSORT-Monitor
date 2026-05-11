@@ -9,7 +9,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 /**
  * Form input with optional label, error, and helper text.
- * Uses @tailwindcss/forms for base styling.
+ * Phase B dark styling: dark surface, uppercase label, brand-cyan focus ring.
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, id, className = '', ...rest }, ref) => {
@@ -20,7 +20,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-[11px] font-semibold uppercase tracking-wider text-fg-4 mb-1.5"
           >
             {label}
           </label>
@@ -29,11 +29,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={`
-            block w-full rounded-md shadow-sm text-sm
+            block w-full rounded-md text-sm
+            bg-bg-surface1 text-fg-1 placeholder-fg-5
+            disabled:bg-bg-surface2 disabled:text-fg-4
+            focus:outline-none focus:ring-2
             ${
               error
-                ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'
+                ? 'border border-brand-red focus:ring-brand-red/20'
+                : 'border border-line-strong focus:border-brand-cyan focus:ring-brand-cyan/20'
             }
             ${className}
           `.trim()}
@@ -48,12 +51,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...rest}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-red-600" role="alert">
+          <p id={`${inputId}-error`} className="mt-1 text-xs text-brand-red" role="alert">
             {error}
           </p>
         )}
         {!error && helperText && (
-          <p id={`${inputId}-helper`} className="mt-1 text-sm text-gray-500">
+          <p id={`${inputId}-helper`} className="mt-1 text-xs text-fg-4">
             {helperText}
           </p>
         )}

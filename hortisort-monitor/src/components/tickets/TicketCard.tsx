@@ -90,11 +90,11 @@ export function TicketCard({
           onClick()
         }
       }}
-      className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow duration-150"
+      className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 cursor-pointer hover:shadow-md transition-shadow duration-150"
     >
       {/* Top row: ticket number + severity + status + SLA breach */}
       <div className="flex items-center gap-2 flex-wrap mb-1">
-        <span className="text-xs font-mono text-gray-400">{ticket.ticket_number}</span>
+        <span className="text-xs font-mono text-gray-400 dark:text-gray-500">{ticket.ticket_number}</span>
         <Badge color={getSeverityColor(ticket.severity)} size="sm">
           {SEVERITY_LABEL[ticket.severity]}
         </Badge>
@@ -109,10 +109,10 @@ export function TicketCard({
       </div>
 
       {/* Title */}
-      <h4 className="text-sm font-semibold text-gray-900 mb-2">{ticket.title}</h4>
+      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{ticket.title}</h4>
 
       {/* Info row: machine, assigned to, created date */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
         <span>{machineName}</span>
         <span>Assigned: {assignedToName}</span>
         <span>{formatDate(ticket.created_at)}</span>

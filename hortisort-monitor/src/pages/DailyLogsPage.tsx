@@ -1,80 +1,95 @@
 import { useState, useEffect } from 'react'
 
-import type { DailyLog, Machine, DailyLogStatus } from '../types'
+import type { DailyLog, Machine, User, DailyLogStatus } from '../types'
 import { useAuth } from '../context/AuthContext'
 import { getAllDailyLogs } from '../services/dailyLogService'
 import { getMachinesByRole } from '../services/machineService'
-import { getUserName } from '../utils/userLookup'
-import { DailyLogCard } from '../components/logs'
-import { Select, Input } from '../components/common'
+import { getUsers } from '../services/userService'
+import { computeDailyLogStats } from '../utils/dailyLogStats'
+import {
+  StatCard,
+  SectionCard,
+  StatBadge,
+  DataTable,
+  InfoBanner,
+  type StatBadgeVariant,
+} from '../components/dark'
 
-// -----------------------------------------------------------------------------
-// Filter options
-// -----------------------------------------------------------------------------
-
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'running', label: 'Running' },
-  { value: 'not_running', label: 'Not Running' },
-  { value: 'maintenance', label: 'Maintenance' },
+const COLUMNS = [
+  { key: 'date',    label: 'Date' },
+  { key: 'machine', label: 'Machine' },
+  { key: 'status',  label: 'Status' },
+  { key: 'fruit',   label: 'Fruit / Tons' },
+  { key: 'notes',   label: 'Notes' },
+  { key: 'by',      label: 'By' },
 ]
 
+const STATUS_BADGE: Record<DailyLogStatus, { variant: StatBadgeVariant; label: string }> = {
+  running:     { variant: 'running',     label: 'Running' },
+  maintenance: { variant: 'maintenance', label: 'Maintenance' },
+  not_running: { variant: 'notrun',      label: 'Not Running' },
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function formatLogDate(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+}
+
+function formatAuto(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return `auto · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 /**
- * Daily logs page with role-scoped data and machine/date/status filters.
+ * Phase B Daily Logs page — info banner + 4 derived stat cards + dense
+ * dark table per `dark-ui-v2.html` lines 572-635. Filters from the
+ * legacy page are dropped per spec §7 row 5.
  *
- * - admin: sees all logs
- * - engineer: sees logs where updated_by === user.id
- * - customer: sees logs for their machines (via getMachinesByRole)
- *
- * No create button — log creation happens through UpdateStatusPage.
+ * Role scoping is preserved verbatim from the prior implementation:
+ * - admin sees all logs
+ * - engineer sees logs they recorded
+ * - customer sees logs for their machines
  */
 export function DailyLogsPage() {
   const { user } = useAuth()
 
-  // Data state
-  const [allLogs, setAllLogs] = useState<DailyLog[]>([])
+  const [allLogs,  setAllLogs]  = useState<DailyLog[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
+  const [users,    setUsers]    = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filter state
-  const [machineFilter, setMachineFilter] = useState('')
-  const [dateFilter, setDateFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<DailyLogStatus | ''>('')
-
-  // Fetch data on mount, scoped by role
   useEffect(() => {
     if (!user) return
-
     let cancelled = false
 
     async function fetchData() {
       setIsLoading(true)
       setError(null)
-
       try {
-        const [fetchedLogs, fetchedMachines] = await Promise.all([
+        const [fetchedLogs, fetchedMachines, fetchedUsers] = await Promise.all([
           getAllDailyLogs(),
-          getMachinesByRole(user!.role, user!.id),
+          getMachinesByRole(),
+          getUsers().catch(() => [] as User[]),
         ])
-
         if (cancelled) return
 
         const machineIdSet = new Set(fetchedMachines.map((m) => m.id))
-
-        let scopedLogs: DailyLog[]
+        let scoped: DailyLog[]
         if (user!.role === 'admin') {
-          scopedLogs = fetchedLogs
+          scoped = fetchedLogs
         } else if (user!.role === 'engineer') {
-          /* Engineer sees logs they recorded */
-          scopedLogs = fetchedLogs.filter((l) => l.updated_by === user!.id)
+          scoped = fetchedLogs.filter((l) => l.updated_by === user!.id)
         } else {
-          /* Customer sees logs for their machines */
-          scopedLogs = fetchedLogs.filter((l) => machineIdSet.has(l.machine_id))
+          scoped = fetchedLogs.filter((l) => machineIdSet.has(l.machine_id))
         }
-
-        setAllLogs(scopedLogs)
+        setAllLogs(scoped)
         setMachines(fetchedMachines)
+        setUsers(fetchedUsers)
       } catch (err) {
         if (cancelled) return
         setError(err instanceof Error ? err.message : 'Failed to load daily logs.')
@@ -87,7 +102,8 @@ export function DailyLogsPage() {
     return () => { cancelled = true }
   }, [user])
 
-  // Lookup maps
+  if (!user) return null
+
   const machineNameMap: Record<number, string> = {}
   const machineCodeMap: Record<number, string> = {}
   for (const m of machines) {
@@ -95,90 +111,95 @@ export function DailyLogsPage() {
     machineCodeMap[m.id] = m.machine_code
   }
 
-  // Machine filter options
-  const machineFilterOptions = [
-    { value: '', label: 'All Machines' },
-    ...machines.map((m) => ({
-      value: String(m.id),
-      label: `${m.machine_code} — ${m.machine_name}`,
-    })),
-  ]
+  const userNameMap: Record<number, string> = {}
+  for (const u of users) { userNameMap[u.id] = u.name }
+  const getUserName = (id: number) => userNameMap[id] ?? `User #${id}`
 
-  // Client-side filtering
-  const filteredLogs = allLogs.filter((l) => {
-    if (machineFilter && l.machine_id !== Number(machineFilter)) return false
-    if (dateFilter && l.date !== dateFilter) return false
-    if (statusFilter && l.status !== statusFilter) return false
-    return true
+  const stats = computeDailyLogStats(allLogs)
+
+  const tableRows = allLogs.map((l) => {
+    const badge = STATUS_BADGE[l.status]
+    const machineLabel = `${machineCodeMap[l.machine_id] ?? '#' + l.machine_id} ${machineNameMap[l.machine_id] ?? ''}`.trim()
+    const fruitTons = l.status === 'running'
+      ? `${l.fruit_type || '—'} — ${l.tons_processed} t`
+      : '—'
+    return {
+      id: l.id,
+      cells: [
+        <div key="d" className="leading-tight">
+          <div className="text-fg-1 font-semibold text-xs">{formatLogDate(l.date)}</div>
+          <div className="text-[10px] text-fg-6">{formatAuto(l.created_at)}</div>
+        </div>,
+        machineLabel,
+        <StatBadge key="st" variant={badge.variant}>{badge.label}</StatBadge>,
+        fruitTons,
+        l.notes,
+        <span key="by" className="text-fg-4 text-[11px]">{getUserName(l.updated_by)}</span>,
+      ],
+    }
   })
 
-  if (!user) return null
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <h2 className="text-xl font-semibold text-gray-900">Daily Logs</h2>
+    <div className="space-y-4">
+      <header>
+        <h1 className="text-xl font-semibold text-fg-1">Daily Logs</h1>
+        <p className="text-sm text-fg-4">Auto-generated from machine status updates</p>
+      </header>
 
-      {/* Error banner */}
+      <InfoBanner>
+        <strong>How daily logs work:</strong> A log entry is automatically created
+        each time an engineer updates a machine status via the Update Status
+        action. It records that day's shift times, fruit type, tons processed,
+        and notes. You cannot manually create one — use "Update Status" on a
+        machine instead.
+      </InfoBanner>
+
       {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-md p-3 text-sm">
+          {error}
         </div>
       )}
 
-      {/* Loading state */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
-        </div>
-      ) : (
-        <>
-          {/* Filters row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full sm:w-56">
-              <Select
-                options={machineFilterOptions}
-                value={machineFilter}
-                onChange={(e) => setMachineFilter(e.target.value)}
-              />
-            </div>
-            <div className="w-full sm:w-44">
-              <Input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                placeholder="Filter by date"
-              />
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                options={STATUS_OPTIONS}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as DailyLogStatus | '')}
-              />
-            </div>
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          accent="blue"
+          label="Logs This Week"
+          value={stats.logs_this_week}
+          icon={<>{'\u2630'}</>}
+        />
+        <StatCard
+          accent="green"
+          label="Running Days"
+          value={stats.running_days}
+          valueColor="#4ade80"
+          icon={<>{'\u25B6'}</>}
+          dot="green"
+        />
+        <StatCard
+          accent="yellow"
+          label="Maintenance Days"
+          value={stats.maintenance_days}
+          valueColor="#fbbf24"
+          icon={<>{'\u2699'}</>}
+        />
+        <StatCard
+          accent="red"
+          label="Not-Running Days"
+          value={stats.not_running_days}
+          valueColor="#ef4444"
+          icon={<>{'\u26A0'}</>}
+        />
+      </div>
 
-          {/* Results or empty state */}
-          {filteredLogs.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No logs found.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredLogs.map((log) => (
-                <DailyLogCard
-                  key={log.id}
-                  log={log}
-                  machineName={machineNameMap[log.machine_id] ?? 'Unknown'}
-                  machineCode={machineCodeMap[log.machine_id] ?? '—'}
-                  recordedByName={getUserName(log.updated_by)}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      <SectionCard title="Recent Daily Logs">
+        {isLoading ? (
+          <p className="text-sm text-fg-6 py-8 text-center">Loading…</p>
+        ) : allLogs.length === 0 ? (
+          <p className="text-sm text-fg-6 py-8 text-center">No logs found.</p>
+        ) : (
+          <DataTable columns={COLUMNS} rows={tableRows} />
+        )}
+      </SectionCard>
     </div>
   )
 }

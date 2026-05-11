@@ -1,238 +1,310 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { apiClient } from '../services/apiClient'
+import {
+  StatCard, SectionCard, MachineTile, DonutChart, SeverityBar,
+  AlertRow, TimelineItem,
+} from '../components/dark'
+import { formatRelative } from '../utils/formatRelative'
+import { useProductionSocket } from '../hooks/useProductionSocket'
+import type {
+  Machine, MachineStats, ProductionSession, Ticket, ActivityLog, MachineStatus,
+} from '../types'
 
-import type { Machine, MachineStatus, MachineStats, DailyLog, Ticket } from '../types';
-import { useAuth } from '../context/AuthContext';
-import { getMachinesByRole, getMachineStats } from '../services/machineService';
-import { getTickets } from '../services/ticketService';
-import { getDailyLogs } from '../services/dailyLogService';
-import { StatsCards } from '../components/dashboard/StatsCards';
-import { MachineCard } from '../components/machines/MachineCard';
-import { Input, Select } from '../components/common';
+// ── helpers ───────────────────────────────────────────────────────────────────
 
-/** Active ticket statuses used to compute per-machine open ticket counts. */
-const ACTIVE_TICKET_STATUSES = ['open', 'in_progress', 'reopened'] as const;
+/** Derive tone for a machine tile from DB status. */
+function machineTone(status: Machine['status']): 'running' | 'idle' | 'down' | 'offline' {
+  return status as 'running' | 'idle' | 'down' | 'offline'
+}
 
-/** Status filter options for the dropdown. */
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'running', label: 'Running' },
-  { value: 'idle', label: 'Idle' },
-  { value: 'down', label: 'Down' },
-  { value: 'offline', label: 'Offline' },
-];
+/** Map a Ticket to the Alert shape expected by AlertRow. */
+function ticketToAlert(t: Ticket) {
+  return {
+    id: t.id,
+    machine_id: t.machine_id,
+    machine_label: t.ticket_number,
+    severity: t.severity === 'P1_critical' ? 'critical' as const
+      : t.severity === 'P2_high' ? 'warn' as const
+      : 'info' as const,
+    badge_label: (t.severity === 'P1_critical' ? 'P1'
+      : t.severity === 'P2_high' ? 'P2'
+      : t.severity === 'P3_medium' ? 'P3' : 'P4') as 'P1' | 'P2' | 'P3' | 'P4',
+    message: t.title,
+    created_at: t.created_at,
+  }
+}
 
-/**
- * Main dashboard page displaying machine stats, filters, and a grid of machine cards.
- *
- * - Fetches machines scoped to the current user's role.
- * - Fetches all tickets and daily logs to compute per-machine metrics.
- * - Supports client-side search and status filtering.
- * - Provides role-appropriate action buttons on each machine card.
- */
+/** Map an ActivityLog DB row to the TimelineItem shape. */
+function activityToEvent(a: ActivityLog) {
+  const iconTone =
+    a.entity_type === 'ticket'  ? 'red'    as const :
+    a.entity_type === 'machine' ? 'blue'   as const :
+    a.entity_type === 'user'    ? 'purple' as const : 'cyan' as const
+  return {
+    id: a.id,
+    type: a.entity_type as 'ticket' | 'machine' | 'user',
+    icon_tone: iconTone,
+    title: a.details,
+    meta: `${a.entity_type} #${a.entity_id}`,
+    created_at: a.created_at,
+  }
+}
+
+// ── empty defaults ─────────────────────────────────────────────────────────────
+
+const EMPTY_STATS: MachineStats = { total: 0, running: 0, idle: 0, down: 0, offline: 0 }
+
+// ── component ─────────────────────────────────────────────────────────────────
+
+/** Command Center — all data from the real backend API. */
 export function DashboardPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
-  // ---------------------------------------------------------------------------
-  // Raw data state (fetched once on mount)
-  // ---------------------------------------------------------------------------
-  const [machines, setMachines] = useState<Machine[]>([]);
-  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
-  const [todayLogs, setTodayLogs] = useState<DailyLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [machineStats,  setMachineStats]  = useState<MachineStats>(EMPTY_STATS)
+  const [machines,      setMachines]      = useState<Machine[]>([])
+  const [sessions,      setSessions]      = useState<ProductionSession[]>([])
+  const [openTickets,   setOpenTickets]   = useState<Ticket[]>([])
+  const [activity,      setActivity]      = useState<ActivityLog[]>([])
+  const [loading,       setLoading]       = useState(true)
+  // Live machine status overrides from socket — keyed by machine_id
+  const [machineStatuses, setMachineStatuses] = useState<Record<number, MachineStatus>>({})
 
-  // ---------------------------------------------------------------------------
-  // Filter state
-  // ---------------------------------------------------------------------------
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<MachineStatus | ''>('');
+  const today = new Date().toISOString().slice(0, 10)
 
-  // ---------------------------------------------------------------------------
-  // Fetch all data on mount
-  // ---------------------------------------------------------------------------
+  const loadAll = useCallback(async () => {
+    try {
+      const [statsRes, machinesRes, sessionsRes, ticketsRes] = await Promise.all([
+        apiClient.get<MachineStats>('/api/v1/machines/stats'),
+        apiClient.get<Machine[]>('/api/v1/machines'),
+        apiClient.get<ProductionSession[]>(`/api/v1/production-sessions?date=${today}&limit=200`),
+        apiClient.get<Ticket[]>('/api/v1/tickets?status=open&limit=50'),
+      ])
+      setMachineStats(statsRes.data)
+      setMachines(machinesRes.data)
+      setSessions(sessionsRes.data)
+      setOpenTickets(ticketsRes.data)
+    } catch { /* keep stale state */ }
+
+    // Activity log — admin only; silently skip for other roles
+    try {
+      const actRes = await apiClient.get<ActivityLog[]>('/api/v1/activity-log?limit=10')
+      setActivity(actRes.data)
+    } catch { /* non-admin: no activity log */ }
+
+    setLoading(false)
+  }, [today])
+
   useEffect(() => {
-    if (!user) return;
+    void loadAll()
+    const interval = setInterval(() => { void loadAll() }, 30_000)
+    return () => clearInterval(interval)
+  }, [loadAll])
 
-    let cancelled = false;
+  // Live machine status via socket — updates instantly without waiting for poll
+  const { lastStatusUpdate } = useProductionSocket({ allMachines: true })
+  useEffect(() => {
+    if (!lastStatusUpdate) return
+    setMachineStatuses((prev) => ({
+      ...prev,
+      [lastStatusUpdate.machine_id]: lastStatusUpdate.status,
+    }))
+    // Also patch the stats counters to reflect the new status immediately
+    setMachines((prev) => prev.map((m) =>
+      m.id === lastStatusUpdate.machine_id ? { ...m, status: lastStatusUpdate.status } : m
+    ))
+  }, [lastStatusUpdate])
 
-    async function fetchData() {
-      setIsLoading(true);
-      setError(null);
+  if (!user) return null
 
-      try {
-        const [fetchedMachines, fetchedTickets, fetchedLogs] = await Promise.all([
-          getMachinesByRole(user!.role, user!.id),
-          getTickets(),
-          getDailyLogs(),
-        ]);
+  // ── derived values ──────────────────────────────────────────────────────────
 
-        if (cancelled) return;
+  // Machines actively running sessions today
+  const activeMachineIds = new Set(
+    sessions.filter((s) => s.status === 'running').map((s) => s.machine_id)
+  )
+  const inProduction = activeMachineIds.size
 
-        setMachines(fetchedMachines);
-        setAllTickets(fetchedTickets);
+  // Total fruits processed today across all sessions
+  const totalFruitsToday = sessions.reduce((sum, s) => {
+    const v = s.quantity_kg !== null ? parseFloat(String(s.quantity_kg)) : 0
+    return sum + (isNaN(v) ? 0 : v)
+  }, 0)
 
-        // Keep only today's logs for efficient per-machine lookup
-        const today = new Date().toISOString().split('T')[0];
-        setTodayLogs(fetchedLogs.filter((log) => log.date === today));
-      } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data.');
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    }
+  // Open ticket counts by severity
+  const p1Count = openTickets.filter((t) => t.severity === 'P1_critical').length
+  const p2Count = openTickets.filter((t) => t.severity === 'P2_high').length
+  const p3Count = openTickets.filter((t) => t.severity === 'P3_medium').length
+  const p4Count = openTickets.filter((t) => t.severity === 'P4_low').length
 
-    fetchData();
-    return () => { cancelled = true; };
-  }, [user]);
+  // Fleet tiles — up to 8 machines
+  const fleetTiles = machines.slice(0, 8)
 
-  // ---------------------------------------------------------------------------
-  // Derived: client-side filtering
-  // ---------------------------------------------------------------------------
-  const filteredMachines = machines.filter((m) => {
-    // Status filter
-    if (statusFilter && m.status !== statusFilter) return false;
-
-    // Search filter (machine_code, name, city, state)
-    if (search) {
-      const term = search.toLowerCase();
-      const matchesSearch =
-        m.machine_code.toLowerCase().includes(term) ||
-        m.machine_name.toLowerCase().includes(term) ||
-        m.city.toLowerCase().includes(term) ||
-        m.state.toLowerCase().includes(term);
-      if (!matchesSearch) return false;
-    }
-
-    return true;
-  });
-
-  // Stats are computed from filtered results so cards + stats stay in sync
-  const stats: MachineStats = getMachineStats(filteredMachines);
-
-  // Global open ticket count (across all user-visible machines, unfiltered)
-  const openTicketCount = allTickets.filter((t) =>
-    (ACTIVE_TICKET_STATUSES as readonly string[]).includes(t.status) &&
-    machines.some((m) => m.id === t.machine_id),
-  ).length;
-
-  // ---------------------------------------------------------------------------
-  // Per-machine helpers
-  // ---------------------------------------------------------------------------
-  const getOpenTicketCountForMachine = useCallback(
-    (machineId: number): number =>
-      allTickets.filter(
-        (t) =>
-          t.machine_id === machineId &&
-          (ACTIVE_TICKET_STATUSES as readonly string[]).includes(t.status),
-      ).length,
-    [allTickets],
-  );
-
-  const getTodayLogForMachine = useCallback(
-    (machineId: number): DailyLog | undefined =>
-      todayLogs.find((log) => log.machine_id === machineId),
-    [todayLogs],
-  );
-
-  // ---------------------------------------------------------------------------
-  // Navigation handlers
-  // ---------------------------------------------------------------------------
-  const handleNavigate = useCallback(
-    (machineId: number) => navigate(`/machines/${machineId}`),
-    [navigate],
-  );
-
-  const handleUpdateStatus = useCallback(
-    (machineId: number) => navigate(`/machines/${machineId}/update-status`),
-    [navigate],
-  );
-
-  const handleRaiseTicket = useCallback(
-    (machineId: number) => navigate(`/tickets/new?machine=${machineId}`),
-    [navigate],
-  );
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-
-  if (!user) return null;
-
-  const userRole = user.role;
+  // Alerts = open P1 + P2 tickets sorted newest first
+  const alertTickets = openTickets
+    .filter((t) => t.severity === 'P1_critical' || t.severity === 'P2_high')
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5)
 
   return (
-    <div className="space-y-6">
-      {/* Page heading */}
-      <h2 className="text-xl font-semibold text-gray-900">Dashboard</h2>
+    <div className="space-y-4">
+      {/* ── Stat row ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <StatCard
+          accent="blue"
+          label="TOTAL MACHINES"
+          icon="⚙"
+          value={loading ? '—' : machineStats.total}
+          sub={`Across ${new Set(machines.map((m) => m.city)).size || '—'} sites`}
+        />
+        <StatCard
+          accent="green"
+          label="RUNNING"
+          dot="green"
+          icon="▶"
+          value={loading ? '—' : machineStats.running}
+          valueColor="#4ade80"
+          sub="machines online"
+        />
+        <StatCard
+          accent="green"
+          label="IN PRODUCTION"
+          dot="green"
+          icon="✦"
+          value={loading ? '—' : inProduction}
+          valueColor="#4ade80"
+          sub="Live TDMS sessions"
+        />
+        <StatCard
+          accent="red"
+          label="OPEN TICKETS"
+          dot="red"
+          icon="⚑"
+          value={loading ? '—' : openTickets.length}
+          valueColor="#ef4444"
+          sub={`${p1Count} P1 Critical · ${openTickets.length - p1Count} open`}
+        />
+        <StatCard
+          accent="cyan"
+          label="FRUITS TODAY"
+          icon="⚖"
+          value={loading ? '—' : Math.round(totalFruitsToday).toLocaleString()}
+          valueColor="#22d3ee"
+          sub="UI Result Update Count"
+        />
+      </div>
 
-      {/* Error banner */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
+      {/* ── Fleet + Breakdown row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Machine Fleet tiles */}
+        <div className="lg:col-span-2">
+          <SectionCard
+            title="Machine Fleet"
+            link={{ label: 'View all →', onClick: () => navigate('/machines') }}
+          >
+            {loading ? (
+              <p className="text-xs text-fg-5 py-6 text-center">Loading machines…</p>
+            ) : fleetTiles.length === 0 ? (
+              <p className="text-xs text-fg-5 py-6 text-center">No machines found.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {fleetTiles.map((m) => {
+                  // Use live socket status override if available, else DB status
+                  const liveStatus = machineStatuses[m.id] ?? m.status
+                  const tone = machineTone(liveStatus)
+                  // How many sessions today for this machine
+                  const machineSessions = sessions.filter((s) => s.machine_id === m.id)
+                  const totalFruits = machineSessions.reduce((sum, s) => {
+                    const v = s.quantity_kg !== null ? parseFloat(String(s.quantity_kg)) : 0
+                    return sum + (isNaN(v) ? 0 : v)
+                  }, 0)
+                  return (
+                    <MachineTile
+                      key={m.id}
+                      tone={tone}
+                      name={m.machine_name}
+                      badge={
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-bg-surface3 text-fg-3">
+                          {tone.toUpperCase()}
+                        </span>
+                      }
+                      value={totalFruits > 0 ? Math.round(totalFruits).toLocaleString() : '—'}
+                      valueColor={totalFruits === 0 ? '#64748b' : undefined}
+                      unit={totalFruits > 0 ? `fruits · ${m.city}` : m.city}
+                      onClick={() => navigate(`/machines/${m.id}`)}
+                    />
+                  )
+                })}
+              </div>
+            )}
+          </SectionCard>
         </div>
-      )}
 
-      {/* Loading state */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500 text-sm">Loading...</p>
-        </div>
-      ) : (
-        <>
-          {/* Stats cards row */}
-          <StatsCards stats={stats} openTicketCount={openTicketCount} />
-
-          {/* Filter / search bar */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Search machines, cities, states..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                type="search"
-              />
+        {/* Fleet Breakdown donut */}
+        <SectionCard title="Fleet Breakdown">
+          <DonutChart
+            centerLabel="machines"
+            segments={[
+              { label: 'Running', value: machineStats.running, color: '#4ade80' },
+              { label: 'Idle',    value: machineStats.idle,    color: '#fbbf24' },
+              { label: 'Down',    value: machineStats.down,    color: '#ef4444' },
+              { label: 'Offline', value: machineStats.offline, color: '#64748b' },
+            ]}
+          />
+          <div className="mt-3 pt-3 border-t border-line">
+            <div className="text-xs font-semibold tracking-wider text-fg-3 uppercase mb-2">
+              Tickets by Severity
             </div>
-            <div className="w-full sm:w-48">
-              <Select
-                options={STATUS_OPTIONS}
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as MachineStatus | '')
-                }
-              />
-            </div>
+            <SeverityBar p1={p1Count} p2={p2Count} p3={p3Count} p4={p4Count} />
           </div>
+        </SectionCard>
+      </div>
 
-          {/* Machine grid or empty state */}
-          {filteredMachines.length === 0 ? (
-            <div className="flex items-center justify-center py-12 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500 text-sm">No machines found.</p>
-            </div>
+      {/* ── Bottom row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Recent Activity — from activity_log table (admin) or empty for others */}
+        <SectionCard title="Recent Activity">
+          {activity.length === 0 ? (
+            <p className="text-xs text-fg-5 py-6 text-center">
+              {user.role === 'admin' ? 'No recent activity.' : 'Activity log visible to admins only.'}
+            </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredMachines.map((machine) => (
-                <MachineCard
-                  key={machine.id}
-                  machine={machine}
-                  todayLog={getTodayLogForMachine(machine.id)}
-                  openTicketCount={getOpenTicketCountForMachine(machine.id)}
-                  userRole={userRole}
-                  onNavigate={handleNavigate}
-                  onUpdateStatus={
-                    userRole !== 'customer' ? handleUpdateStatus : undefined
-                  }
-                  onRaiseTicket={
-                    userRole !== 'customer' ? handleRaiseTicket : undefined
-                  }
+            <div>
+              {activity.slice(0, 5).map((e) => (
+                <TimelineItem
+                  key={e.id}
+                  event={activityToEvent(e)}
+                  timeAgo={formatRelative(e.created_at)}
                 />
               ))}
             </div>
           )}
-        </>
-      )}
+        </SectionCard>
+
+        {/* Live Alerts — from open P1/P2 tickets */}
+        <SectionCard
+          title="Live Alerts"
+          link={{ label: 'View all →', onClick: () => navigate('/tickets') }}
+        >
+          {alertTickets.length === 0 ? (
+            <p className="text-xs text-fg-5 py-6 text-center">
+              No critical or high-priority tickets open.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {alertTickets.map((t) => (
+                <AlertRow
+                  key={t.id}
+                  alert={ticketToAlert(t)}
+                  timeAgo={formatRelative(t.created_at)}
+                />
+              ))}
+            </div>
+          )}
+        </SectionCard>
+      </div>
     </div>
-  );
+  )
 }

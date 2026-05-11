@@ -1,0 +1,8 @@
+{
+  "backend_url": "https://exhume-flashbulb-cruelness.ngrok-free.dev",
+  "machine_id": 1,
+  "api_key": "hs-key-machine-001-dev",
+  "poll_interval": 15,
+  "data_dir": "C:/Program Files/HortiSORT/DataLog",
+  "tdms_subfolder": "Hortisort"
+}
